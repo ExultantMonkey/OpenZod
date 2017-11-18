@@ -260,6 +260,7 @@ namespace ZPath_Finding_AStar
 		int total_ticks;
 		int pause_ticks;
 		double start_time, end_time;
+		double tick_time;
 		//vector<pf_point> open_list;
 		//vector<pf_point> closed_list;
 		pf_point_array open_list;
@@ -305,7 +306,8 @@ namespace ZPath_Finding_AStar
 		open_list.AddPoint(sp);
 		//open_list.list[open_list.size++] = pf_point(start_x, start_y);
 
-		//start_time = current_time();
+		tick_time = current_time();
+		//start_time = tick_time;
 		total_ticks = 0;
 		pause_ticks = 0;
 		while(open_list.size)
@@ -356,7 +358,13 @@ namespace ZPath_Finding_AStar
 			if(pause_ticks >= ticks_until_pause)
 			{
 				pause_ticks = 0;
-				SDL_Delay(10 + (ZPath_Finding_Response::existing_responses * 4));
+				
+				double diff_time = current_time() - tick_time;
+				if(diff_time > 0.01)
+				{
+					SDL_Delay(1000 * diff_time * 0.4 * ZPath_Finding_Response::existing_responses);
+					tick_time = current_time();
+				}
 			}
 
 			if(response->kill_thread)

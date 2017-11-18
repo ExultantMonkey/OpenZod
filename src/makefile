@@ -87,7 +87,7 @@ zcomp_message_engine.o: zcomp_message_engine.cpp zcomp_message_engine.h constant
 zpath_finding.o: zpath_finding.cpp zpath_finding.h constants.h zsdl.h
 	$(CC) $(CFLAGS) $(INCLUDES) zpath_finding.cpp
 	
-zpath_finding_astar.o: zpath_finding_astar.cpp zpath_finding_astar.h constants.h zsdl.h
+zpath_finding_astar.o: zpath_finding_astar.cpp zpath_finding_astar.h common.h zsdl.h
 	$(CC) $(CFLAGS) $(INCLUDES) zpath_finding_astar.cpp
 	
 zsettings.o: zsettings.cpp zsettings.h constants.h zsdl.h
