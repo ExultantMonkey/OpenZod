@@ -1015,6 +1015,6 @@ bool ZPath_Finding_Engine::Direct_Path_Possible(int sx, int sy, int ex, int ey, 
 	}
 
 	//didn't find a false so I guess its good
-	//printf("Direct_Path_Possible::possible...\n");
+	//printf("Direct_Path_Possible::possible... [%d,%d] - [%d,%d]\n", sx, sy, ex, ey);
 	return true;
 }

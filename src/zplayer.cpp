@@ -3591,7 +3591,6 @@ void ZPlayer::DeleteCurrentGuiWindow()
 {
 	if(gui_window)
 	{
-		printf("deleted gui window\n");
 		delete gui_window;
 		gui_window = NULL;
 	}

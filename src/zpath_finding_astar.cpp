@@ -399,7 +399,7 @@ namespace ZPath_Finding_AStar
 
 				if(cp.px == ip.x && cp.py == ip.y)
 				{
-					//printf("inserted point:[%d,%d]\n", i->x, i->y);
+					//printf("inserted point:[%d,%d]\n", ip.x, ip.y);
 					cp = ip;
 					break;
 				}

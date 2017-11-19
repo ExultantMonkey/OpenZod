@@ -646,8 +646,8 @@ bool ZCore::CannonPlacable(ZObject *building_obj, int tx, int ty)
 	//within the map at all?
 	if(tx < 0) return false;
 	if(ty < 0) return false;
-	if(tx > zmap.GetMapBasics().width) return false;
-	if(ty > zmap.GetMapBasics().height) return false;
+	if(tx+1 >= zmap.GetMapBasics().width) return false;
+	if(ty+1 >= zmap.GetMapBasics().height) return false;
 
 	//it within the zone? (is there a zone?)
 	if(!building_obj->GetConnectedZone()) return false;
@@ -671,6 +671,16 @@ bool ZCore::CannonPlacable(ZObject *building_obj, int tx, int ty)
 	}
 
 	//is it all over good terrain?
+	planet_type tt = (planet_type)zmap.GetMapBasics().terrain_type;
+	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y).tile).is_water) return false;
+	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y+16).tile).is_water) return false;
+	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y).tile).is_water) return false;
+	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y+16).tile).is_water) return false;
+
+	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y).tile).is_passable) return false;
+	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y+16).tile).is_passable) return false;
+	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y).tile).is_passable) return false;
+	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y+16).tile).is_passable) return false;
 
 	return true;
 }
