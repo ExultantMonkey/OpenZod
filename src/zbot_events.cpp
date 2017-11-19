@@ -78,9 +78,11 @@ void ZBot::test_event(ZBot *p, char *data, int size, int dummy)
 
 void ZBot::connect_event(ZBot *p, char *data, int size, int dummy)
 {
-	p->ProcessConnect();
-
+	//needs to be before set team event
+	//in order to join teams that already have players
 	p->SendBotBypassData();
+	
+	p->ProcessConnect();
 }
 
 void ZBot::disconnect_event(ZBot *p, char *data, int size, int dummy)

@@ -68,7 +68,7 @@ void ZServer::connect_event(ZServer *p, char *data, int size, int player)
 
 	if(player < p->player_info.size())
 	{
-		printf("ZServer::connect_event: tried to add a player that is already on the list [p:%d] vs [size:%s]\n", player, p->player_info.size());
+		printf("ZServer::connect_event: tried to add a player that is already on the list [p:%d] vs [size:%lu]\n", player, p->player_info.size());
 		return;
 	}
 
@@ -95,7 +95,7 @@ void ZServer::disconnect_event(ZServer *p, char *data, int size, int player)
 
 	if(player >= p->player_info.size())
 	{
-		printf("ZServer::disconnect_event: tried to remove a player that is not on the list [p:%d] vs [size:%s]\n", player, p->player_info.size());
+		printf("ZServer::disconnect_event: tried to remove a player that is not on the list [p:%d] vs [size:%lu]\n", player, p->player_info.size());
 		return;
 	}
 
@@ -315,6 +315,30 @@ void ZServer::set_player_team_event(ZServer *p, char *data, int size, int player
 
 	if(the_team < NULL_TEAM) return;
 	if(the_team >= MAX_TEAM_TYPES) return;
+	
+	//team already have a player and game not paused?
+	//ignore check if joining NULL team or we are a bot
+	if(!p->ztime.IsPaused() && the_team != NULL_TEAM && !p->player_info[player].bot_logged_in)
+	{
+		bool player_on_team = false;
+		
+		int pi=0;
+		for(vector<p_info>::iterator i=p->player_info.begin();i!=p->player_info.end();++i, ++pi)
+		{
+			//this player on the team, not a bot and not us?
+			if(i->team == the_team && !i->bot_logged_in && pi != player)
+			{
+				player_on_team = true;
+				break;
+			}
+		}
+		
+		if(player_on_team)
+		{
+			p->SendNews(player, "change team error: team already has a player, please pause game before joining", 0, 0, 0);
+			return;
+		}
+	}
 
 	p->ChangePlayerTeam(player, the_team);
 
