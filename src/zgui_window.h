@@ -204,6 +204,7 @@ class ZGuiWindow
 		virtual void SetBuildList(ZBuildList *buildlist_) { buildlist = buildlist_; }
 		virtual void SetMap(ZMap *zmap_) { zmap = zmap_; }
 		bool KillMe();
+		void DoKillMe() { killme = true; }
 		void Show() { show = true; }
 		void Hide() { show = false; }
 		void ToggleShow() { show = !show; }

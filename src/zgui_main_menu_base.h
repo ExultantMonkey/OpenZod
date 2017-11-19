@@ -131,6 +131,7 @@ public:
 	virtual bool WheelDownButton();
 
 	bool KillMe() { return killme; }
+	void DoKillMe() { killme = true; }
 	int GetMenuType() { return menu_type; }
 	void SetCenterCoords(int cx_, int cy_);
 	bool WithinDimensions(int x_, int y_);

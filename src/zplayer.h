@@ -225,6 +225,7 @@ class ZPlayer : public ZClient
 		void MainMenuMove(double px, double py);
 		bool GuiAbsorbLClick();
 		bool GuiAbsorbLUnClick();
+		void CloseCurrentMainMenuEtc();
 		void DeleteCurrentGuiWindow();
 		void ProcessChangeObjectAmount();
 		void ProcessUnicode(int key);

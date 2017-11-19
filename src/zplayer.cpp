@@ -3565,12 +3565,33 @@ bool ZPlayer::DoPlaceCannon()
 	return true;
 }
 
+void ZPlayer::CloseCurrentMainMenuEtc()
+{
+	//Close windows in order of visibility 
+	
+	//main menu loaded?
+	if(gui_menu_list.size())
+	{
+		(*gui_menu_list.begin())->DoKillMe();
+		return;
+	}
+	
+	//factory list?
+	if(gui_factory_list && gui_factory_list->IsVisible())
+	{
+		gui_factory_list->ToggleShow();
+		return;
+	}
+	
+	//factory selected?
+	if(gui_window) gui_window->DoKillMe();
+}
 
 void ZPlayer::DeleteCurrentGuiWindow()
 {
 	if(gui_window)
 	{
-		//printf("deleted gui window\n");
+		printf("deleted gui window\n");
 		delete gui_window;
 		gui_window = NULL;
 	}

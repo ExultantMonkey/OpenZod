@@ -490,7 +490,10 @@ void ZPlayer::keydown_event(ZPlayer *p, char *data, int size, int dummy)
 			}
 			break;
 		case 27: //esc key
-			exit(0);
+			if(p->CtrlDown())
+				exit(0);
+			else
+				p->CloseCurrentMainMenuEtc();
 			break;
 		case 305: // rctrl
 			p->rctrl_down = true;
