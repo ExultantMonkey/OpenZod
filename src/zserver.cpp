@@ -3663,26 +3663,35 @@ void ZServer::MakeAllFortTurretsUnEjectable()
 
 bool ZServer::ChangePlayerTeam(int player, int team)
 {
-	string send_str;
-
+	//checks
 	if(team < 0) return false;
 	if(team >= MAX_TEAM_TYPES) return false;
 
+	//set the team
 	player_info[player].team = (team_type)team;
 
 	//update player lists
 	RelayLPlayerTeam(player);
 
-	int_packet packet;
+	//send team data to player
+	SendPlayerTeam(player);
 
-	packet.team = team;
-
-	server_socket.SendMessage(player, SET_TEAM, (const char*)&packet, sizeof(int_packet));
-
-	send_str = "you have been set to the " + team_type_string[player_info[player].team] + " team";
-	SendNews(player, send_str.c_str(), 0, 0, 0);
+	//send update text if team is new
+	{
+		string send_str = "you have been set to the " + team_type_string[player_info[player].team] + " team";
+		SendNews(player, send_str.c_str(), 0, 0, 0);
+	}
 
 	return true;
+}
+
+void ZServer::SendPlayerTeam(int player)
+{
+	int_packet packet;
+
+	packet.team = player_info[player].team;
+
+	server_socket.SendMessage(player, SET_TEAM, (const char*)&packet, sizeof(int_packet));
 }
 
 void ZServer::ReshuffleTeams()

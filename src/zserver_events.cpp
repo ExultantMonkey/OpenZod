@@ -317,16 +317,19 @@ void ZServer::set_player_team_event(ZServer *p, char *data, int size, int player
 	if(the_team >= MAX_TEAM_TYPES) return;
 	
 	//team already have a player and game not paused?
-	//ignore check if joining NULL team or we are a bot
-	if(!p->ztime.IsPaused() && the_team != NULL_TEAM && !p->player_info[player].bot_logged_in)
+	//ignore check if joining NULL team, or we are a bot
+	//or rejoining our own team
+	if(!p->ztime.IsPaused() 
+		&& the_team != NULL_TEAM
+		&& the_team != p->player_info[player].team
+		&& !p->player_info[player].bot_logged_in)
 	{
 		bool player_on_team = false;
 		
-		int pi=0;
-		for(vector<p_info>::iterator i=p->player_info.begin();i!=p->player_info.end();++i, ++pi)
+		for(vector<p_info>::iterator i=p->player_info.begin();i!=p->player_info.end();++i)
 		{
 			//this player on the team, not a bot and not us?
-			if(i->team == the_team && !i->bot_logged_in && pi != player)
+			if(i->team == the_team && !i->bot_logged_in)
 			{
 				player_on_team = true;
 				break;
@@ -336,27 +339,20 @@ void ZServer::set_player_team_event(ZServer *p, char *data, int size, int player
 		if(player_on_team)
 		{
 			p->SendNews(player, "change team error: team already has a player, please pause game before joining", 0, 0, 0);
+			
+			//tell the player their team again
+			//to fix bug where appear as their preset team
+			//even though they weren't able to join it
+			p->SendPlayerTeam(player);
+			
 			return;
 		}
 	}
 
 	p->ChangePlayerTeam(player, the_team);
 
-	p->player_info[player].team = (team_type)the_team;
-
 	//sprintf(message, "player '%s' set their team to the %s team", p->player_info[player].name.c_str(), team_type_string[the_team].c_str());
 	//p->BroadCastNews(message);
-
-	//update player lists
-	p->RelayLPlayerTeam(player);
-	//{
-	//	set_player_int_packet packet;
-
-	//	packet.p_id = p->player_info[player].p_id;
-	//	packet.value = p->player_info[player].team;
-
-	//	p->server_socket.SendMessageAll(SET_LPLAYER_TEAM, (char*)&packet, sizeof(set_player_int_packet));
-	//}
 }
 
 void ZServer::rcv_object_waypoints_event(ZServer *p, char *data, int size, int player)

@@ -133,6 +133,7 @@ class ZServer : public ZCore
 		void RelayPortraitAnim(int ref_id, int anim_id);
 		void RelayTeamEnded(int team, bool won);
 		bool ChangePlayerTeam(int player, int team);
+		void SendPlayerTeam(int player);
 		void ReshuffleTeams();
 		bool SuggestReshuffleTeams();
 		void ChangeGameSpeed(float new_speed);
