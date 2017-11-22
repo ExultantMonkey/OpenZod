@@ -14,12 +14,12 @@ using namespace std;
 
 enum hud_buttons
 {
-	A_BUTTON, B_BUTTON, D_BUTTON, G_BUTTON, MENU_BUTTON, R_BUTTON, T_BUTTON, V_BUTTON, Z_BUTTON, MAX_HUD_BUTTONS
+	A_BUTTON, B_BUTTON, D_BUTTON, G_BUTTON, R_BUTTON, T_BUTTON, V_BUTTON, Z_BUTTON, MENU_BUTTON, MAX_HUD_BUTTONS
 };
 
 const string hub_buttons_string[MAX_HUD_BUTTONS] =
 {
-	"a_button", "b_button", "d_button", "g_button", "menu_button", "r_button", "t_button", "v_button", "z_button"
+	"a_button", "b_button", "d_button", "g_button", "r_button", "t_button", "v_button", "z_button", "menu_button"
 };
 
 enum hud_button_state
@@ -146,6 +146,7 @@ class ZHud
 		string chat_message;
 		ZSDL_Surface chat_message_img;
 		int chat_start_x, chat_end_x;
+		int bottom_right_x;
 
 		int max_units;
 		int unit_amount;

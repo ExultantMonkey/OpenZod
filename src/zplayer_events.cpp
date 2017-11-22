@@ -669,8 +669,7 @@ void ZPlayer::add_new_object_event(ZPlayer *p, char *data, int size, int dummy)
 	}
 
 	//make the buttons available that let you cycle through your units
-	p->ReSetupButtons();
-
+	//and set unit amount
 	p->ProcessChangeObjectAmount();
 }
 
@@ -792,6 +791,10 @@ void ZPlayer::set_object_team_event(ZPlayer *p, char *data, int size, int dummy)
 		if(obj->GetOwner() != p->our_team)
 			p->select_info.DeleteObject(obj);
 	}
+	
+	//make the buttons available that let you cycle through your units
+	//and set unit amount
+	p->ProcessChangeObjectAmount();
 }
 
 void ZPlayer::set_object_attack_object_event(ZPlayer *p, char *data, int size, int dummy)

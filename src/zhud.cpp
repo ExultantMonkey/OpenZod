@@ -1,5 +1,6 @@
 #include "zhud.h"
 #include "zteam.h"
+#include <limits.h>
 
 HubButton::HubButton()
 {
@@ -141,6 +142,7 @@ ZHud::ZHud()
 
 	chat_start_x = 0;
 	chat_end_x = 0;
+	bottom_right_x = INT_MAX / 2;
 
 	aportrait.SetDoRandomAnims(false);
 	a_ref_id = -1;
@@ -640,7 +642,7 @@ void ZHud::DoRender(SDL_Surface *dest, int screen_w, int screen_h)
 			main_hud_bottom_left.BlitSurface(NULL, &to_rect);
 
 			//best placed here, it goes over the left peice
-			RenderUnitAmountBar(dest, off_x, off_y);
+			//RenderUnitAmountBar(dest, off_x, off_y);
 
 			//center
 			if(main_hud_bottom_left.GetBaseSurface() && main_hud_bottom_center.GetBaseSurface() && main_hud_bottom_right.GetBaseSurface())
@@ -676,7 +678,7 @@ void ZHud::DoRender(SDL_Surface *dest, int screen_w, int screen_h)
 			//right
 			if(main_hud_bottom_right.GetBaseSurface())
 			{
-				to_rect.x = (548 + off_x) - main_hud_bottom_right.GetBaseSurface()->w;
+				to_rect.x = bottom_right_x = (548 + off_x) - main_hud_bottom_right.GetBaseSurface()->w;
 				to_rect.y = off_y + 448;
 				main_hud_bottom_right.BlitSurface(NULL, &to_rect);
 			}
@@ -832,6 +834,8 @@ void ZHud::DoRender(SDL_Surface *dest, int screen_w, int screen_h)
 	RenderTime(dest, off_x, off_y);
 
 	RenderHealth(dest, off_x, off_y);
+	
+	RenderUnitAmountBar(dest, off_x, off_y);
 
 	RenderChatMessage(dest, off_x, off_y);
 }
@@ -893,56 +897,98 @@ void ZHud::RenderUnitAmountBar(SDL_Surface *dest, int off_x, int off_y)
 	SDL_Rect from_rect, to_rect;
 	double percent_to_max;
 	char message[50];
+	int max_width, max_right_x;
 
 	if(!rerender_unit_amount) return;
 
 	if(!unit_amount_bar[team].GetBaseSurface()) return;
+	
+	//needed to determine how much space is left to render
+	max_right_x = bottom_right_x - 2;
 
 	//clear the space
 	{
+		max_width = max_right_x - 132;
+		if(max_width > 62) max_width = 62;
+		
+		//no space to render anything?
+		if(max_width <= 0) return;
+
 		//to_rect.x = off_x + 132;
 		to_rect.x = 132;
 		to_rect.y = off_y + 460;
-		to_rect.w = 62;
+		to_rect.w = max_width;//62;
 		to_rect.h = 16;
 		//SDL_FillRect(dest, &to_rect, SDL_MapRGB(dest->format, 0,0,0));
 		ZSDL_FillRect(&to_rect, 0, 0, 0);
 	}
 
-	percent_to_max = 1.0 * unit_amount / max_units;
-	if(percent_to_max < 0) percent_to_max = 0;
-	if(percent_to_max > 1) percent_to_max = 1;
+	//render bar
+	{
+		max_width = max_right_x - 132;
+		if(max_width > unit_amount_bar[team].GetBaseSurface()->w) 
+			max_width = unit_amount_bar[team].GetBaseSurface()->w;
+		
+		percent_to_max = 1.0 * unit_amount / max_units;
+		if(percent_to_max < 0) percent_to_max = 0;
+		if(percent_to_max > 1) percent_to_max = 1;
 
-	//to_rect.x = off_x + 132;
-	to_rect.x = 132;
-	to_rect.y = off_y + 460;
+		//to_rect.x = off_x + 132;
+		to_rect.x = 132;
+		to_rect.y = off_y + 460;
 
-	from_rect.x = 0;
-	from_rect.y = 0;
-	from_rect.w = unit_amount_bar[team].GetBaseSurface()->w * percent_to_max;
-	from_rect.h = unit_amount_bar[team].GetBaseSurface()->h;
+		from_rect.x = 0;
+		from_rect.y = 0;
+		from_rect.w = max_width * percent_to_max;
+		from_rect.h = unit_amount_bar[team].GetBaseSurface()->h;
+	}
 
 	unit_amount_bar[team].BlitSurface(&from_rect, &to_rect);
 	//SDL_BlitSurface(unit_amount_bar[team], &from_rect, dest, &to_rect);
 
 	//render text
 	{
-		sprintf(message, "%d", unit_amount);
+		static int prev_unit_amount = -1;
+		
+		//recreate image?
+		if(prev_unit_amount != unit_amount)
+		{
+			prev_unit_amount = unit_amount;
+			
+			sprintf(message, "%d", unit_amount);
 
-		//ZSDL_FreeSurface(unit_amount_text);
-		//unit_amount_text.Unload();
+			//ZSDL_FreeSurface(unit_amount_text);
+			//unit_amount_text.Unload();
 
-		//unit_amount_text = ZFontEngine::GetFont(SMALL_WHITE_FONT).Render(message);
-		unit_amount_text.LoadBaseImage(ZFontEngine::GetFont(SMALL_WHITE_FONT).Render(message));
+			//unit_amount_text = ZFontEngine::GetFont(SMALL_WHITE_FONT).Render(message);
+			unit_amount_text.LoadBaseImage(ZFontEngine::GetFont(SMALL_WHITE_FONT).Render(message));
+		}
+		
+		if(unit_amount_text.GetBaseSurface())
+		{
+			max_width = max_right_x - (132 + 3);
+			if(max_width > unit_amount_text.GetBaseSurface()->w) 
+				max_width = unit_amount_text.GetBaseSurface()->w;
+			
+			//no space to render anything?
+			if(max_width <= 0) return;
 
-		//to_rect.x = off_x + 132 + 3;
-		to_rect.x = 132 + 3;
-		to_rect.y = off_y + 460 + 5;
+			//to_rect.x = off_x + 132 + 3;
+			to_rect.x = 132 + 3;
+			to_rect.y = off_y + 460 + 5;
+			
+			from_rect.x = 0;
+			from_rect.y = 0;
+			from_rect.w = max_width;
+			from_rect.h = unit_amount_text.GetBaseSurface()->h;
 
-		//if(unit_amount_text) SDL_BlitSurface(unit_amount_text, NULL, dest, &to_rect);
-		unit_amount_text.BlitSurface(NULL, &to_rect);
-		//unit_amount_text.RenderSurface(to_rect.x, to_rect.y);
+			//if(unit_amount_text) SDL_BlitSurface(unit_amount_text, NULL, dest, &to_rect);
+			unit_amount_text.BlitSurface(&from_rect, &to_rect);
+			//unit_amount_text.RenderSurface(to_rect.x, to_rect.y);
+		}
 	}
+	
+	rerender_unit_amount = false;
 }
 
 void ZHud::RenderHealth(SDL_Surface *dest, int off_x, int off_y)

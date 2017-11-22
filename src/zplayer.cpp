@@ -316,6 +316,10 @@ void ZPlayer::SetPlayerTeam(team_type player_team)
 
 	//reset cursor
 	DetermineCursor();
+	
+	//make the buttons available that let you cycle through your units
+	//and set unit amount
+	ProcessChangeObjectAmount();
 }
 
 void ZPlayer::SetDimensions(int w, int h)
@@ -3049,6 +3053,8 @@ void ZPlayer::DeleteObjectCleanUp(ZObject *obj)
 	for(i=object_list.begin();i!=object_list.end();i++)
 		(*i)->RemoveObject(obj);
 
+	//make the buttons available that let you cycle through your units
+	//and set unit amount
 	ProcessChangeObjectAmount();
 }
 
