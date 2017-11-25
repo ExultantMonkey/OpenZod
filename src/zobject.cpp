@@ -2387,7 +2387,7 @@ void ZObject::ProcessAttackWP(vector<waypoint>::iterator &wp, double time_dif, b
 
 			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-			cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + 8, y + 8, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
+			cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 			//don't wait for thread if it wasn't created
 			if(cur_wp_info.path_finding_id)
@@ -2462,7 +2462,7 @@ void ZObject::ProcessAttackWP(vector<waypoint>::iterator &wp, double time_dif, b
 				cur_wp_info.got_pf_response = false;
 				//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 				//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-				cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + 8, y + 8, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
+				cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 
 				//don't wait for thread if it wasn't created
 				if(cur_wp_info.path_finding_id)
@@ -2542,7 +2542,7 @@ void ZObject::ProcessPickupWP(vector<waypoint>::iterator &wp, double time_dif, b
 
 		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), wp->x, wp->y, (object_type == ROBOT_OBJECT), ref_id);
 		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + 8, y + 8, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
+		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 		//don't wait for thread if it wasn't created
 		if(cur_wp_info.path_finding_id)
@@ -2598,7 +2598,7 @@ void ZObject::ProcessEnterWP(vector<waypoint>::iterator &wp, double time_dif, bo
 
 		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), wp->x, wp->y, (object_type == ROBOT_OBJECT), ref_id);
 		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + 8, y + 8, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
+		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 		//don't wait for thread if it wasn't created
 		if(cur_wp_info.path_finding_id)
@@ -2715,7 +2715,7 @@ void ZObject::ProcessMoveWP(vector<waypoint>::iterator &wp, double time_dif, boo
 
 			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), wp->x, wp->y, (object_type == ROBOT_OBJECT), ref_id);
 			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-			cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + 8, y + 8, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
+			cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 			//don't wait for thread if it wasn't created
 			if(cur_wp_info.path_finding_id)
@@ -2804,7 +2804,7 @@ void ZObject::ProcessEnterFortWP(vector<waypoint>::iterator &wp, double time_dif
 			SetTarget();
 
 			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-			cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + 8, y + 8, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
+			cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 			//don't wait for thread if it wasn't created
 			if(cur_wp_info.path_finding_id)
@@ -2985,7 +2985,7 @@ void ZObject::ProcessCraneRepairWP(vector<waypoint>::iterator &wp, double time_d
 		//find our way to the entrance
 		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + 8, y + 8, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
+		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 		//don't wait for thread if it wasn't created
 		if(cur_wp_info.path_finding_id)
@@ -3132,7 +3132,7 @@ void ZObject::ProcessUnitRepairWP(vector<waypoint>::iterator &wp, double time_di
 		//find our way to the entrance
 		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + 8, y + 8, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
+		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 		//don't wait for thread if it wasn't created
 		if(cur_wp_info.path_finding_id)

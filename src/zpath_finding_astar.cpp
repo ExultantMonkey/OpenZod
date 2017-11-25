@@ -224,6 +224,10 @@ namespace ZPath_Finding_AStar
 
 	int the_dir(pf_point &lp, pf_point &cp)
 	{
+		// 3 2 1
+		// 4 L 0
+		// 5 6 7
+		
 		if(cp.x > lp.x)
 		{
 			if(cp.y == lp.y)
@@ -235,7 +239,7 @@ namespace ZPath_Finding_AStar
 		}
 		else if(cp.x == lp.x)
 		{
-			if(cp.y > lp.y)
+			if(cp.y < lp.y)
 				return 2;
 			else
 				return 6;
@@ -270,8 +274,8 @@ namespace ZPath_Finding_AStar
 		//check
 		if(!response) return;
 
-		int start_x = response->start_x / 16;
-		int start_y = response->start_y / 16;
+		int start_x = (response->start_x+1) / 16;
+		int start_y = (response->start_y+1) / 16;
 		int end_x = response->end_x / 16;
 		int end_y = response->end_y / 16;
 
@@ -282,6 +286,9 @@ namespace ZPath_Finding_AStar
 			response->pf_point_list.push_back(pf_point(response->end_x, response->end_y));
 			return;
 		}
+		
+		//printf("Do_Astar::start_tile:[%d,%d]\n", start_x, start_y);
+		//printf("Do_Astar::end_tile:[%d,%d]\n", end_x, end_y);
 
 		//printf("Do_Astar::start:[%d,%d]\n", response->start_x, response->start_y);
 		//printf("Do_Astar::end:[%d,%d]\n", response->end_x, response->end_y);
@@ -385,6 +392,7 @@ namespace ZPath_Finding_AStar
 			int i;
 
 			final_path.insert(final_path.begin(), cp);
+			//printf("inserted point:[%d,%d]\n", cp.x, cp.y);
 
 			//for(vector<pf_point>::iterator i=close_list.begin();;i++)
 			for(i=0;;i++)
@@ -399,7 +407,7 @@ namespace ZPath_Finding_AStar
 
 				if(cp.px == ip.x && cp.py == ip.y)
 				{
-					//printf("inserted point:[%d,%d]\n", ip.x, ip.y);
+					//printf("inserted point:[%d,%d]\n", cp.x, cp.y);
 					cp = ip;
 					break;
 				}
@@ -412,7 +420,45 @@ namespace ZPath_Finding_AStar
 			}
 
 			if(cp.x == start_x && cp.y == start_y)
+			{
+				//can our current position go to the first waypoint
+				//without shifting 100% to our starting tile?
+				if(final_path.size())
+				{
+					pf_point &fp = *final_path.begin();
+					int tsx, tsy;
+					int sfdir;
+					int rx, ry;
+					int crx, cry;
+					
+					rx = response->start_x;
+					ry = response->start_y;
+					crx = cp.x * 16;
+					cry = cp.y * 16;
+					
+					sfdir = the_dir(cp,fp);
+					
+					// 3 2 1
+					// 4 L 0
+					// 5 6 7
+					
+					if((sfdir == 0 && rx-1 <= crx &&  !tile_ok(tsx=start_x, tsy=start_y+1, fp.x, fp.y, response)) ||
+						(sfdir == 1 && !tile_ok(tsx=start_x+1, tsy=start_y, fp.x, fp.y, response)) ||
+						(sfdir == 1 && rx-1 <= crx) ||
+						(sfdir == 2 && !tile_ok(tsx=start_x+1, tsy=start_y, fp.x, fp.y, response)) ||
+						(sfdir == 3) ||
+						(sfdir == 4 && !tile_ok(tsx=start_x, tsy=start_y+1, fp.x, fp.y, response)) ||
+						(sfdir == 5 && !tile_ok(tsx=start_x, tsy=start_y+1, fp.x, fp.y, response)) ||
+						(sfdir == 5 && ry-1 <= cry) ||
+						(sfdir == 6 && ry-1 <= cry && !tile_ok(tsx=start_x+1, tsy=start_y, fp.x, fp.y, response)))
+					{
+						//printf("inserted start:[%d,%d] dir:%d\n", cp.x, cp.y, sfdir);
+						final_path.insert(final_path.begin(), cp);
+					}
+				}
+				
 				break;
+			}
 		}
 
 		//remove redundents

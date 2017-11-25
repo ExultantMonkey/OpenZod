@@ -420,7 +420,7 @@ bool ZBuilding::StoreBuiltCannon(unsigned char oid)
 	//already full?
 	if(built_cannon_list.size() >= MAX_STORED_CANNONS) return false;
 
-	printf("cannon stored\n");
+	//printf("cannon stored\n");
 
 	built_cannon_list.push_back(oid);
 	return true;
