@@ -57,11 +57,11 @@ void GMMMainMenu::HandleWidgetEvent(int event_type, ZGMMWidget *event_widget)
 			gmm_flags.open_main_menu = true;
 			gmm_flags.open_main_menu_type = GMM_SELECT_MAP;
 		}
-		else if(w_ref_id == menu_button[GMMMM_MULTIPLAYER_BUTTON].GetRefID())
+		/*else if(w_ref_id == menu_button[GMMMM_MULTIPLAYER_BUTTON].GetRefID())
 		{
 			gmm_flags.open_main_menu = true;
 			gmm_flags.open_main_menu_type = GMM_MULTIPLAYER;
-		}
+		}*/
 		else if(w_ref_id == menu_button[GMMMM_OPTIONS_BUTTON].GetRefID())
 		{
 			gmm_flags.open_main_menu = true;
