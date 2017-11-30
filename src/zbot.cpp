@@ -121,7 +121,8 @@ void ZBot::ProcessAI()
 	//}
 
 	//set new build orders
-	ChooseBuildOrders();
+	//ChooseBuildOrders();
+	ChooseBuildOrders_2();
 }
 
 bool ZBot::Stage1AI_3()
@@ -1367,6 +1368,389 @@ bool ZBot::Stage2AI()
 	}
 
 	return true;
+}
+
+bool ZBot::GetBestBuildComboIncCI(vector<int> &ci, int max_pu)
+{
+	int i=0;
+	
+	while(1)
+	{
+		//incremented ci's past the max number of ci's?
+		if(i>=ci.size()) return false;
+		
+		//increment this ci
+		ci[i]++;
+		
+		//has this ci gone over it's max?
+		//if no then ci increment complete and return true
+		if(ci[i] >= max_pu)
+		{
+			//reset this ci to zero and set i to inc the next ci
+			ci[i] = 0;
+			i++;
+		}
+		else
+			return true;
+	}
+	
+	return false;
+}
+
+bool ZBot::GetBestBuildComboBuildretn(vector<int> &ci, vector<ZObject*> &b_list, vector<PreferredUnit> &pu_list, BuildCombo &retn)
+{
+	//clear
+	retn.b_list.clear();
+	
+	if(!pu_list.size()) return false;
+	if(!b_list.size()) return false;
+	
+	vector<int> pu_count(pu_list.size(), 0);
+	
+	//build b_list for this combination
+	vector<int>::iterator cii=ci.begin();
+	for(vector<ZObject*>::iterator bi=b_list.begin(); bi!=b_list.end() && cii!=ci.end(); ++bi, ++cii)
+	{
+		ZObject* &b = *bi;
+		int cci = *cii;
+		
+		if(!b) return false;
+		
+		if(cci < 0 || cci >= pu_list.size())
+		{
+			printf("GetBestBuildComboBuildretn::bad cci:%d\n", cci);
+			return false;
+		}
+		
+		PreferredUnit &pu = pu_list[cci];
+		unsigned char ot, oid;
+		b->GetObjectID(ot, oid);
+		
+		//does this building have this unit?
+		if(!buildlist.UnitInBuildList(oid, b->GetLevel(), pu.ot, pu.oid))
+		{
+			//printf("GetBestBuildComboBuildretn::building does not have unit type cci:%d ot:%d oid:%d\n", cci, pu.ot, pu.oid);
+			return false;
+		}
+		
+		//has unit type so add building unit to build combo
+		BuildingUnit new_bu;
+		
+		new_bu.b = b;
+		new_bu.pot = pu.ot;
+		new_bu.poid = pu.oid;
+		
+		retn.b_list.push_back(new_bu);
+		
+		//increment build count of this prefered unit
+		pu_count[cci]++;
+	}
+	
+	//create actual sums of prefered units building
+	//based on units already building not in the b_list
+	int total_units_building = 0;
+	for(int i=0;i<pu_count.size() && i<pu_list.size();i++)
+	{
+		pu_count[i] += pu_list[i].in_production;
+		total_units_building += pu_count[i];
+	}
+	
+	//calculate target_distance
+	{
+		double squared_dist_sum = 0;
+		
+		//for(vector<PreferredUnit>::iterator pu=pu_list.begin();pu!=pu_list.end();++pu)
+		for(int i=0;i<pu_list.size() && i<pu_count.size(); i++)
+		{
+			//double diff = ((pu_count[i] * 1.0 / b_list.size()) - pu_list[i].p_value);
+			double diff = ((pu_count[i] * 1.0 / total_units_building) - pu_list[i].p_value);
+			
+			squared_dist_sum += diff * diff;
+		}
+			
+		retn.target_distance = sqrt(squared_dist_sum);
+	}
+	
+	return true;
+}
+
+BuildCombo ZBot::GetBestBuildCombo(vector<ZObject*> &b_list, vector<PreferredUnit> &pu_list)
+{
+	BuildCombo ret;
+	
+	//checks
+	if(!b_list.size())
+	{
+		//printf("GetBestBuildCombo::no b_list\n");
+		return ret;
+	}
+	if(!pu_list.size())
+	{
+		//printf("GetBestBuildCombo::no pu_list\n");
+		return ret;
+	}
+	
+	int max_pu = pu_list.size();
+	vector<int> ci(b_list.size(), 0);
+	
+	while(1)
+	{
+		BuildCombo retn;
+		
+		//build retn
+		if(GetBestBuildComboBuildretn(ci, b_list, pu_list, retn))
+		{
+			//it's value better than store ret build combo?
+			if(!ret.b_list.size() || retn.target_distance < ret.target_distance)
+				ret = retn;
+		}
+		
+		//increment ci
+		if(!GetBestBuildComboIncCI(ci, max_pu)) break;
+	}
+	
+	return ret;
+}
+
+void BuildCombo::Debug()
+{
+	if(b_list.size())
+		printf("BuildCombo::%p - target_distance:%lf\n", this, target_distance);
+	
+	for(vector<BuildingUnit>::iterator bu=b_list.begin();bu!=b_list.end();++bu)
+	{
+		if(bu->pot == ROBOT_OBJECT && bu->poid >= 0 && bu->poid < MAX_ROBOT_TYPES)
+			printf("BuildCombo::%p - builbing:%p unit:%s\n", this, bu->b, robot_production_string[bu->poid].c_str());
+		else if(bu->pot == VEHICLE_OBJECT && bu->poid >= 0 && bu->poid < MAX_VEHICLE_TYPES)
+			printf("BuildCombo::%p - builbing:%p unit:%s\n", this, bu->b, vehicle_production_string[bu->poid].c_str());
+		else if(bu->pot == VEHICLE_OBJECT && bu->poid >= 0 && bu->poid < MAX_CANNON_TYPES)
+			printf("BuildCombo::%p - builbing:%p unit:%s\n", this, bu->b, cannon_production_string[bu->poid].c_str());
+		else
+			printf("BuildCombo::%p - builbing:%p unit: ot:%d oid:%d\n", this, bu->b, bu->pot, bu->poid);
+	}
+}
+
+bool ZBot::CanBuildAt(ZObject *b)
+{
+	double &the_time = ztime.ztime;
+	
+	if(!b) return false;
+	
+	double percentage_produced = b->PercentageProduced(the_time);
+	double btotal_time = b->ProductionTimeTotal();
+	double last_set_build_time = b->GetLastSetAIBuildTime();
+	
+	//printf("ChooseBuildOrders_2::percentage_produced:%lf\n", percentage_produced);
+	//printf("ChooseBuildOrders_2::btotal_time:%lf\n", btotal_time);
+	//printf("ChooseBuildOrders_2::GetLastSetAIBuildTime:%lf\n", last_set_build_time);
+	//printf("ChooseBuildOrders_2::the_time:%lf\n", the_time);
+	
+	if(percentage_produced >= 0.25)
+	{
+		//printf("ChooseBuildOrders_2::too much already produced, skipping...\n");
+		return false;
+	}
+	
+	if(the_time < last_set_build_time + (btotal_time * 0.35))
+	{
+		//printf("ChooseBuildOrders_2::attempting to set too quickly, skipping...\n");
+		return false;
+	}
+	
+	return true;
+}
+
+void ZBot::AddBuildingProductionSums(ZObject *b, vector<PreferredUnit> &preferred_build_list)
+{
+	unsigned char cot, coid;
+	
+	if(!b) return;
+	
+	if(!b->GetBuildUnit(cot, coid)) return;
+	
+	for(vector<PreferredUnit>::iterator p=preferred_build_list.begin(); p!=preferred_build_list.end(); p++)
+		if(p->ot == cot && p->oid == coid)
+		{
+			p->in_production++;
+			break;
+		}
+}
+
+void ZBot::ChooseBuildOrders_2()
+{
+	double &the_time = ztime.ztime;
+	double last_time;
+	const int max_combo_check = 6;
+	
+	//set preferences
+	vector<PreferredUnit> vehicle_build_list;
+	vector<PreferredUnit> robot_build_list;
+	
+	vehicle_build_list.push_back(PreferredUnit(VEHICLE_OBJECT, LIGHT, 0.1));
+	vehicle_build_list.push_back(PreferredUnit(VEHICLE_OBJECT, MEDIUM, 0.5));
+	vehicle_build_list.push_back(PreferredUnit(VEHICLE_OBJECT, HEAVY, 0.2));
+	vehicle_build_list.push_back(PreferredUnit(VEHICLE_OBJECT, MISSILE_LAUNCHER, 0.1));
+	
+	robot_build_list.push_back(PreferredUnit(ROBOT_OBJECT, PYRO, 0.5));
+	robot_build_list.push_back(PreferredUnit(ROBOT_OBJECT, TOUGH, 0.2));
+	robot_build_list.push_back(PreferredUnit(ROBOT_OBJECT, LASER, 0.2));
+	
+	//get robot, vehicle, and fort factory lists
+	vector<ZObject*> vb_list;
+	vector<ZObject*> rb_list;
+	int total_pv_buildings = 0;
+	int total_pr_buildings = 0;
+	
+	//final build list
+	map<ZObject*,BuildingUnit> fb_list;
+	
+	for(vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
+	{
+		bool dont_add = false;
+		unsigned char ot, oid;
+		
+		//is it ours
+		if((*o)->GetOwner() != our_team) continue;
+
+		(*o)->GetObjectID(ot, oid);
+
+		//a building?
+		if(ot != BUILDING_OBJECT) continue;
+		//one that can build?
+		if(oid == RADAR) continue;
+		if(oid == REPAIR) continue;
+		if(oid == BRIDGE_VERT) continue;
+		if(oid == BRIDGE_HORZ) continue;
+		
+		//enough time hasn't passed?
+		if(!CanBuildAt(*o))
+		{
+			//is it building one of the prefered units?
+			AddBuildingProductionSums(*o, robot_build_list);
+			AddBuildingProductionSums(*o, vehicle_build_list);
+		}
+		else
+		{
+			//dont add factory if it goes past the max processable at once
+			bool dont_add = false;
+			
+			//robot factory?
+			if(oid == ROBOT_FACTORY)
+				for(vector<PreferredUnit>::iterator p=robot_build_list.begin(); p!=robot_build_list.end(); p++)
+					if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
+					{
+						if(rb_list.size() >= max_combo_check)
+							dont_add = true;
+						else
+							rb_list.push_back(*o);
+						
+						break;
+					}
+				
+			//vehicle factory? (consider forts a vehicle factory)
+			if(oid == VEHICLE_FACTORY || (oid == FORT_FRONT || oid == FORT_BACK))
+				for(vector<PreferredUnit>::iterator p=vehicle_build_list.begin(); p!=vehicle_build_list.end(); p++)
+					if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
+					{
+						if(vb_list.size() >= max_combo_check)
+							dont_add = true;
+						else
+							vb_list.push_back(*o);
+						
+						break;
+					}
+			
+			//don't add because we can't process that much at once?
+			if(dont_add)
+			{
+				//if not adding to build list, add anything it is producing to the production sums
+				AddBuildingProductionSums(*o, robot_build_list);
+				AddBuildingProductionSums(*o, vehicle_build_list);
+			}
+			else
+			{
+				//add it to the final list with a simple prefered ordered choice
+				for(vector<PreferredUnit>::iterator p=preferred_build_list.begin(); p!=preferred_build_list.end(); p++)
+					if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
+					{
+						BuildingUnit new_bu;
+						new_bu.b = *o;
+						new_bu.pot = p->ot;
+						new_bu.poid = p->oid;
+						
+						fb_list[*o] = new_bu;
+						break;
+					}
+			}
+		}
+	}
+	
+	//printf("fb_list.size():%d\n", fb_list.size());
+	//printf("vb_list.size():%d\n", vb_list.size());
+	//printf("rb_list.size():%d\n", rb_list.size());
+	
+	//get prefered build lists for robot and vehicle factories
+	//last_time = current_time();
+	BuildCombo vb_combo = GetBestBuildCombo(vb_list, vehicle_build_list);
+	BuildCombo rb_combo = GetBestBuildCombo(rb_list, robot_build_list);
+	//printf("GetBestBuildCombo time:%lf\n", current_time() - last_time);
+	
+	//vb_combo.Debug();
+	//rb_combo.Debug();
+	
+	//set prefered build combos to final build list
+	{
+		for(vector<BuildingUnit>::iterator bu=vb_combo.b_list.begin();bu!=vb_combo.b_list.end();++bu)
+			fb_list[bu->b] = *bu;
+		
+		for(vector<BuildingUnit>::iterator bu=rb_combo.b_list.begin();bu!=rb_combo.b_list.end();++bu)
+			fb_list[bu->b] = *bu;
+	}
+	
+	//make the build orders
+	for(map<ZObject*,BuildingUnit>::iterator fb=fb_list.begin();fb!=fb_list.end();++fb)
+	{
+		BuildingUnit &bu = fb->second;
+		unsigned char cot, coid;
+		
+		//sanity check?
+		if(bu.b != fb->first)
+		{
+			printf("ChooseBuildOrders_2::bu.b != fb->first\n");
+			continue;
+		}
+		
+		//get current production
+		if(!bu.b->GetBuildUnit(cot, coid)) continue;
+		
+		//perfered different than current?
+		//then send request
+		if(!(cot == bu.pot && coid == bu.poid))
+		{
+			//stop production
+			{
+				int the_data;
+
+				the_data = bu.b->GetRefID();
+
+				client_socket.SendMessage(STOP_BUILDING, (const char*)&the_data, sizeof(int));
+			}
+
+			//start new
+			{
+				start_building_packet the_data;
+				
+				the_data.ref_id = bu.b->GetRefID();
+				the_data.ot = bu.pot;
+				the_data.oid = bu.poid;
+
+				client_socket.SendMessage(START_BUILDING, (const char*)&the_data, sizeof(start_building_packet));
+			}
+		}
+		
+		//set building time
+		bu.b->SetLastSetAIBuildTime(the_time);
+	}
 }
 
 void ZBot::ChooseBuildOrders()

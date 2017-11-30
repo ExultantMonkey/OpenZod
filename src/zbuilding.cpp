@@ -14,6 +14,9 @@ ZBuilding::ZBuilding(ZTime *ztime_, ZSettings *zsettings_, planet_type palette_)
 	object_type = BUILDING_OBJECT;
 	bot = -1;
 	boid = -1;
+	binit_time = 0;
+	bfinal_time = 0;
+	btotal_time = 0;
 	can_be_destroyed = false;
 	zone_ownage = 0;
 	attacked_by_explosives = true;
@@ -357,6 +360,7 @@ void ZBuilding::ProcessSetBuildingStateData(char *data, int size)
 	boid = pi->oid;
 	binit_time = the_time + pi->init_offset;
 	bfinal_time = binit_time + pi->prod_time;
+	btotal_time = pi->prod_time;
 }
 
 double ZBuilding::PercentageProduced(double &the_time)

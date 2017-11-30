@@ -102,6 +102,9 @@ ZObject::ZObject(ZTime *ztime_, ZSettings *zsettings_)
 	//needed for when an object needs to be removed after some time
 	killme = false;
 	killme_time = 0;
+	
+	//ai stuff
+	ai_last_set_build_time = -50000;
 
 	ClearGroupInfo();
 }
@@ -4115,6 +4118,16 @@ bool ZObject::GetBuildingCreationPoint(int &x, int &y)
 bool ZObject::GetBuildingCreationMovePoint(int &x, int &y)
 {
 	return false;
+}
+
+double ZObject::PercentageProduced(double &the_time)
+{
+	return 0;
+}
+
+double ZObject::ProductionTimeTotal()
+{
+	return 0;
 }
 
 bool ZObject::GetBuildUnit(unsigned char &ot, unsigned char &oid)

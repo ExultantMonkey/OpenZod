@@ -4,6 +4,7 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <map>
 #include <time.h>
 #include "common.h"
 #include "constants.h"

@@ -457,6 +457,8 @@ class ZObject
 		virtual void ProcessSetBuiltCannonData(char *data, int size);
 		virtual bool GetBuildingCreationPoint(int &x, int &y);
 		virtual bool GetBuildingCreationMovePoint(int &x, int &y);
+		virtual double PercentageProduced(double &the_time);
+		virtual double ProductionTimeTotal();
 		virtual bool GetBuildUnit(unsigned char &ot, unsigned char &oid);
 		virtual map_zone_info *GetConnectedZone();
 		virtual void SetConnectedZone(map_zone_info *connected_zone_);
@@ -556,6 +558,8 @@ class ZObject
 		vector<ZObject*> &GetAIList() { return ai_list; }
 		vector<ZObject*> &GetAIOrigList() { return ai_orig_list; }
 		void AddToAIList(ZObject *obj) { ai_list.push_back(obj); obj->GetAIList().push_back(this); }
+		double GetLastSetAIBuildTime() { return ai_last_set_build_time; }
+		void SetLastSetAIBuildTime(double val) { ai_last_set_build_time = val; }
 	private:
 		
 	protected:
@@ -675,6 +679,7 @@ class ZObject
 		//AI Stuff
 		vector<ZObject*> ai_list;
 		vector<ZObject*> ai_orig_list;
+		double ai_last_set_build_time;
 
 		bool do_auto_repair;
 		double next_auto_repair_time;

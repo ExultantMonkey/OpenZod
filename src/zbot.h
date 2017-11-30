@@ -3,13 +3,9 @@
 
 #include "zclient.h"
 
-class PreferredUnit
-{
-public:
-	PreferredUnit();
-	PreferredUnit(unsigned char ot_, unsigned char oid_) {ot = ot_; oid = oid_;}
-	unsigned char ot, oid;
-};
+class PreferredUnit;
+class BuildingUnit;
+class BuildCombo;
 
 class ZBot : public ZClient
 {
@@ -44,6 +40,12 @@ class ZBot : public ZClient
 		bool GoAllOut_3(double &percent_to_order, double &order_delay);
 
 		void ChooseBuildOrders();
+		void ChooseBuildOrders_2();
+		BuildCombo GetBestBuildCombo(vector<ZObject*> &b_list, vector<PreferredUnit> &pu_list);
+		bool GetBestBuildComboIncCI(vector<int> &ci, int max_pu);
+		bool GetBestBuildComboBuildretn(vector<int> &ci, vector<ZObject*> &b_list, vector<PreferredUnit> &pu_list, BuildCombo &retn);
+		bool CanBuildAt(ZObject *b);
+		void AddBuildingProductionSums(ZObject *b, vector<PreferredUnit> &preferred_build_list);
 
 		void SendBotDevWaypointList(ZObject *obj);
 		
@@ -102,6 +104,46 @@ class ZBot : public ZClient
 		vector<PreferredUnit> preferred_build_list;
 		double next_ai_time;
 		double last_order_time;
+};
+
+class PreferredUnit
+{
+public:
+	PreferredUnit()
+	{
+		ot = (unsigned char)-1;
+		oid = (unsigned char)-1;
+		p_value = 1;
+		in_production = 0;
+	}
+	
+	PreferredUnit(unsigned char ot_, unsigned char oid_, double p_value_ = 1.0) 
+	{
+		ot = ot_; 
+		oid = oid_;
+		p_value = p_value_;
+		in_production = 0;
+	}
+	
+	unsigned char ot, oid;
+	double p_value;
+	int in_production;
+};
+
+class BuildingUnit
+{
+public:
+	ZObject* b;
+	unsigned char pot, poid;
+};
+
+class BuildCombo
+{
+public:
+	void Debug();
+	
+	vector<BuildingUnit> b_list;
+	double target_distance;
 };
 
 #endif

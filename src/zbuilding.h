@@ -48,6 +48,7 @@ class ZBuilding : public ZObject
 		virtual bool StopBuildingProduction(bool clear_queue_list = true);
 		double PercentageProduced(double &the_time);
 		double ProductionTimeLeft(double &the_time);
+		double ProductionTimeTotal() { return btotal_time; };
 		virtual bool GetBuildingCreationPoint(int &x, int &y);
 		virtual bool GetBuildingCreationMovePoint(int &x, int &y);
 		virtual bool BuildUnit(double &the_time, unsigned char &ot, unsigned char &oid);
@@ -79,7 +80,7 @@ class ZBuilding : public ZObject
 		bool do_base_rerender;
 		int build_state;
 		unsigned char bot, boid;
-		double binit_time, bfinal_time;
+		double binit_time, bfinal_time, btotal_time;
 		int unit_create_x, unit_create_y;
 		int unit_move_x, unit_move_y;
 		vector<unsigned char> built_cannon_list;
