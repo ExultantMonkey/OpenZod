@@ -153,6 +153,31 @@ void print_dump(char *message, int size, char *name)
 	printf("\n");
 }
 
+double distance(int x1, int y1, int x2, int y2)
+{
+	int dx = x1 - x2;
+	int dy = y1 - y2;
+	
+	return sqrt((double)((dx * dx) + (dy * dy)));
+}
+
+double point_distance_from_line(int x1, int y1, int x2, int y2, int px, int py)
+{
+	int A, B, C;
+	double under;
+	
+	A = -1 * (y1 - y2);
+	B = (x1 - x2);
+	C = -1 * (A * x1 + B * y1);
+
+	under = sqrt((double)((A * A) + (B * B)));
+	
+	//distance from line equals...
+	//|A*x + B*y + C| / (A^2 + B^2)^0.5
+	
+	return abs(A * px + B * py + C) / under;
+}
+
 bool points_within_distance(int x1, int y1, int x2, int y2, int distance)
 {
 	//quick prelim tests

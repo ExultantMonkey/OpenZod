@@ -922,9 +922,11 @@ double ZObject::DistanceFromObject(ZObject &obj)
 {
 	int dx, dy;
 
-	dx = loc.x - obj.loc.x;
-	dy = loc.y - obj.loc.y;
-
+	//dx = loc.x - obj.loc.x;
+	//dy = loc.y - obj.loc.y;
+	dx = center_x - obj.center_x;
+	dy = center_y - obj.center_y;
+	
 	return sqrt((double)((dx * dx) + (dy * dy)));
 }
 

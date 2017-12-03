@@ -178,6 +178,8 @@ void ZBot::ReduceUnitsToPercent(vector<ZObject*> &units_list, double max_percent
 {
 	vector<ZObject*> new_units_list;
 	int max_units;
+	bool own_repairable_buildings = false;
+	bool crane_in_new_list = false;
 
 	if(max_percent >= 0.95) return;
 	if(units_list.size() <= 1) return;
@@ -186,16 +188,71 @@ void ZBot::ReduceUnitsToPercent(vector<ZObject*> &units_list, double max_percent
 	max_units++;
 
 	if(max_units > units_list.size()) max_units = units_list.size();
+	
+	//do we own destroyed buildings?
+	for(vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
+	{
+		unsigned char ot, oid;
+		
+		//is it ours
+		if((*o)->GetOwner() != our_team) continue;
 
+		(*o)->GetObjectID(ot, oid);
+		
+		//a building?
+		if(ot != BUILDING_OBJECT) continue;
+		if(oid == BRIDGE_VERT) continue;
+		if(oid == BRIDGE_HORZ) continue;
+		
+		//can be repaired by a crane?
+		if((*o)->CanBeRepairedByCrane(our_team))
+		{
+			own_repairable_buildings = true;
+			break;
+		}
+	}
+
+	//select the percentage of units
 	while(new_units_list.size() < max_units && units_list.size())
 	{
-		int choice;
+		int choice = rand() % units_list.size();
+		vector<ZObject*>::iterator u = units_list.begin() + choice;
+		unsigned char ot, oid;
 
-		choice = rand() % units_list.size();
+		//adding a crane to the new list?
+		(*u)->GetObjectID(ot, oid);
+		if(ot == VEHICLE_OBJECT && oid == CRANE)
+			crane_in_new_list = true;
+		
+		new_units_list.push_back(*u);
+		units_list.erase(u);
+	}
+	
+	//add in a crane if we have destroyed buildings and we didn't add a crane
+	if(own_repairable_buildings && !crane_in_new_list && rand()%6)
+	{
+		vector<vector<ZObject*>::iterator> cu_list;
+		
+		//build list of available cranes
+		for(vector<ZObject*>::iterator u=units_list.begin();u!=units_list.end();++u)
+		{
+			unsigned char ot, oid;
 
-		new_units_list.push_back(units_list[choice]);
-
-		units_list.erase(units_list.begin() + choice);
+			//not a crane?
+			(*u)->GetObjectID(ot, oid);
+			if(!(ot == VEHICLE_OBJECT && oid == CRANE)) continue;
+			
+			cu_list.push_back(u);
+		}
+		
+		//choose one from random
+		if(cu_list.size())
+		{
+			vector<ZObject*>::iterator u = cu_list[rand() % cu_list.size()];
+			
+			new_units_list.push_back(*u);
+			units_list.erase(u);
+		}
 	}
 
 	units_list = new_units_list;
@@ -414,11 +471,58 @@ void ZBot::GiveOutOrders_3(vector<ZObject*> &units_list, vector<ZObject*> &targe
 	}
 }
 
+bool ZBot::CullTargetFromCrane(ZObject* u, ZObject* t, vector<ZObject*> &ct_list)
+{
+	const int max_line_dist = 14*16;
+	const int max_total_dist = 42*16;
+	int ucx, ucy;
+	int tcx, tcy;
+	
+	u->GetCenterCords(ucx, ucy);
+	t->GetCenterCords(tcx, tcy);
+	
+	//see if it is along the way to any of the high priority targets
+	for(vector<ZObject*>::iterator ct=ct_list.begin();ct!=ct_list.end();++ct)
+	{
+		//is t one of the high priority targets?
+		if(t == *ct) return false;
+		
+		int ctcx, ctcy;
+		double u_ct_dist = u->DistanceFromObject(**ct);
+		double t_ct_dist = t->DistanceFromObject(**ct);
+		double u_t_dist  = u->DistanceFromObject(*t);
+		
+		(*ct)->GetCenterCords(ctcx, ctcy);
+		
+		//too far in the other direction past the crane?
+		if(t_ct_dist > u_ct_dist + max_line_dist) continue;
+		
+		//too far past the priority target?
+		if(u_t_dist > u_ct_dist + max_line_dist) continue;
+		
+		//too far to trust is on the way to the high priority target?
+		if(u_t_dist > max_total_dist) continue;
+		
+		//too far away from the line in between the crane and the high priority target?
+		if(point_distance_from_line(ucx, ucy, ctcx, ctcy, tcx, tcy) > max_line_dist) continue;
+		
+		//is within the line between the crane and the high priority target
+		//and not too far past the crane or target, or just too far away from crane
+		return false;
+	}
+	
+	//it wasn't along the way to any of the high priority targets so remove
+	return true;
+}
+
 void ZBot::MatchTargets_3(vector<ZObject*> &units_list, vector<ZObject*> &targets_list)
 {
 	//clear the ai lists
 	for(vector<ZObject*>::iterator u=units_list.begin(); u!=units_list.end(); u++) (*u)->GetAIList().clear();
 	for(vector<ZObject*>::iterator t=targets_list.begin(); t!=targets_list.end(); t++) (*t)->GetAIList().clear();
+	
+	//crane repair list needed to cull crane targets
+	set<ZObject*> cu_set;
 
 	//do the matching
 	for(vector<ZObject*>::iterator u=units_list.begin(); u!=units_list.end(); u++)
@@ -479,7 +583,14 @@ void ZBot::MatchTargets_3(vector<ZObject*> &units_list, vector<ZObject*> &target
 
 				//crane repairable
 				if((*t)->CanBeRepairedByCrane(our_team))
-					if(uot == VEHICLE_OBJECT && uoid == CRANE) (*u)->AddToAIList(*t);
+					if(uot == VEHICLE_OBJECT && uoid == CRANE)
+					{
+						(*u)->AddToAIList(*t);
+						
+						//this a high priority crane target that needs to cull out other targets?
+						if(tot == BUILDING_OBJECT && toid != BRIDGE_VERT && toid != BRIDGE_HORZ && our_team == (*t)->GetOwner())
+							cu_set.insert(*u);
+					}
 
 				break;
 			case CANNON_OBJECT:
@@ -506,6 +617,58 @@ void ZBot::MatchTargets_3(vector<ZObject*> &units_list, vector<ZObject*> &target
 				//attack_object
 				if((*u)->CanAttackObject(*t)) (*u)->AddToAIList(*t);
 				break;
+			}
+		}
+	}
+	
+	//do we have high priority crane targets that need to cull out other targets?
+	if(cu_set.size())
+	{
+		for(set<ZObject*>::iterator u=cu_set.begin();u!=cu_set.end();++u)
+		{
+			vector<ZObject*> ct_list;
+			vector<ZObject*> &u_ai_list = (*u)->GetAIList();
+			
+			//build high priority target list for this crane
+			for(vector<ZObject*>::iterator t=u_ai_list.begin();t!=u_ai_list.end();++t)
+			{
+				unsigned char tot, toid;
+				
+				if(!(*t)->CanBeRepairedByCrane(our_team)) continue;
+				
+				(*t)->GetObjectID(tot, toid);
+				
+				if(tot != BUILDING_OBJECT) continue;
+				if(toid == BRIDGE_VERT) continue;
+				if(toid == BRIDGE_HORZ) continue;
+				if(our_team != (*t)->GetOwner()) continue;
+				
+				ct_list.push_back(*t);
+			}
+			
+			//this crane doesn't have high priority targets?
+			if(!ct_list.size()) continue;
+			
+			//cull targets
+			for(vector<ZObject*>::iterator t=u_ai_list.begin();t!=u_ai_list.end();)
+			{
+				if(CullTargetFromCrane(*u, *t, ct_list))
+				{
+					vector<ZObject*> &t_ai_list = (*t)->GetAIList();
+					
+					//remove from lists
+					for(vector<ZObject*>::iterator tu=t_ai_list.begin();tu!=t_ai_list.end();)
+					{
+						if(*tu == *u)
+							tu=t_ai_list.erase(tu);
+						else
+							++tu;
+					}
+					
+					t=u_ai_list.erase(t);
+				}
+				else
+					++t;
 			}
 		}
 	}
@@ -1479,16 +1642,8 @@ BuildCombo ZBot::GetBestBuildCombo(vector<ZObject*> &b_list, vector<PreferredUni
 	BuildCombo ret;
 	
 	//checks
-	if(!b_list.size())
-	{
-		//printf("GetBestBuildCombo::no b_list\n");
-		return ret;
-	}
-	if(!pu_list.size())
-	{
-		//printf("GetBestBuildCombo::no pu_list\n");
-		return ret;
-	}
+	if(!b_list.size()) return ret;
+	if(!pu_list.size()) return ret;
 	
 	int max_pu = pu_list.size();
 	vector<int> ci(b_list.size(), 0);
@@ -1501,8 +1656,19 @@ BuildCombo ZBot::GetBestBuildCombo(vector<ZObject*> &b_list, vector<PreferredUni
 		if(GetBestBuildComboBuildretn(ci, b_list, pu_list, retn))
 		{
 			//it's value better than store ret build combo?
-			if(!ret.b_list.size() || retn.target_distance < ret.target_distance)
+			if(!ret.b_list.size())
 				ret = retn;
+			else
+			{
+				//if the values are effectively the same, then choose it randomly
+				if(fabs(retn.target_distance - ret.target_distance) <= 0.001)
+				{
+					if(!(rand() % 2))
+						ret = retn;
+				}
+				else if(retn.target_distance < ret.target_distance)
+					ret = retn;
+			}
 		}
 		
 		//increment ci
@@ -1536,14 +1702,12 @@ bool ZBot::CanBuildAt(ZObject *b)
 	
 	if(!b) return false;
 	
+	//if building nothing then true
+	if(b->GetBuildState() == BUILDING_SELECT) return true;
+	
 	double percentage_produced = b->PercentageProduced(the_time);
 	double btotal_time = b->ProductionTimeTotal();
 	double last_set_build_time = b->GetLastSetAIBuildTime();
-	
-	//printf("ChooseBuildOrders_2::percentage_produced:%lf\n", percentage_produced);
-	//printf("ChooseBuildOrders_2::btotal_time:%lf\n", btotal_time);
-	//printf("ChooseBuildOrders_2::GetLastSetAIBuildTime:%lf\n", last_set_build_time);
-	//printf("ChooseBuildOrders_2::the_time:%lf\n", the_time);
 	
 	if(percentage_produced >= 0.25)
 	{
@@ -1601,26 +1765,48 @@ void ZBot::ChooseBuildOrders_2()
 	int total_pv_buildings = 0;
 	int total_pr_buildings = 0;
 	
+	//crane data
+	bool building_crane = false;
+	bool own_crange = false;
+	vector<ZObject*> cb_list;
+	bool own_repairable_buildings = false;
+	
 	//final build list
 	map<ZObject*,BuildingUnit> fb_list;
 	
 	for(vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
 	{
-		bool dont_add = false;
 		unsigned char ot, oid;
 		
 		//is it ours
 		if((*o)->GetOwner() != our_team) continue;
 
 		(*o)->GetObjectID(ot, oid);
+		
+		//is a crane?
+		if(ot == VEHICLE_OBJECT && oid == CRANE)
+			own_crange = true;
 
 		//a building?
 		if(ot != BUILDING_OBJECT) continue;
-		//one that can build?
+		
+		//can be repaired by a crane?
+		if((*o)->CanBeRepairedByCrane(our_team) && oid != BRIDGE_VERT && oid != BRIDGE_HORZ)
+			own_repairable_buildings = true;
+		
+		//building can build?
 		if(oid == RADAR) continue;
 		if(oid == REPAIR) continue;
 		if(oid == BRIDGE_VERT) continue;
 		if(oid == BRIDGE_HORZ) continue;
+		
+		//is destroyed?
+		if((*o)->IsDestroyed()) continue;
+		
+		//building a crane?
+		unsigned char cot, coid;
+		if((*o)->GetBuildUnit(cot, coid) && cot == VEHICLE_OBJECT && coid == CRANE)
+			building_crane = true;
 		
 		//enough time hasn't passed?
 		if(!CanBuildAt(*o))
@@ -1631,63 +1817,98 @@ void ZBot::ChooseBuildOrders_2()
 		}
 		else
 		{
-			//dont add factory if it goes past the max processable at once
-			bool dont_add = false;
+			//vehicle factory? (consider forts a vehicle factory)
+			if(oid == VEHICLE_FACTORY || (oid == FORT_FRONT || oid == FORT_BACK))
+				for(vector<PreferredUnit>::iterator p=vehicle_build_list.begin(); p!=vehicle_build_list.end(); p++)
+					if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
+					{
+						vb_list.push_back(*o);
+						break;
+					}
 			
 			//robot factory?
 			if(oid == ROBOT_FACTORY)
 				for(vector<PreferredUnit>::iterator p=robot_build_list.begin(); p!=robot_build_list.end(); p++)
 					if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
 					{
-						if(rb_list.size() >= max_combo_check)
-							dont_add = true;
-						else
-							rb_list.push_back(*o);
-						
-						break;
-					}
-				
-			//vehicle factory? (consider forts a vehicle factory)
-			if(oid == VEHICLE_FACTORY || (oid == FORT_FRONT || oid == FORT_BACK))
-				for(vector<PreferredUnit>::iterator p=vehicle_build_list.begin(); p!=vehicle_build_list.end(); p++)
-					if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
-					{
-						if(vb_list.size() >= max_combo_check)
-							dont_add = true;
-						else
-							vb_list.push_back(*o);
-						
+						rb_list.push_back(*o);
 						break;
 					}
 			
-			//don't add because we can't process that much at once?
-			if(dont_add)
-			{
-				//if not adding to build list, add anything it is producing to the production sums
-				AddBuildingProductionSums(*o, robot_build_list);
-				AddBuildingProductionSums(*o, vehicle_build_list);
-			}
-			else
-			{
-				//add it to the final list with a simple prefered ordered choice
-				for(vector<PreferredUnit>::iterator p=preferred_build_list.begin(); p!=preferred_build_list.end(); p++)
-					if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
-					{
-						BuildingUnit new_bu;
-						new_bu.b = *o;
-						new_bu.pot = p->ot;
-						new_bu.poid = p->oid;
-						
-						fb_list[*o] = new_bu;
-						break;
-					}
-			}
+			//can build a crane?
+			if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), VEHICLE_OBJECT, CRANE))
+				cb_list.push_back(*o);
+			
+			//add it to the final list with a simple prefered ordered choice
+			for(vector<PreferredUnit>::iterator p=preferred_build_list.begin(); p!=preferred_build_list.end(); p++)
+				if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
+				{
+					BuildingUnit new_bu;
+					new_bu.b = *o;
+					new_bu.pot = p->ot;
+					new_bu.poid = p->oid;
+					
+					fb_list[*o] = new_bu;
+					break;
+				}
 		}
 	}
 	
-	//printf("fb_list.size():%d\n", fb_list.size());
-	//printf("vb_list.size():%d\n", vb_list.size());
-	//printf("rb_list.size():%d\n", rb_list.size());
+	//build a crane?
+	if(own_repairable_buildings && !building_crane && !own_crange && cb_list.size())
+	{
+		vector<ZObject*>::iterator cb = cb_list.begin() + (rand() % cb_list.size());
+		
+		//set to crane
+		BuildingUnit &bu = fb_list[*cb];
+		bu.pot = VEHICLE_OBJECT;
+		bu.poid = CRANE;
+		
+		//remove building from preferred building lists
+		for(vector<ZObject*>::iterator b=vb_list.begin();b!=vb_list.end();)
+		{
+			if(*b==*cb)
+				b=vb_list.erase(b);
+			else
+				++b;
+		}
+		
+		for(vector<ZObject*>::iterator b=rb_list.begin();b!=rb_list.end();)
+		{
+			if(*b==*cb)
+				b=rb_list.erase(b);
+			else
+				++b;
+		}
+	}
+	
+	//reduce full build list to max size processable
+	if(max_combo_check > 0)
+	{
+		while(vb_list.size() > max_combo_check)
+		{
+			vector<ZObject*>::iterator b = vb_list.begin() + (rand() % vb_list.size());
+			
+			//add it to the production sums
+			AddBuildingProductionSums(*b, vehicle_build_list);
+			
+			//erase from fb_list and this list
+			fb_list.erase(*b);
+			vb_list.erase(b);
+		}
+		
+		while(rb_list.size() > max_combo_check)
+		{
+			vector<ZObject*>::iterator b = rb_list.begin() + (rand() % rb_list.size());
+			
+			//add it to the production sums
+			AddBuildingProductionSums(*b, robot_build_list);
+			
+			//erase from fb_list and this list
+			fb_list.erase(*b);
+			rb_list.erase(b);
+		}
+	}
 	
 	//get prefered build lists for robot and vehicle factories
 	//last_time = current_time();

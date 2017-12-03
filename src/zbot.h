@@ -35,6 +35,7 @@ class ZBot : public ZClient
 		void CollectOurTargets_3(vector<ZObject*> &targets_list, bool all_out);
 		void ReduceUnitsToPercent(vector<ZObject*> &units_list, double max_percent);
 		void RemoveTargetedFromTargets(vector<ZObject*> &targets_list, vector<ZObject*> &targeted_list);
+		bool CullTargetFromCrane(ZObject* u, ZObject* t, vector<ZObject*> &ct_list);
 		void MatchTargets_3(vector<ZObject*> &units_list, vector<ZObject*> &targets_list);
 		void GiveOutOrders_3(vector<ZObject*> &units_list, vector<ZObject*> &targets_list);
 		bool GoAllOut_3(double &percent_to_order, double &order_delay);
