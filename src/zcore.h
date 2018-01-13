@@ -146,6 +146,9 @@ class ZCore
 		void SetBotBypassData(char *data, int size);
 		static void CreateRandomBotBypassData(char *data, int &size);
 		virtual void AllowRun(bool allow_run_ = true) { allow_run = allow_run_; }
+		
+		bool CannonPlacable(ZObject *building_obj, int tx, int ty);
+		
 	protected:
 		void InitEncryption();
 		void SetupRandomizer();
@@ -157,7 +160,6 @@ class ZCore
 		ZObject* ProcessWaypointData(char *data, int size, bool is_server = false, int ok_team = -1);
 		ZObject* ProcessRallypointData(char *data, int size, bool is_server = false, int ok_team = -1);
 		virtual void DeleteObjectCleanUp(ZObject *obj);
-		bool CannonPlacable(ZObject *building_obj, int tx, int ty);
 		bool AreaIsFortTurret(int tx, int ty);
 		void ResetUnitLimitReached();
 		bool CheckUnitLimitReached();

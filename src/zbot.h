@@ -2,6 +2,7 @@
 #define _ZBOT_H_
 
 #include "zclient.h"
+#include "zgun_placement_heatmap.h"
 
 class PreferredUnit;
 class BuildingUnit;
@@ -39,9 +40,12 @@ class ZBot : public ZClient
 		void MatchTargets_3(vector<ZObject*> &units_list, vector<ZObject*> &targets_list);
 		void GiveOutOrders_3(vector<ZObject*> &units_list, vector<ZObject*> &targets_list);
 		bool GoAllOut_3(double &percent_to_order, double &order_delay);
+		
+		void PlaceCannons();
 
 		void ChooseBuildOrders();
 		void ChooseBuildOrders_2();
+		vector<ZObject*> ChooseGunBuildOrders(map<ZObject*,BuildingUnit> &fb_list, vector<ZObject*> &guns_building_list, vector<ZObject*> &total_buildings_list);
 		BuildCombo GetBestBuildCombo(vector<ZObject*> &b_list, vector<PreferredUnit> &pu_list);
 		bool GetBestBuildComboIncCI(vector<int> &ci, int max_pu);
 		bool GetBestBuildComboBuildretn(vector<int> &ci, vector<ZObject*> &b_list, vector<PreferredUnit> &pu_list, BuildCombo &retn);
@@ -101,7 +105,8 @@ class ZBot : public ZClient
 		static void set_build_queue_list_event(ZBot *p, char *data, int size, int dummy);
 
 		vector<ZObject*> flag_object_list;
-
+		
+		ZGunPlacementHeatMap gp_heatmap;
 		vector<PreferredUnit> preferred_build_list;
 		double next_ai_time;
 		double last_order_time;

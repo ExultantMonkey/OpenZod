@@ -29,6 +29,9 @@
 #include "gmm_warning.h"
 #include "gmm_multiplayer.h"
 
+//for testing only
+#include "zgun_placement_heatmap.h"
+
 struct news_entry
 {
    public:
@@ -418,6 +421,11 @@ class ZPlayer : public ZClient
 		ZObject *hover_object;
 		bool hover_object_can_attack;
 		bool hover_object_can_enter_fort;
+		
+		#ifdef ENABLE_HEATMAP_DEBUG
+		//test gun placement heatmap
+		ZGunPlacementHeatMap gp_heatmap;
+		#endif
 
 		//menus
 		ZGuiWindow *active_menu;

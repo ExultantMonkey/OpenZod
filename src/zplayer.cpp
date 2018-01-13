@@ -1074,6 +1074,11 @@ void ZPlayer::ProcessGame()
 	//scroll
 	ProcessScroll();
 	ProcessFocusCamerato();
+	
+	#ifdef ENABLE_HEATMAP_DEBUG
+	//for testing purposes
+	gp_heatmap.Process(the_time, object_list, zmap, our_team);
+	#endif
 }
 
 void ZPlayer::ProcessVerbalWarnings()
@@ -1260,6 +1265,11 @@ void ZPlayer::RenderScreen()
 
 		//render objects
 		RenderObjects();
+		
+		#ifdef ENABLE_HEATMAP_DEBUG
+		//render test gun placement heatmap 
+		gp_heatmap.DoRender(zmap);
+		#endif
 
 		//mouse stuff
 		RenderMouse();

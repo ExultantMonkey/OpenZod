@@ -637,6 +637,8 @@ void ZCore::DeleteObjectCleanUp(ZObject *obj)
 bool ZCore::CannonPlacable(ZObject *building_obj, int tx, int ty)
 {
 	int x, y, right, bottom;
+	
+	if(!building_obj) return false;
 
 	x = tx * 16;
 	y = ty * 16;

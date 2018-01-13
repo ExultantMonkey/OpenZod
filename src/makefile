@@ -1,8 +1,8 @@
 CC=g++
-CFLAGS=-c -g `sdl-config --cflags` -D DISABLE_OPENGL -D DISABLE_REGCHECK
-LDFLAGS=`sdl-config --libs` -lSDL_image -lSDL_mixer -lSDL_ttf -lm -lmysqlclient
+CFLAGS=-c -g `sdl-config --cflags` -D DISABLE_OPENGL -D DISABLE_REGCHECK -fopenmp
+LDFLAGS=`sdl-config --libs` -lSDL_image -lSDL_mixer -lSDL_ttf -lm -lmysqlclient -fopenmp
 INCLUDES=
-BASEFILES = common.cpp zsdl.cpp event_handler.cpp socket_handler.cpp server_socket.cpp client_socket.cpp zhud.cpp zfont_engine.cpp zfont.cpp zmini_map.cpp cursor.cpp zgui_window.cpp zbuildlist.cpp zsound_engine.cpp zmusic_engine.cpp zcomp_message_engine.cpp zpath_finding.cpp zpath_finding_astar.cpp zsettings.cpp zsdl_opengl.cpp zportrait.cpp zteam.cpp ztray.cpp zmysql.cpp zpsettings.cpp ztime.cpp zvote.cpp zunitrating.cpp zencrypt_aes.cpp zolists.cpp zgui_main_menu_base.cpp zgui_main_menu_widget.cpp
+BASEFILES = common.cpp zsdl.cpp event_handler.cpp socket_handler.cpp server_socket.cpp client_socket.cpp zhud.cpp zfont_engine.cpp zfont.cpp zmini_map.cpp cursor.cpp zgui_window.cpp zbuildlist.cpp zsound_engine.cpp zmusic_engine.cpp zcomp_message_engine.cpp zpath_finding.cpp zpath_finding_astar.cpp zsettings.cpp zsdl_opengl.cpp zportrait.cpp zteam.cpp ztray.cpp zmysql.cpp zpsettings.cpp ztime.cpp zvote.cpp zunitrating.cpp zencrypt_aes.cpp zolists.cpp zgui_main_menu_base.cpp zgui_main_menu_widget.cpp zgun_placement_heatmap.cpp
 COREFILES = zcore.cpp zserver.cpp zserver_events.cpp zserver_commands.cpp zclient.cpp zplayer.cpp zplayer_events.cpp zbot.cpp zbot_events.cpp SDL_rotozoom.cpp
 EFFECTFILES = ebullet.cpp elaser.cpp eflame.cpp epyrofire.cpp etoughrocket.cpp etoughmushroom.cpp etoughsmoke.cpp elightrocket.cpp elightinitfire.cpp emomissilerockets.cpp emissilecrockets.cpp erobotdeath.cpp edeath.cpp estandard.cpp edeathsparks.cpp eturrentmissile.cpp esideexplosion.cpp ecannondeath.cpp eunitparticle.cpp erockparticle.cpp erockturrent.cpp emapobjectturrent.cpp ebridgeturrent.cpp ecraneconco.cpp erobotturrent.cpp etrack.cpp etankdirt.cpp etanksmoke.cpp etankoil.cpp etankspark.cpp
 OBJECTFILES = zmap.cpp zmap_crater_graphics.cpp zeffect.cpp zobject.cpp zrobot.cpp zbuilding.cpp zcannon.cpp zvehicle.cpp oflag.cpp orock.cpp ogrenades.cpp orockets.cpp ohut.cpp omapobject.cpp abird.cpp ahutanimal.cpp
@@ -126,6 +126,9 @@ zgui_main_menu_base.o: zgui_main_menu_base.cpp zgui_main_menu_base.h
 zgui_main_menu_widget.o: zgui_main_menu_widget.cpp zgui_main_menu_widgets.h
 	$(CC) $(CFLAGS) $(INCLUDES) zgui_main_menu_widget.cpp
 	
+zgun_placement_heatmap.o: zgun_placement_heatmap.cpp zgun_placement_heatmap.h zobject.h zmap.h zcore.h zsettings.h
+	$(CC) $(CFLAGS) $(INCLUDES) zgun_placement_heatmap.cpp
+	
 #core files -----------------------------------
 
 zcore.o: zcore.cpp zcore.h event_handler.h
@@ -143,13 +146,13 @@ zserver_commands.o: zserver_commands.cpp zserver.h zcore.h event_handler.h
 zclient.o: zclient.cpp zclient.h zcore.h event_handler.h
 	$(CC) $(CFLAGS) $(INCLUDES) zclient.cpp
 	
-zplayer.o: zplayer.cpp zplayer.h zclient.h zcore.h event_handler.h
+zplayer.o: zplayer.cpp zplayer.h zclient.h zcore.h event_handler.h zgun_placement_heatmap.h
 	$(CC) $(CFLAGS) $(INCLUDES) zplayer.cpp
 	
 zplayer_events.o: zplayer_events.cpp zplayer.h zclient.h zcore.h event_handler.h
 	$(CC) $(CFLAGS) $(INCLUDES) zplayer_events.cpp
 	
-zbot.o: zbot.cpp zbot.h zclient.h zcore.h event_handler.h
+zbot.o: zbot.cpp zbot.h zclient.h zcore.h event_handler.h zgun_placement_heatmap.h
 	$(CC) $(CFLAGS) $(INCLUDES) zbot.cpp
 	
 zbot_events.o: zbot_events.cpp zbot.h zclient.h zcore.h event_handler.h

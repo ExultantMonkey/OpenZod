@@ -25,6 +25,7 @@ ZBot::ZBot() : ZClient()
 	preferred_build_list.push_back(PreferredUnit(ROBOT_OBJECT, SNIPER));
 	preferred_build_list.push_back(PreferredUnit(ROBOT_OBJECT, TOUGH));
 	preferred_build_list.push_back(PreferredUnit(ROBOT_OBJECT, PSYCHO));
+	preferred_build_list.push_back(PreferredUnit(ROBOT_OBJECT, GRUNT));
 }
 
 void ZBot::Setup()
@@ -103,6 +104,9 @@ void ZBot::ProcessAI()
 
 	for(vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
 		(*o)->SmoothMove(the_time);
+	
+	//process gun placement heatmap
+	gp_heatmap.Process(the_time, object_list, zmap, our_team);
 
 	if(the_time < next_ai_time) return;
 
@@ -119,6 +123,8 @@ void ZBot::ProcessAI()
 	//	//kill all enemies
 	//	Stage2AI();
 	//}
+	
+	PlaceCannons();
 
 	//set new build orders
 	//ChooseBuildOrders();
@@ -1740,6 +1746,199 @@ void ZBot::AddBuildingProductionSums(ZObject *b, vector<PreferredUnit> &preferre
 		}
 }
 
+void ZBot::PlaceCannons()
+{
+	for(vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
+	{
+		unsigned char ot, oid;
+		
+		//is it ours
+		if((*o)->GetOwner() != our_team) continue;
+
+		(*o)->GetObjectID(ot, oid);
+
+		//a building?
+		if(ot != BUILDING_OBJECT) continue;
+		
+		//building can build?
+		if(oid == RADAR) continue;
+		if(oid == REPAIR) continue;
+		if(oid == BRIDGE_VERT) continue;
+		if(oid == BRIDGE_HORZ) continue;
+		
+		//is destroyed?
+		if((*o)->IsDestroyed()) continue;
+		
+		vector<unsigned char> c_list = (*o)->GetBuiltCannonList();
+		
+		if(!c_list.size()) continue;
+		
+		//only place the first one
+		//this way the heatmap doesn't try to place them all in the same place
+		
+		int tx, ty;
+		
+		if(gp_heatmap.FindCannonPlace(this, zmap, zsettings, *o, c_list[0], tx, ty))
+		{
+			struct place_cannon_packet the_data;
+			
+			the_data.ref_id = (*o)->GetRefID();
+			the_data.oid = c_list[0];
+			the_data.tx = tx;
+			the_data.ty = ty;
+
+			client_socket.SendMessage(PLACE_CANNON, (const char*)&the_data, sizeof(place_cannon_packet));
+		}
+	}
+}
+
+vector<ZObject*> ZBot::ChooseGunBuildOrders(map<ZObject*,BuildingUnit> &fb_list, vector<ZObject*> &guns_building_list, vector<ZObject*> &total_buildings_list)
+{
+	vector<ZObject*> gb_list;
+	vector<ZObject*> gb_plist;
+	const double percent_guns_building_max = 0.2;
+	int total_buildings = total_buildings_list.size();
+	bool map_cant_build_gatling = false;
+	map<map_zone_info*,int> guns_building_in_zone;
+	
+	//if the map can build a light or toughs and up then never build a gatling gun 
+	for(vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
+	{
+		unsigned char ot, oid;
+		
+		(*o)->GetObjectID(ot, oid);
+		
+		//a building that can build?
+		if(ot != BUILDING_OBJECT) continue;
+		if(oid == RADAR) continue;
+		if(oid == REPAIR) continue;
+		if(oid == BRIDGE_VERT) continue;
+		if(oid == BRIDGE_HORZ) continue;
+		
+		if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), ROBOT_OBJECT, TOUGH) ||
+			buildlist.UnitInBuildList(oid, (*o)->GetLevel(), VEHICLE_OBJECT, LIGHT))
+		{
+			map_cant_build_gatling = true;
+			break;
+		}
+	}
+	
+	//build list to pull from randomly
+	for(map<ZObject*,BuildingUnit>::iterator fb=fb_list.begin();fb!=fb_list.end();++fb)
+	{
+		ZObject *bo = fb->first;
+		
+		if(!bo) continue;
+		
+		//this building already building / finished a cannon?
+		unsigned char cot, coid;
+		if(bo->GetBuildUnit(cot, coid) && cot == CANNON_OBJECT) continue;
+		
+		gb_plist.push_back(fb->first);
+	}
+	
+	//pull from list until the next one would go over 20%
+	while((1.0 + guns_building_list.size()) / total_buildings <= percent_guns_building_max && gb_plist.size())
+	{
+		vector<ZObject*>::iterator gb = gb_plist.begin() + (rand() % gb_plist.size());
+		ZObject *gbo = *gb;
+		
+		//remove from potential list
+		gb_plist.erase(gb);
+		
+		if(!gbo) continue;
+		
+		map_zone_info *gb_zone = gbo->GetConnectedZone();
+		
+		//already too many cannons building in this zone?
+		{
+			int c_in_zone = gbo->CannonsInZone(ols);
+			int c_building_in_zone = 0;
+			
+			for(vector<ZObject*>::iterator o=guns_building_list.begin(); o!=guns_building_list.end(); o++)
+				if(gb_zone == (*o)->GetConnectedZone())
+					c_building_in_zone++;
+				
+			if(c_in_zone + c_building_in_zone >= MAX_STORED_CANNONS) continue;
+		}
+		
+		//choose cannon to build
+		unsigned char coid = GATLING;
+		bool cchoosen = false;
+		
+		{
+			unsigned char bot, boid;
+			
+			gbo->GetObjectID(bot, boid);
+			
+			//start with the highest gun available then choose howitzer 1/6 % if choose missle cannon
+			for(int oid=MAX_CANNON_TYPES-1;oid>=0;oid--)
+				if(buildlist.UnitInBuildList(boid, gbo->GetLevel(), CANNON_OBJECT, oid))
+				{
+					coid = oid;
+					cchoosen = true;
+					
+					break;
+				}
+				
+			if(buildlist.UnitInBuildList(boid, gbo->GetLevel(), CANNON_OBJECT, HOWITZER) && !(rand()%6))
+			{
+				coid = HOWITZER;
+				cchoosen = true;
+			}
+		}
+		
+		//didn't choose a cannon?
+		if(!cchoosen) continue;
+		
+		//choose a gatling when they aren't allowed?
+		if(coid == GATLING && map_cant_build_gatling) continue;
+		
+		//choose a gatling or gun when a howitzer or missle can be built in the zone?
+		if(coid == GATLING || coid == GUN)
+		{
+			bool can_build_h_or_m_in_zone = false;
+			
+			for(vector<ZObject*>::iterator to=total_buildings_list.begin(); to!=total_buildings_list.end(); to++)
+			{
+				ZObject *too = *to;
+				
+				if(!too) continue;
+				
+				//not in same zone or are the same building?
+				if(gb_zone != too->GetConnectedZone()) continue;
+				if(gbo == too) continue;
+				
+				unsigned char tot, toid;
+				
+				too->GetObjectID(tot, toid);
+				
+				if(buildlist.UnitInBuildList(toid, too->GetLevel(), CANNON_OBJECT, HOWITZER) ||
+					buildlist.UnitInBuildList(toid, too->GetLevel(), CANNON_OBJECT, MISSILE_CANNON))
+				{
+					can_build_h_or_m_in_zone = true;
+					break;
+				}
+			}
+			
+			if(can_build_h_or_m_in_zone) continue;
+		}
+		
+		//set cannon build info
+		BuildingUnit &bu = fb_list[gbo];
+		bu.pot = CANNON_OBJECT;
+		bu.poid = coid;
+		
+		//add this building to the list that had their build changed a cannon
+		gb_list.push_back(gbo);
+		
+		//add to guns building list
+		guns_building_list.push_back(gbo);
+	}
+	
+	return gb_list;
+}
+
 void ZBot::ChooseBuildOrders_2()
 {
 	double &the_time = ztime.ztime;
@@ -1770,6 +1969,10 @@ void ZBot::ChooseBuildOrders_2()
 	bool own_crange = false;
 	vector<ZObject*> cb_list;
 	bool own_repairable_buildings = false;
+	
+	//gun data
+	vector<ZObject*> guns_building_list;
+	vector<ZObject*> total_buildings_list;
 	
 	//final build list
 	map<ZObject*,BuildingUnit> fb_list;
@@ -1805,8 +2008,12 @@ void ZBot::ChooseBuildOrders_2()
 		
 		//building a crane?
 		unsigned char cot, coid;
-		if((*o)->GetBuildUnit(cot, coid) && cot == VEHICLE_OBJECT && coid == CRANE)
+		bool got_build_unit = false;
+		if((got_build_unit = (*o)->GetBuildUnit(cot, coid)) && cot == VEHICLE_OBJECT && coid == CRANE)
 			building_crane = true;
+		
+		//needed for guns 
+		total_buildings_list.push_back(*o);
 		
 		//enough time hasn't passed?
 		if(!CanBuildAt(*o))
@@ -1814,6 +2021,9 @@ void ZBot::ChooseBuildOrders_2()
 			//is it building one of the prefered units?
 			AddBuildingProductionSums(*o, robot_build_list);
 			AddBuildingProductionSums(*o, vehicle_build_list);
+			
+			if(got_build_unit && cot == CANNON_OBJECT)
+				guns_building_list.push_back(*o);
 		}
 		else
 		{
@@ -1851,6 +2061,32 @@ void ZBot::ChooseBuildOrders_2()
 					fb_list[*o] = new_bu;
 					break;
 				}
+		}
+	}
+	
+	//choose gun building
+	{
+		vector<ZObject*> gb_list = ChooseGunBuildOrders(fb_list, guns_building_list, total_buildings_list);
+		
+		//remove gun builds from vehicle / robot potential build lists
+		for(vector<ZObject*>::iterator gb=gb_list.begin();gb!=gb_list.end();++gb)
+		{
+			//remove building from preferred building lists
+			for(vector<ZObject*>::iterator b=vb_list.begin();b!=vb_list.end();)
+			{
+				if(*b==*gb)
+					b=vb_list.erase(b);
+				else
+					++b;
+			}
+			
+			for(vector<ZObject*>::iterator b=rb_list.begin();b!=rb_list.end();)
+			{
+				if(*b==*gb)
+					b=rb_list.erase(b);
+				else
+					++b;
+			}
 		}
 	}
 	

@@ -443,6 +443,7 @@ class ZObject
 		bool WithinAttackRadius(int ox, int oy);
 		bool WithinAttackRadius(ZObject *obj);
 		bool WithinAttackRadiusOf(vector<ZObject*> &avoid_list, int ox, int oy);
+		int GetAttackRadius() { return attack_radius; }
 		static ZObject* GetObjectFromID_BS(int ref_id, vector<ZObject*> &the_list);
 		static ZObject* GetObjectFromID(int ref_id, vector<ZObject*> &the_list);
 		bool StopMove();
