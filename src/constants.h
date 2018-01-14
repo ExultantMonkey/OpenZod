@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define GAME_VERSION "2017-11-26"
+#define GAME_VERSION "2018-01-14"
 
 #define MAX_PLAYER_NAME_SIZE 30
 #define MAX_BUILDING_LEVELS 6

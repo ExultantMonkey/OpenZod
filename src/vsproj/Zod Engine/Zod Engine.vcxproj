@@ -71,10 +71,10 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>DISABLE_REGCHECK;DISABLE_BUYREG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>libs\include;libs\MySQL Connector C 6.0.2\include</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
@@ -182,6 +182,7 @@
     <ClInclude Include="..\..\zgui_main_menu_base.h" />
     <ClInclude Include="..\..\zgui_main_menu_widgets.h" />
     <ClInclude Include="..\..\zgui_window.h" />
+    <ClInclude Include="..\..\zgun_placement_heatmap.h" />
     <ClInclude Include="..\..\zhud.h" />
     <ClInclude Include="..\..\zmap.h" />
     <ClInclude Include="..\..\zmap_crater_graphics.h" />
@@ -316,6 +317,7 @@
     <ClCompile Include="..\..\zgui_main_menu_base.cpp" />
     <ClCompile Include="..\..\zgui_main_menu_widget.cpp" />
     <ClCompile Include="..\..\zgui_window.cpp" />
+    <ClCompile Include="..\..\zgun_placement_heatmap.cpp" />
     <ClCompile Include="..\..\zhud.cpp" />
     <ClCompile Include="..\..\zmap.cpp" />
     <ClCompile Include="..\..\zmap_crater_graphics.cpp" />

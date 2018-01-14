@@ -7,5 +7,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>..\..\..\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-w -r 1280x1080 -s -u -t red -b red -b blue -m p02_bb_orig01.map</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

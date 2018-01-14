@@ -21,9 +21,9 @@ public:
 	
 	virtual void Process(double the_time, ZOLists &ols, ZMap &tmap, int our_team) {}
 	virtual bool ShouldReset(ZMap &tmap);
-	virtual bool DoReset(ZMap &tmap);
+	virtual void DoReset(ZMap &tmap);
 	virtual bool ShouldClear(int our_team);
-	virtual bool DoClear(int our_team = -1);
+	virtual void DoClear(int our_team = -1);
 	
 	int GetHeatMapSize() { return heatmap_size; }
 	float *GetHeatMapData() { return heatmap; }

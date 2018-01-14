@@ -151,7 +151,7 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 		map<float, vector< pair<int,int> > > results;
 		int h = tmap.GetMapBasics().height;
 		double c_attack_radius = zsettings.GetUnitSettings(CANNON_OBJECT, coid).attack_radius;
-		int c_tile_dist = ceil(zsettings.GetUnitSettings(CANNON_OBJECT, coid).attack_radius / 16);
+		int c_tile_dist = ceil((float)(zsettings.GetUnitSettings(CANNON_OBJECT, coid).attack_radius / 16));
 		int c_tile_width = c_tile_dist * 2;
 		int c_center = c_tile_dist * 16;
 		int c_size = c_tile_width * c_tile_width;
@@ -372,7 +372,7 @@ bool ZHeatMapBase::ShouldReset(ZMap &tmap)
 	return false;
 }
 
-bool ZHeatMapBase::DoReset(ZMap &tmap)
+void ZHeatMapBase::DoReset(ZMap &tmap)
 {
 	heatmap_size = tmap.GetMapBasics().width * tmap.GetMapBasics().height;
 	
@@ -399,7 +399,7 @@ bool ZHeatMapBase::ShouldClear(int our_team)
 	return false;
 }
 
-bool ZHeatMapBase::DoClear(int our_team)
+void ZHeatMapBase::DoClear(int our_team)
 {
 	//clear data
 	#pragma omp simd
@@ -411,7 +411,7 @@ bool ZHeatMapBase::DoClear(int our_team)
 
 void ZHeatMapBase::AddHeat(ZMap &tmap, int cx, int cy, int heat_dist, float weight, bool heat_stacks)
 {
-	int heat_tile_dist = ceil(heat_dist / 16);
+	int heat_tile_dist = ceil((float)(heat_dist / 16));
 	
 	int tx = cx / 16;
 	int ty = cy / 16;
