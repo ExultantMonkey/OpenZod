@@ -106,7 +106,7 @@ void ZBot::ProcessAI()
 		(*o)->SmoothMove(the_time);
 	
 	//process gun placement heatmap
-	gp_heatmap.Process(the_time, object_list, zmap, our_team);
+	gp_heatmap.Process(the_time, ols, zmap, our_team);
 
 	if(the_time < next_ai_time) return;
 
@@ -1796,7 +1796,7 @@ vector<ZObject*> ZBot::ChooseGunBuildOrders(map<ZObject*,BuildingUnit> &fb_list,
 {
 	vector<ZObject*> gb_list;
 	vector<ZObject*> gb_plist;
-	const double percent_guns_building_max = 0.2;
+	const double percent_guns_building_max = 0.35;
 	int total_buildings = total_buildings_list.size();
 	bool map_cant_build_gatling = false;
 	map<map_zone_info*,int> guns_building_in_zone;

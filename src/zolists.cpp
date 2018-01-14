@@ -65,7 +65,6 @@ void ZOLists::AddObject(ZObject *obj)
 	if(ot == CANNON_OBJECT) cannon_olist.push_back(obj);
 	if(ot == BUILDING_OBJECT) building_olist.push_back(obj);
 	if(ot == MAP_ITEM_OBJECT && oid == ROCK_OBJECT) rock_olist.push_back(obj);
-	if(ot == CANNON_OBJECT) cannon_olist.push_back(obj);
 	if(ot == CANNON_OBJECT || ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT) passive_engagable_olist.push_back(obj);
 	if(ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT) mobile_olist.push_back(obj);
 	prender_olist.push_back(obj);

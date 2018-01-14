@@ -126,7 +126,7 @@ zgui_main_menu_base.o: zgui_main_menu_base.cpp zgui_main_menu_base.h
 zgui_main_menu_widget.o: zgui_main_menu_widget.cpp zgui_main_menu_widgets.h
 	$(CC) $(CFLAGS) $(INCLUDES) zgui_main_menu_widget.cpp
 	
-zgun_placement_heatmap.o: zgun_placement_heatmap.cpp zgun_placement_heatmap.h zobject.h zmap.h zcore.h zsettings.h
+zgun_placement_heatmap.o: zgun_placement_heatmap.cpp zgun_placement_heatmap.h zobject.h zmap.h zcore.h zsettings.h zolists.h
 	$(CC) $(CFLAGS) $(INCLUDES) zgun_placement_heatmap.cpp
 	
 #core files -----------------------------------

@@ -1077,7 +1077,7 @@ void ZPlayer::ProcessGame()
 	
 	#ifdef ENABLE_HEATMAP_DEBUG
 	//for testing purposes
-	gp_heatmap.Process(the_time, object_list, zmap, our_team);
+	gp_heatmap.Process(the_time, ols, zmap, our_team);
 	#endif
 }
 
