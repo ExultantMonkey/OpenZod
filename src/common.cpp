@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
+#include <chrono>
+#include <thread>
 #include "common.h"
 
 #ifdef _WIN32
@@ -148,13 +150,9 @@ void lcase(string &message)
 		message[i] = tolower(message[i]);
 }
 
-void uni_pause(int m_sec)
+void uni_pause(int ms)
 {
-#ifdef _WIN32 //if windows
-	Sleep(m_sec);	//win version
-#else
-	usleep(m_sec * 1000);	//lin version
-#endif
+	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 void print_dump(char *message, int size, char *name)
