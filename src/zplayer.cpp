@@ -338,9 +338,6 @@ void ZPlayer::Setup()
 
 	if(!client_socket.Start(remote_address.c_str()))
 		printf("ZPlayer::Setup:socket not setup\n");
-
-	//setup gfile
-	//ZGFile::Init();
 	
 	InitSDL();
 

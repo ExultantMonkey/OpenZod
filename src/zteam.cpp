@@ -1,5 +1,4 @@
 #include "zteam.h"
-//#include "zgfile.h"
 
 ZTeam_Palette ZTeam::team_palette[MAX_TEAM_TYPES];
 
