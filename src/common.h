@@ -41,7 +41,6 @@ namespace COMMON
 	extern vector<string> directory_filelist(string foldername);
 	extern void parse_filelist(vector<string> &filelist, string extension);
 	extern bool sort_string_func (const string &a, const string &b);
-	extern void start_stop_perf(const char *message = "");
 
 	//inline functions...
 	inline bool isz(float num) { return (num < 0.00001 && num > -0.00001); };

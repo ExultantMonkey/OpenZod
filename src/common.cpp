@@ -23,29 +23,7 @@
 
 namespace COMMON
 {
-	
-void start_stop_perf(char *message)
-{
-	static bool perf_started = false;
-	static double last_time = 0;
-	
-	//starting perf?
-	if(!perf_started)
-	{
-		last_time = current_time();
 		
-		perf_started = true;
-	}
-	else
-	{
-		double time_diff = current_time() - last_time;
-		
-		printf("performance:'%s' time:%lf\n", message, time_diff);
-		
-		perf_started = false;
-	}
-}
-	
 double current_time()
 {
 #ifdef WIN32
