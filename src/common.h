@@ -24,7 +24,6 @@ namespace COMMON
 	extern void lcase(char *message, int m_size);
 	extern void lcase(string &message);
 	extern double current_time();
-	extern void create_folder(char *foldername);
 	extern void uni_pause(int m_sec);
 	extern char *wtoc_s(const wchar_t *input);
 	extern char *wtoc(const wchar_t *input, char *dest, int size);

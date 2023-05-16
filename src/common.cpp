@@ -44,15 +44,6 @@ void start_stop_perf(char *message)
 	}
 }
 	
-void create_folder(char *foldername)
-{
-#ifdef WIN32 //if windows
-	mkdir(foldername);
-#else
-	mkdir(foldername,-1);
-#endif
-}
-
 double current_time()
 {
 #ifdef WIN32
