@@ -155,16 +155,6 @@ void uni_pause(int ms)
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-void print_dump(char *message, int size, char *name)
-{
-	int i;
-	
-	printf("raw dump:%s:", name);
-	for(i=0;i<size;i++)
-		printf("%0.2x ", message[i]);
-	printf("\n");
-}
-
 double distance(int x1, int y1, int x2, int y2)
 {
 	int dx = x1 - x2;

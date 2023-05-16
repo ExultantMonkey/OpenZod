@@ -29,7 +29,6 @@ namespace COMMON
 	extern char *wtoc(const wchar_t *input, char *dest, int size);
 	extern wchar_t *ctow_s(const char *input);
 	extern wchar_t *ctow(const char *input, wchar_t *dest, int size);
-	extern void print_dump(char *message, int size, char *name);
 	extern double distance(int x1, int y1, int x2, int y2);
 	extern double point_distance_from_line(int x1, int y1, int x2, int y2, int px, int py);
 	extern bool points_within_distance(int x1, int y1, int x2, int y2, int distance);

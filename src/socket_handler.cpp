@@ -225,7 +225,6 @@ int SocketHandler::DoProcess(char **message, int *size, int *pack_id)
 	*pack_id = ((int*)buf)[1];
 	packet_size = *size + 8;
 	
-// 	print_dump(buf, 20, "rcv ");
 // 	printf("rcv buf_size:%d packet_size:%d\n", buf_size, packet_size);
 	
 	if(*size < 0)
@@ -323,9 +322,7 @@ int SocketHandler::SendMessage(int pack_id, const char *data, int size)
 #else
 	error_no = send(s, temp_buf, size + sizeof(int) + sizeof(int), 0);
 #endif
-	
-// 	print_dump(temp_buf, 20, "send");
-	
+		
 	//error in send?
 	if(error_no <= 0)
 	{
