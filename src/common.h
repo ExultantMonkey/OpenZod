@@ -25,10 +25,6 @@ namespace COMMON
 	extern void lcase(string &message);
 	extern double current_time();
 	extern void uni_pause(int m_sec);
-	extern char *wtoc_s(const wchar_t *input);
-	extern char *wtoc(const wchar_t *input, char *dest, int size);
-	extern wchar_t *ctow_s(const char *input);
-	extern wchar_t *ctow(const char *input, wchar_t *dest, int size);
 	extern double distance(int x1, int y1, int x2, int y2);
 	extern double point_distance_from_line(int x1, int y1, int x2, int y2, int px, int py);
 	extern bool points_within_distance(int x1, int y1, int x2, int y2, int distance);
