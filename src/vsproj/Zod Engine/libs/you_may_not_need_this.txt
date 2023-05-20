@@ -1,3 +1,0 @@
-This is only needed if you are compiling with visual studio on windows.
-
-Also by the time you download this, it may already be incorporated into the main sources.
