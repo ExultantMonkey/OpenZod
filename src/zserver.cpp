@@ -1148,7 +1148,7 @@ void ZServer::ProcessObjects()
 	for(obj=object_list.begin(); obj!=object_list.end();)
 	{
 		if((*obj)->KillMe(the_time))
-			obj = DeleteObject(obj);
+			DeleteObject(*obj);
 		else
 			obj++;
 	}
@@ -2153,52 +2153,37 @@ void ZServer::RemoveObjectFromGroup(ZObject *obj)
 	//}
 }
 
-vector<ZObject*>::iterator ZServer::DeleteObject(vector<ZObject*>::iterator obj)
+void ZServer::DeleteObject(ZObject *obj)
 {
-	vector<ZObject*>::iterator ret;
-	int ref_id;
-	ZObject *dobj;
+	//Clean up group stuff
+	RemoveObjectFromGroup(obj);
+	//Clean up map
+	obj->UnSetMapImpassables(zmap);
 
-	dobj = *obj;
+	int ref_id = obj->GetRefID();
 
-	//clean up group stuff?
-	RemoveObjectFromGroup(dobj);
+	//Make sure no other part of the server is point to this object
+	for (ZObject* o : object_list) {
+		o->RemoveObject(obj);
+	}
 
-	//clean up map
-	dobj->UnSetMapImpassables(zmap);
+	//Clean up server olilsts
+	ols.RemoveObject(obj);
 
-	ref_id = dobj->GetRefID();
+	//Do the actual deletion
+	for (std::vector<ZObject*>::iterator i = object_list.begin(); i != object_list.end(); i++) {
+		if (obj == *i) {
+			object_list.erase(i);
+			
+		}
+	}
+	delete obj;
 
-	//now make sure no other part of the server is still pointing to this object
-	for(vector<ZObject*>::iterator o=object_list.begin();o!=object_list.end();o++)
-		(*o)->RemoveObject(dobj);
-
-	//make the deletion
-	delete *obj;
-	ret = object_list.erase(obj);
-
-	//clean up server olists
-	ols.RemoveObject(dobj);
-
-	//do this (mainly so production of units can start again)
+	//Do this so unit production can start again
 	CheckUnitLimitReached();
 
 	//tell everyone it is deleted
 	server_socket.SendMessageAll(DELETE_OBJECT, (char*)&ref_id, sizeof(int));
-
-	return ret;
-}
-
-void ZServer::DeleteObject(ZObject *obj)
-{
-	vector<ZObject*>::iterator i;
-
-	for(i=object_list.begin();i!=object_list.end();i++)
-		if(obj == *i)
-		{
-			DeleteObject(i);
-			break;
-		}
 }
 
 void ZServer::ResetObjectTeam(ZObject *obj, team_type new_team)

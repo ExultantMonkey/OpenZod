@@ -56,7 +56,6 @@ class ZServer : public ZCore
 		bool EndGameRequirementsMet();
 		void LoadNextMap(string map_name = "");
 		void ResetGame();
-		vector<ZObject*>::iterator DeleteObject(vector<ZObject*>::iterator obj);
 		void ProcessMissiles();
 		void ProcessMissileDamage(damage_missile &the_missile);
 		void UpdateObjectHealth(ZObject *obj, int attacker_ref_id = -1);
