@@ -38,7 +38,6 @@ class ZServer : public ZCore
 		void RelayObjectWayPoints(ZObject *obj);
 		void RelayObjectRallyPoints(ZObject *obj, int player = -1);
 		void RelayTeamMessage(team_type the_team, int pack_id, const char *data, int size);
-		//void SetupFlagList();
 		void CheckFlagCaptures();
 		void CheckPlayerSuggestions();
 		void AwardZone(OFlag *flag, ZObject *conquerer);
@@ -173,8 +172,6 @@ class ZServer : public ZCore
 
 		ZPath_Finding_Engine path_finder;
 		
-		//vector<p_info> player_info;s
-		//vector<ZObject*> flag_object_list;
 		vector<damage_missile> damage_missile_list;
 		vector<damage_missile> new_damage_missile_list;
 		vector<ZObject*> new_object_list;
