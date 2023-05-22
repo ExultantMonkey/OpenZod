@@ -274,15 +274,15 @@ bool ZServer::EndGameRequirementsMet()
 	for(i=0;i<MAX_TEAM_TYPES;i++)
 		team_available[i] = false;
 
-	for(vector<ZObject*>::iterator obj=ols.passive_engagable_olist.begin(); obj!=ols.passive_engagable_olist.end(); obj++)
+	for(ZObject* obj : ols.passive_engagable_olist)
 	{
 		unsigned char ot, oid;
 		
-		(*obj)->GetObjectID(ot, oid);
+		obj->GetObjectID(ot, oid);
 
 		if(!(ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT || ot == CANNON_OBJECT)) continue;
 
-		team_available[(*obj)->GetOwner()] = true;
+		team_available[obj->GetOwner()] = true;
 	}
 
 	//how many teams exist?
@@ -467,15 +467,15 @@ void ZServer::InitZones()
 {
 	//this function sets all the buildings / zones to their correct initial owners
 	//and links them all accordingly
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+	for(ZObject* i : object_list)
 	{
 		map_zone_info *the_zone;
 		unsigned char iot;
 		unsigned char ioid;
 		int x, y;
 
-		(*i)->GetObjectID(iot, ioid);
-		(*i)->GetCords(x, y);
+		i->GetObjectID(iot, ioid);
+		i->GetCords(x, y);
 
 		//is this a fort, then just set the zone to the forts owner
 		if(iot == BUILDING_OBJECT && (ioid == FORT_FRONT || ioid == FORT_BACK))
@@ -484,20 +484,20 @@ void ZServer::InitZones()
 
 			if(the_zone) 
 			{
-				the_zone->owner = (*i)->GetOwner();
+				the_zone->owner = i->GetOwner();
 
 				//init any other buildings in this zone
-				for(vector<ZObject*>::iterator j=object_list.begin(); j!=object_list.end(); j++)
+				for(ZObject* j : object_list)
 				{
 					unsigned char ot, oid;
 					int ox, oy;
 
-					(*j)->GetObjectID(ot, oid);
-					(*j)->GetCords(ox, oy);
+					j->GetObjectID(ot, oid);
+					j->GetCords(ox, oy);
 
 					if(ot == BUILDING_OBJECT)
 						if(the_zone == zmap.GetZone(ox,oy))
-							(*j)->SetOwner((*i)->GetOwner());
+							j->SetOwner(i->GetOwner());
 				}
 			}
 		}
@@ -508,13 +508,13 @@ void ZServer::InitZones()
 			the_zone = zmap.GetZone(x,y);
 
 			if(the_zone) 
-				((OFlag*)(*i))->SetZone(the_zone, zmap, object_list);
+				((OFlag*)i)->SetZone(the_zone, zmap, object_list);
 		}
 	}
 
 	//now that all the buildings have their correct initial teams, set default productions
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
-		(*i)->SetBuildingDefaultProduction();
+	for(ZObject* i : object_list)
+		i->SetBuildingDefaultProduction();
 
 	//do this...
 	ResetZoneOwnagePercentages();
@@ -720,14 +720,14 @@ ZObject *ZServer::CreateObject(unsigned char ot, unsigned char oid, int x, int y
 
 void ZServer::InitObjects()
 {
-	for(vector<map_object>::iterator i=zmap.GetObjectList().begin(); i!=zmap.GetObjectList().end(); i++)
+	for(map_object i : zmap.GetObjectList())
 	{
-		if(!CheckMapObject(*i)) continue;
+		if(!CheckMapObject(i)) continue;
 
-		if(i->object_type == ROBOT_OBJECT)
-			CreateRobotGroup(i->object_id, i->x*16, i->y*16, i->owner, NULL, -1, i->health_percent);
+		if(i.object_type == ROBOT_OBJECT)
+			CreateRobotGroup(i.object_id, i.x*16, i.y*16, i.owner, NULL, -1, i.health_percent);
 		else
-			CreateObject(i->object_type, i->object_id, i->x*16, i->y*16, i->owner, NULL, i->blevel, i->extra_links, i->health_percent);
+			CreateObject(i.object_type, i.object_id, i.x*16, i.y*16, i.owner, NULL, i.blevel, i.extra_links, i.health_percent);
 	}
 
 	//make sure you can not eject fort turret cannons
@@ -857,42 +857,40 @@ void ZServer::ScuffleUnits()
 
 	if(the_time >= next_scuffle_time)
 	{
-		vector<ZObject*>::iterator i, j;
-
 		next_scuffle_time = the_time + 1.0;
 
-		for(i=ols.mobile_olist.begin(); i!=ols.mobile_olist.end(); i++)
+		for(ZObject* i : ols.mobile_olist)
 		{
 			int x, y;
 			int w, h;
 			unsigned char ot, oid;
 
-			(*i)->GetObjectID(ot, oid);
+			i->GetObjectID(ot, oid);
 
 			if(!(ot == VEHICLE_OBJECT || ot == ROBOT_OBJECT)) continue;
-			if((*i)->GetOwner() == NULL_TEAM) continue;
-			if((*i)->GetWayPointList().size()) continue;
+			if(i->GetOwner() == NULL_TEAM) continue;
+			if(i->GetWayPointList().size()) continue;
 
-			(*i)->GetCenterCords(x, y);
-			(*i)->GetDimensionsPixel(w, h);
+			i->GetCenterCords(x, y);
+			i->GetDimensionsPixel(w, h);
 
 			//ok does it overlap any other moveable units?
-			for(j=ols.mobile_olist.begin(); j!=ols.mobile_olist.end(); j++)
-				if(*j != *i && (*i)->GetOwner() == (*j)->GetOwner())
+			for(ZObject* j : ols.mobile_olist)
+				if(j != i && i->GetOwner() == j->GetOwner())
 			{
 				int jx, jy;
 				int jw, jh;
 				int shift, offset;
 				unsigned char jot, joid;
 
-				(*j)->GetObjectID(jot, joid);
+				j->GetObjectID(jot, joid);
 
 				if(!(jot == VEHICLE_OBJECT || jot == ROBOT_OBJECT)) continue;
-				if((*j)->GetOwner() == NULL_TEAM) continue;
-				if((*j)->GetWayPointList().size()) continue;
+				if(j->GetOwner() == NULL_TEAM) continue;
+				if(j->GetWayPointList().size()) continue;
 
-				(*j)->GetCenterCords(jx, jy);
-				(*j)->GetDimensionsPixel(jw, jh);
+				j->GetCenterCords(jx, jy);
+				j->GetDimensionsPixel(jw, jh);
 
 				//are their centers roughly within 2 pixels away?
 				if(abs(x - jx) >= 6) continue;
@@ -912,7 +910,7 @@ void ZServer::ScuffleUnits()
 				if(rand() % 2) init_movepoint.y = y - shift;
 				else init_movepoint.y = y + shift;
 
-				(*i)->GetWayPointList().push_back(init_movepoint);
+				i->GetWayPointList().push_back(init_movepoint);
 
 				break;
 			}
@@ -937,8 +935,9 @@ void ZServer::ProcessMissiles()
 
 	//the objects push new objects into this queue, so we need to move it to the real one
 	//also do CheckUnitLimitReached if required
-	for(vector<damage_missile>::iterator i=new_damage_missile_list.begin(); i!=new_damage_missile_list.end(); i++)
-		damage_missile_list.push_back(*i);
+	for(damage_missile i : new_damage_missile_list) {
+		damage_missile_list.push_back(i);
+	}
 	new_damage_missile_list.clear();
 }
 
@@ -950,16 +949,14 @@ void ZServer::ProcessMissileDamage(damage_missile &the_missile)
 	int &radius = the_missile.radius;
 	int &team = the_missile.team;
 	int &damage = the_missile.damage;
-	vector<ZObject*>::iterator obj;
 
-	for(obj=object_list.begin(); obj!=object_list.end(); obj++)
-		if(!(*obj)->IsDestroyed() && (team == NULL_TEAM || (*obj)->GetOwner() != team))
-		{
+	for(ZObject* obj : object_list)
+		if(!obj->IsDestroyed() && (team == NULL_TEAM || obj->GetOwner() != team))		{
 			int tx, ty;
 			int dx, dy;
 			float mag;
 
-			(*obj)->GetCenterCords(tx, ty);
+			obj->GetCenterCords(tx, ty);
 
 			dx = x - tx;
 			dy = y - ty;
@@ -973,19 +970,19 @@ void ZServer::ProcessMissileDamage(damage_missile &the_missile)
 			//slow check
 			if(mag >= radius) continue;
 
-			(*obj)->DamageHealth(damage * (1.0 - (mag / radius)), zmap);
+			obj->DamageHealth(damage * (1.0 - (mag / radius)), zmap);
 
-			(*obj)->SetDamagedByMissileTime(the_time);
+			obj->SetDamagedByMissileTime(the_time);
 
 			if(the_missile.attacker_ref_id != -1 && 
 				the_missile.attack_player_given && 
-				the_missile.target_ref_id == (*obj)->GetRefID() &&
-				(*obj)->IsDestroyed())
+				the_missile.target_ref_id == obj->GetRefID() &&
+				obj->IsDestroyed())
 			{
 				RelayPortraitAnim(the_missile.attacker_ref_id, TARGET_DESTROYED_ANIM);
 			}
 
-			UpdateObjectHealth(*obj, the_missile.attacker_ref_id);
+			UpdateObjectHealth(obj, the_missile.attacker_ref_id);
 		}
 }
 
@@ -993,13 +990,12 @@ void ZServer::ProcessPathFindingResults()
 {
 	zmap.GetPathFinder().Lock_List();
 
-	vector<ZPath_Finding_Response*>::iterator pf;
-	for(pf=zmap.GetPathFinder().GetList().begin(); pf!=zmap.GetPathFinder().GetList().end(); pf++)
+	for(ZPath_Finding_Response* pf : zmap.GetPathFinder().GetList())
 	{
 		ZObject *obj;
 
-		obj = GetObjectFromID((*pf)->obj_ref_id, object_list);
-		if(obj) obj->PostPathFindingResult(*pf);
+		obj = GetObjectFromID(pf->obj_ref_id, object_list);
+		if(obj) obj->PostPathFindingResult(pf);
 	}
 
 	zmap.GetPathFinder().Clear_Response_List();
@@ -1012,74 +1008,73 @@ void ZServer::ProcessObjects()
 	char *data;
 	int size;
 	double &the_time = ztime.ztime;
-	vector<ZObject*>::iterator obj;
 
 	//kill all those that need to die
-	for(obj=object_list.begin(); obj!=object_list.end();)
+	for(ZObject* obj : object_list)
 	{
-		if((*obj)->KillMe(the_time))
-			DeleteObject(*obj);
-		else
-			obj++;
+		if(obj->KillMe(the_time)) {
+			DeleteObject(obj);
+		}
 	}
 
 	//process all the objects
-	for(obj=object_list.begin(); obj!=object_list.end();obj++) 
-		(*obj)->ProcessServer(zmap, ols);
+	for(ZObject* obj : object_list)  {
+		obj->ProcessServer(zmap, ols);
+	}
 
 	//see if any pathfinding responses have come back
 	//and process them
 	ProcessPathFindingResults();
 
 	//check to see what updated and needs to be sent to the clients
-	for(obj=object_list.begin(); obj!=object_list.end(); )
+	for(ZObject* obj : object_list)
 	{
 		ZObject *tobj;
 
 		//this case can cut us early
 		//because it will delete this object entirely
-		if((*obj)->GetSFlags().entered_target_ref_id != -1)
+		if(obj->GetSFlags().entered_target_ref_id != -1)
 		{
-			tobj = GetObjectFromID((*obj)->GetSFlags().entered_target_ref_id, object_list);
-			RobotEnterObject((*obj), tobj);
+			tobj = GetObjectFromID(obj->GetSFlags().entered_target_ref_id, object_list);
+			RobotEnterObject(obj, tobj);
 		}
 
 		//might want to revive it to the client first
-		if((*obj)->GetSFlags().auto_repair)
+		if(obj->GetSFlags().auto_repair)
 		{
-			(*obj)->SetHasProcessedDeath(false);
-			UpdateObjectHealth((*obj));
+			obj->SetHasProcessedDeath(false);
+			UpdateObjectHealth(obj);
 		}
 
-		if((*obj)->GetSFlags().updated_velocity)
-			RelayObjectLoc(*obj);
+		if(obj->GetSFlags().updated_velocity)
+			RelayObjectLoc(obj);
 
-		if((*obj)->GetSFlags().updated_waypoints)
+		if(obj->GetSFlags().updated_waypoints)
 		{
-			RelayObjectWayPoints(*obj);
+			RelayObjectWayPoints(obj);
 
 			//also fix minion waypoints
-			(*obj)->CloneMinionWayPoints();
+			obj->CloneMinionWayPoints();
 		}
 
-		if((*obj)->GetSFlags().updated_attack_object)
+		if(obj->GetSFlags().updated_attack_object)
 		{
-			RelayObjectAttackObject(*obj);
+			RelayObjectAttackObject(obj);
 		}
 
-		if((*obj)->GetSFlags().updated_attack_object_health && (*obj)->GetAttackObject())
+		if(obj->GetSFlags().updated_attack_object_health && obj->GetAttackObject())
 		{
-			UpdateObjectHealth((*obj)->GetAttackObject(), (*obj)->GetRefID());
+			UpdateObjectHealth(obj->GetAttackObject(), obj->GetRefID());
 		}
 
-		if((*obj)->GetSFlags().updated_attack_object_driver_health && (*obj)->GetAttackObject())
+		if(obj->GetSFlags().updated_attack_object_driver_health && obj->GetAttackObject())
 		{
-			UpdateObjectDriverHealth((*obj)->GetAttackObject());
+			UpdateObjectDriverHealth(obj->GetAttackObject());
 		}
 
-		if((*obj)->GetSFlags().destroy_fort_building_ref_id != -1)
+		if(obj->GetSFlags().destroy_fort_building_ref_id != -1)
 		{
-			tobj = GetObjectFromID((*obj)->GetSFlags().destroy_fort_building_ref_id, object_list);
+			tobj = GetObjectFromID(obj->GetSFlags().destroy_fort_building_ref_id, object_list);
 			if(tobj)
 			{
 				tobj->SetHealth(0, zmap);
@@ -1087,90 +1082,91 @@ void ZServer::ProcessObjects()
 			}
 		}
 
-		if((*obj)->GetSFlags().fired_missile)
+		if(obj->GetSFlags().fired_missile)
 		{
 			fire_missile_packet the_data;
 
-			the_data.ref_id = (*obj)->GetRefID();
-			the_data.x = (*obj)->GetSFlags().missile_x;
-			the_data.y = (*obj)->GetSFlags().missile_y;
+			the_data.ref_id = obj->GetRefID();
+			the_data.x = obj->GetSFlags().missile_x;
+			the_data.y = obj->GetSFlags().missile_y;
 
 			server_socket.SendMessageAll(FIRE_MISSILE, (const char*)&the_data, sizeof(fire_missile_packet));
 		}
 
-		if((*obj)->GetSFlags().build_unit)
+		if(obj->GetSFlags().build_unit)
 		{
 			ZObject *new_obj;
-			new_obj = BuildingCreateUnit(*obj, (*obj)->GetSFlags().bot, (*obj)->GetSFlags().boid);
-			(*obj)->ResetProduction();
-			RelayBuildingState(*obj);
-			RelayObjectBuildingQueue(*obj);
-			RelayObjectManufacturedSound(*obj, new_obj);
+			new_obj = BuildingCreateUnit(obj, obj->GetSFlags().bot, obj->GetSFlags().boid);
+			obj->ResetProduction();
+			RelayBuildingState(obj);
+			RelayObjectBuildingQueue(obj);
+			RelayObjectManufacturedSound(obj, new_obj);
 
 			//append rally points
 			if(new_obj)
 			{
-				for(vector<waypoint>::iterator i=(*obj)->GetRallyPointList().begin(); i!=(*obj)->GetRallyPointList().end(); i++)
-					new_obj->GetWayPointList().push_back(*i);
+				for(waypoint i : obj->GetRallyPointList()) {
+					new_obj->GetWayPointList().push_back(i);
+				}
 			}
 		}
 
-		if((*obj)->GetSFlags().repair_unit)
+		if(obj->GetSFlags().repair_unit)
 		{
 			ZObject *new_obj;
-			new_obj = BuildingRepairUnit(*obj, (*obj)->GetSFlags().rot, (*obj)->GetSFlags().roid, (*obj)->GetSFlags().rdriver_type, (*obj)->GetSFlags().rdriver_info, (*obj)->GetSFlags().rwaypoint_list);
-			RelayBuildingState(*obj);
+			new_obj = BuildingRepairUnit(obj, obj->GetSFlags().rot, obj->GetSFlags().roid, obj->GetSFlags().rdriver_type, obj->GetSFlags().rdriver_info, obj->GetSFlags().rwaypoint_list);
+			RelayBuildingState(obj);
 		}
 
-		if((*obj)->GetSFlags().set_crane_anim)
+		if(obj->GetSFlags().set_crane_anim)
 		{
 			crane_anim_packet the_data;
 
-			the_data.ref_id = (*obj)->GetRefID();
-			the_data.on = (*obj)->GetSFlags().crane_anim_on;
-			the_data.rep_ref_id = (*obj)->GetSFlags().crane_rep_ref_id;
+			the_data.ref_id = obj->GetRefID();
+			the_data.on = obj->GetSFlags().crane_anim_on;
+			the_data.rep_ref_id = obj->GetSFlags().crane_rep_ref_id;
 
 			server_socket.SendMessageAll(DO_CRANE_ANIM, (const char*)&the_data, sizeof(crane_anim_packet));
 		}
 
-		if((*obj)->GetSFlags().entered_repair_building_ref_id != -1)
+		if(obj->GetSFlags().entered_repair_building_ref_id != -1)
 		{
-			tobj = GetObjectFromID((*obj)->GetSFlags().entered_repair_building_ref_id, object_list);
-			UnitEnterRepairBuilding((*obj), tobj);
+			tobj = GetObjectFromID(obj->GetSFlags().entered_repair_building_ref_id, object_list);
+			UnitEnterRepairBuilding(obj, tobj);
 		}
 
-		if((*obj)->GetSFlags().updated_open_lid)
+		if(obj->GetSFlags().updated_open_lid)
 		{
 			set_lid_state_packet the_data;
 
-			the_data.ref_id = (*obj)->GetRefID();
-			the_data.lid_open = (*obj)->GetLidState();
+			the_data.ref_id = obj->GetRefID();
+			the_data.lid_open = obj->GetLidState();
 
 			server_socket.SendMessageAll(SET_LID_OPEN, (const char*)&the_data, sizeof(set_lid_state_packet));
 		}
 
-		if((*obj)->GetSFlags().updated_grenade_amount)
+		if(obj->GetSFlags().updated_grenade_amount)
 		{
-			RelayObjectGrenadeAmount(*obj);
+			RelayObjectGrenadeAmount(obj);
 		}
 
-		if((*obj)->GetSFlags().do_pickup_grenade_anim)
+		if(obj->GetSFlags().do_pickup_grenade_anim)
 		{
 			int_packet the_data;
 
-			the_data.ref_id = (*obj)->GetRefID();
+			the_data.ref_id = obj->GetRefID();
 
 			server_socket.SendMessageAll(PICKUP_GRENADE_ANIM, (const char*)&the_data, sizeof(int_packet));
 		}
 
-		if((*obj)->GetSFlags().updated_leader_grenade_amount && (*obj)->GetGroupLeader())
+		if(obj->GetSFlags().updated_leader_grenade_amount && obj->GetGroupLeader())
 		{
-			RelayObjectGrenadeAmount((*obj)->GetGroupLeader());
+			RelayObjectGrenadeAmount(obj->GetGroupLeader());
 		}
 
-		if((*obj)->GetSFlags().delete_grenade_box_ref_id != -1)
+		if(obj->GetSFlags().delete_grenade_box_ref_id != -1)
 		{
-			tobj = GetObjectFromID((*obj)->GetSFlags().delete_grenade_box_ref_id, object_list);
+			tobj = GetObjectFromID(obj->GetSFlags().delete_grenade_box_ref_id, object_list);
 			if(tobj)
 			{
 				tobj->SetHealth(0, zmap);
@@ -1178,20 +1174,17 @@ void ZServer::ProcessObjects()
 			}
 		}
 
-		if((*obj)->GetSFlags().portrait_anim_ref_id != -1)
+		if(obj->GetSFlags().portrait_anim_ref_id != -1)
 		{
-			RelayPortraitAnim((*obj)->GetSFlags().portrait_anim_ref_id, (*obj)->GetSFlags().portrait_anim_value);
+			RelayPortraitAnim(obj->GetSFlags().portrait_anim_ref_id, obj->GetSFlags().portrait_anim_value);
 		}
-
-		//there is more then one way this can increment
-		//so we need it here and not in the for
-		obj++;
 	}
 
 	//the objects push new objects into this queue, so we need to move it to the real one
 	//also do CheckUnitLimitReached if required
-	for(vector<ZObject*>::iterator i=new_object_list.begin(); i!=new_object_list.end(); i++)
-		ols.AddObject(*i);
+	for(ZObject* i : new_object_list) {
+		ols.AddObject(i);
+	}
 
 	if(new_object_list.size()) CheckUnitLimitReached();
 	new_object_list.clear();
@@ -1250,11 +1243,11 @@ void ZServer::RobotEnterObject(ZObject *robot_obj, ZObject *dest_obj)
 	dest_obj->GetObjectID(ot, oid);
 
 	if(ot == VEHICLE_OBJECT && oid == APC)
-	for(vector<ZObject*>::iterator i=robot_obj->GetMinionList().begin(); i!=robot_obj->GetMinionList().end(); i++)
+	for(ZObject* i : robot_obj->GetMinionList())
 	{
 		ZObject *minion_obj;
 
-		minion_obj = *i;
+		minion_obj = i;
 
 		//add minion
 		dest_obj->AddDriver(minion_obj->GetHealth());
@@ -1379,8 +1372,8 @@ ZObject *ZServer::BuildingRepairUnit(ZObject *obj, unsigned char ot, unsigned ch
 	new_obj->SetCords(new_x, new_y);
 
 	//shift its minions
-	for(vector<ZObject*>::iterator i=new_obj->GetMinionList().begin(); i!=new_obj->GetMinionList().end(); i++)
-		(*i)->SetCords(new_x, new_y);
+	for(ZObject* i : new_obj->GetMinionList())
+		i->SetCords(new_x, new_y);
 
 	//set the initial waypoint
 	waypoint init_movepoint;
@@ -1408,8 +1401,8 @@ ZObject *ZServer::BuildingRepairUnit(ZObject *obj, unsigned char ot, unsigned ch
 	RelayNewObject(new_obj);
 
 	//and the minions...
-	for(vector<ZObject*>::iterator i=new_obj->GetMinionList().begin(); i!=new_obj->GetMinionList().end(); i++)
-		RelayNewObject(*i);
+	for(ZObject* i : new_obj->GetMinionList())
+		RelayNewObject(i);
 
 	//tell them where it is going
 	RelayObjectWayPoints(new_obj);
@@ -1454,8 +1447,8 @@ ZObject *ZServer::BuildingCreateUnit(ZObject *obj, unsigned char ot, unsigned ch
 	new_obj->SetCords(new_x, new_y);
 
 	//shift its minions
-	for(vector<ZObject*>::iterator i=new_obj->GetMinionList().begin(); i!=new_obj->GetMinionList().end(); i++)
-		(*i)->SetCords(new_x, new_y);
+	for(ZObject* i : new_obj->GetMinionList())
+		i->SetCords(new_x, new_y);
 
 	//set the initial waypoint
 	waypoint init_movepoint;
@@ -1476,8 +1469,8 @@ ZObject *ZServer::BuildingCreateUnit(ZObject *obj, unsigned char ot, unsigned ch
 	RelayNewObject(new_obj);
 
 	//and the minions...
-	for(vector<ZObject*>::iterator i=new_obj->GetMinionList().begin(); i!=new_obj->GetMinionList().end(); i++)
-		RelayNewObject(*i);
+	for(ZObject* i : new_obj->GetMinionList())
+		RelayNewObject(i);
 
 	//tell them where it is going
 	RelayObjectWayPoints(new_obj);
@@ -1499,25 +1492,25 @@ void ZServer::CheckDestroyedBridge(ZObject *obj)
 
 
 	//kill all the robots and vehicles on the bridge right now
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+	for(ZObject* i : object_list)
 	{
 		unsigned char iot, ioid;
 
 		//some checks
-		if((*i)->IsDestroyed()) continue;
+		if(i->IsDestroyed()) continue;
 
-		(*i)->GetObjectID(iot, ioid);
+		i->GetObjectID(iot, ioid);
 
 		//is it a robot or vehicle?
 		if(!(iot == VEHICLE_OBJECT || iot == ROBOT_OBJECT)) continue;
 
 		//does it intersect with this bridge?
-		if(!(*i)->IntersectsObject(*obj)) continue;
+		if(!i->IntersectsObject(*obj)) continue;
 
 		//destroy it then
-		(*i)->SetHealth(0, zmap);
+		i->SetHealth(0, zmap);
 
-		RelayObjectDeath(*i);
+		RelayObjectDeath(i);
 	}
 }
 
@@ -1541,31 +1534,31 @@ void ZServer::CheckDestroyedFort(ZObject *obj)
 	RelayTeamEnded(team, false);
 
 	//destroy all the other objects in this list
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+	for(ZObject* i : object_list)
 	{
 		unsigned char iot, ioid;
 
-		if((*i)->GetOwner() != team) continue;
-		if((*i)->IsDestroyed()) continue;
-		if((*i) == obj) continue;
+		if(i->GetOwner() != team) continue;
+		if(i->IsDestroyed()) continue;
+		if(i == obj) continue;
 
-		(*i)->GetObjectID(iot, ioid);
+		i->GetObjectID(iot, ioid);
 
 		//no flags.
 		if(iot == MAP_ITEM_OBJECT) continue;
 		
 		//destroy it then
-		(*i)->SetHealth(0, zmap);
+		i->SetHealth(0, zmap);
 
-		RelayObjectDeath(*i);
+		RelayObjectDeath(i);
 	}
 
 	//lose all the zones
-	for(vector<ZObject*>::iterator i=ols.flag_olist.begin(); i!=ols.flag_olist.end(); i++)
+	for(ZObject* i : ols.flag_olist)
 	{
-		if((*i)->GetOwner() != team) continue;
+		if(i->GetOwner() != team) continue;
 
-		AwardZone((OFlag*)*i, NULL_TEAM);
+		AwardZone((OFlag*)i, NULL_TEAM);
 	}
 
 	//annouce the news
@@ -1681,29 +1674,28 @@ void ZServer::UpdateObjectDriverHealth(ZObject *obj)
 		}
 
 		//all objects attacking this obj must quit
-		vector<ZObject*>::iterator o;
-		for(o=object_list.begin(); o!=object_list.end();o++)
+		for(ZObject* o : object_list)
 		{
 			//are we currently attacking this object? then stop
-			if((*o)->GetAttackObject() == obj)
+			if(o->GetAttackObject() == obj)
 			{
-				(*o)->Disengage();
-				RelayObjectAttackObject((*o));
+				o->Disengage();
+				RelayObjectAttackObject(o);
 			}
 
 			//do we have a waypoint looking to kill just this target?
-			if((*o)->GetWayPointList().size() && 
-				((*o)->GetWayPointList().begin()->mode == ATTACK_WP || (*o)->GetWayPointList().begin()->mode == AGRO_WP) &&
-				(*o)->GetWayPointList().begin()->ref_id == obj->GetRefID())
+			if(o->GetWayPointList().size() && 
+				(o->GetWayPointList().begin()->mode == ATTACK_WP || o->GetWayPointList().begin()->mode == AGRO_WP) &&
+				o->GetWayPointList().begin()->ref_id == obj->GetRefID())
 			{
 				//kill the waypoint
-				(*o)->GetWayPointList().erase((*o)->GetWayPointList().begin());
+				o->GetWayPointList().erase(o->GetWayPointList().begin());
 
 				//let folks know about the waypoint updates
-				RelayObjectWayPoints((*o));
+				RelayObjectWayPoints(o);
 
 				//stop movement
-				if((*o)->StopMove()) RelayObjectLoc(*o);
+				if(o->StopMove()) RelayObjectLoc(o);
 			}
 		}
 	}
@@ -1758,38 +1750,38 @@ void ZServer::CheckNoUnitsDestroyFort(int team)
 	if(team == NULL_TEAM) return;
 
 	//leave if we find a unit in this team that is alive
-	for(vector<ZObject*>::iterator obj=ols.passive_engagable_olist.begin(); obj!=ols.passive_engagable_olist.end(); obj++)
+	for(ZObject* obj : ols.passive_engagable_olist)
 	{
 		unsigned char ot, oid;
 		
-		(*obj)->GetObjectID(ot, oid);
+		obj->GetObjectID(ot, oid);
 
 		//only leave the function
 		//if we find an alive unit on our team
-		if((*obj)->GetOwner() != team) continue;
+		if(obj->GetOwner() != team) continue;
 		if(!(ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT || ot == CANNON_OBJECT)) continue;
-		if((*obj)->IsDestroyed()) continue;
+		if(obj->IsDestroyed()) continue;
 
 		return;
 	}
 
 	//ok destroy all the forts
-	for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+	for(ZObject* obj : object_list)
 	{
 		unsigned char ot, oid;
 		
-		(*obj)->GetObjectID(ot, oid);
+		obj->GetObjectID(ot, oid);
 
-		if((*obj)->GetOwner() != team) continue;
+		if(obj->GetOwner() != team) continue;
 		if(!(ot == BUILDING_OBJECT && (oid == FORT_FRONT || oid == FORT_BACK))) continue;
-		if((*obj)->IsDestroyed()) continue;
+		if(obj->IsDestroyed()) continue;
 
 		//destroy it then
-		(*obj)->SetHealth(0, zmap);
+		obj->SetHealth(0, zmap);
 
-		CheckDestroyedFort(*obj);
+		CheckDestroyedFort(obj);
 
-		RelayObjectDeath(*obj);
+		RelayObjectDeath(obj);
 	}
 }
 
@@ -1800,28 +1792,26 @@ void ZServer::CheckFlagCaptures()
 
 	if(the_time > next_time)
 	{
-		vector<ZObject*>::iterator f, o;
-
 		next_time = the_time + 0.2;
 
-		for(f=ols.flag_olist.begin();f!=ols.flag_olist.end();f++)
-			for(o=ols.mobile_olist.begin();o!=ols.mobile_olist.end();o++)
+		for(ZObject* f : ols.flag_olist)
+			for(ZObject* o : ols.mobile_olist)
 			{
 				unsigned char ot, oid;
 
-				if((*o)->GetOwner() == NULL_TEAM) continue;
-				if((*f)->GetOwner() == (*o)->GetOwner()) continue;
+				if(o->GetOwner() == NULL_TEAM) continue;
+				if(f->GetOwner() == o->GetOwner()) continue;
 
-				(*o)->GetObjectID(ot, oid);
+				o->GetObjectID(ot, oid);
 
 				//only get mobile units
 				if(!(ot == VEHICLE_OBJECT || ot == ROBOT_OBJECT)) continue;
 
 				//they intersect?
-				if(!(*f)->IntersectsObject(**o)) continue;
+				if(!f->IntersectsObject(*o)) continue;
 
 				//ok they intersect so lets give the team the zone
-				AwardZone((OFlag*)*f, *o);
+				AwardZone((OFlag*)f, o);
 
 				//escape looking for objects that could capture this flag
 				break;
@@ -1838,7 +1828,6 @@ void ZServer::AwardZone(OFlag *flag, ZObject *conquerer)
 void ZServer::AwardZone(OFlag *flag, team_type new_team)
 {
 	team_type old_team;
-	vector<ZObject*>::iterator i;
 
 	old_team = flag->GetLinkedZone()->owner;
 
@@ -1846,13 +1835,13 @@ void ZServer::AwardZone(OFlag *flag, team_type new_team)
 	ResetObjectTeam(flag, new_team);
 
 	//set all its buildings teams
-	for(i=flag->GetLinkedObjects().begin();i!=flag->GetLinkedObjects().end();i++)
+	for(ZObject* i : flag->GetLinkedObjects())
 	{
-		ResetObjectTeam(*i, new_team);
+		ResetObjectTeam(i, new_team);
 		
 		//start default production
-		if((*i)->SetBuildingDefaultProduction())
-			RelayBuildingState(*i);
+		if(i->SetBuildingDefaultProduction())
+			RelayBuildingState(i);
 	}
 
 	//set the zones team
@@ -1913,34 +1902,34 @@ void ZServer::RemoveObjectFromGroup(ZObject *obj)
 		ZObject *new_leader = NULL;
 
 		//pick the new leader
-		for(vector<ZObject*>::iterator i=obj->GetMinionList().begin(); i!=obj->GetMinionList().end(); i++)
-			if(*i)
+		for(ZObject* i : obj->GetMinionList())
+			if(i)
 			{
-				new_leader = *i;
+				new_leader = i;
 				break;
 			}
 
 		if(new_leader)
 		{
 			//tell everyone the new leader
-			for(vector<ZObject*>::iterator i=obj->GetMinionList().begin(); i!=obj->GetMinionList().end(); i++)
-				if(*i) (*i)->SetGroupLeader(new_leader);
+			for(ZObject* i : obj->GetMinionList())
+				if(i) i->SetGroupLeader(new_leader);
 
 			//clear out new leader info
 			new_leader->ClearGroupInfo();
 
 			//set up new_leader's minion list
-			for(vector<ZObject*>::iterator i=obj->GetMinionList().begin(); i!=obj->GetMinionList().end(); i++)
-				if(*i) new_leader->AddGroupMinion(*i);
+			for(ZObject* i : obj->GetMinionList())
+				if(i) new_leader->AddGroupMinion(i);
 
 			//send out new leaders info
 			RelayObjectGroupInfo(new_leader);
 
 			//send out minions new info
-			for(vector<ZObject*>::iterator i=new_leader->GetMinionList().begin(); i!=new_leader->GetMinionList().end(); i++)
-				if(*i)
+			for(ZObject* i : new_leader->GetMinionList())
+				if(i)
 			{
-				RelayObjectGroupInfo(*i);
+				RelayObjectGroupInfo(i);
 			}
 
 			//give new leader the grenades
@@ -2382,18 +2371,18 @@ void ZServer::ResetZoneOwnagePercentages(bool notify_players)
 			zone_ownage[i] = 0;
 
 	//tally
-	for(vector<ZObject*>::iterator of=ols.flag_olist.begin(); of!=ols.flag_olist.end(); of++)
-		zone_ownage[(*of)->GetOwner()]++;
+	for(ZObject* of : ols.flag_olist)
+		zone_ownage[of->GetOwner()]++;
 
 	//percentage
 	for(i=0;i<MAX_TEAM_TYPES;i++)
 			team_zone_percentage[i] = 1.0 * zone_ownage[i] / ols.flag_olist.size();
 
 	//tell all the buildings to redo their build orders
-	for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+	for(ZObject* obj : object_list)
 	{
-		if((*obj)->ResetBuildTime(team_zone_percentage[(*obj)->GetOwner()]) && notify_players)
-			RelayBuildingState(*obj);;
+		if(obj->ResetBuildTime(team_zone_percentage[obj->GetOwner()]) && notify_players)
+			RelayBuildingState(obj);
 	}
 }
 
@@ -2621,15 +2610,15 @@ void ZServer::RelayTeamsWonEnded()
 		team_won[i] = false;
 
 	//populate team_won[]
-	for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+	for(ZObject* obj : object_list)
 	{
 		unsigned char ot, oid;
 		
-		(*obj)->GetObjectID(ot, oid);
+		obj->GetObjectID(ot, oid);
 
 		if(!(ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT || ot == CANNON_OBJECT)) continue;
 
-		team_won[(*obj)->GetOwner()] = true;
+		team_won[obj->GetOwner()] = true;
 	}
 
 	for(int i=RED_TEAM;i<MAX_TEAM_TYPES;i++)
@@ -2649,36 +2638,36 @@ void ZServer::UpdateUsersWinLoses()
 		team_won[i] = false;
 
 	//populate team_won[]
-	for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+	for(ZObject* obj : object_list)
 	{
 		unsigned char ot, oid;
 		
-		(*obj)->GetObjectID(ot, oid);
+		obj->GetObjectID(ot, oid);
 
 		if(!(ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT || ot == CANNON_OBJECT)) continue;
 
-		team_won[(*obj)->GetOwner()] = true;
+		team_won[obj->GetOwner()] = true;
 	}
 
 	//update users
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
-		if(i->logged_in && i->team != NULL_TEAM)
+	for(p_info i : player_info)
+		if(i.logged_in && i.team != NULL_TEAM)
 		{
 			string err_msg;
 
-			i->total_games++;
+			i.total_games++;
 
-			if(!zmysql.IncreaseUserVariable(err_msg, i->db_id, "total_games", 1))
+			if(!zmysql.IncreaseUserVariable(err_msg, i.db_id, "total_games", 1))
 				printf("mysql error: %s\n", err_msg.c_str());
 
-			if(team_won[i->team])
+			if(team_won[i.team])
 			{
-				if(!zmysql.IncreaseUserVariable(err_msg, i->db_id, "wins", 1))
+				if(!zmysql.IncreaseUserVariable(err_msg, i.db_id, "wins", 1))
 					printf("mysql error: %s\n", err_msg.c_str());
 			}
 			else
 			{
-				if(!zmysql.IncreaseUserVariable(err_msg, i->db_id, "loses", 1))
+				if(!zmysql.IncreaseUserVariable(err_msg, i.db_id, "loses", 1))
 					printf("mysql error: %s\n", err_msg.c_str());
 			}
 		}
@@ -2731,14 +2720,14 @@ void ZServer::CheckOnlineHistoryPlayerCount()
 	//get
 	if(psettings.require_login)
 	{
-		for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
-			if(i->logged_in)
+		for(p_info i : player_info)
+			if(i.logged_in)
 				current_player_count++;
 	}
 	else
 	{
-		for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
-			if(i->mode == PLAYER_MODE)
+		for(p_info i : player_info)
+			if(i.mode == PLAYER_MODE)
 				current_player_count++;
 	}
 
@@ -2753,8 +2742,8 @@ void ZServer::CheckOnlineHistoryTrayPlayerCount()
 
 	int current_player_count = 0;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
-		if(i->mode == TRAY_MODE)
+	for(p_info i : player_info)
+		if(i.mode == TRAY_MODE)
 			current_player_count++;
 
 	//set
@@ -2877,8 +2866,8 @@ bool ZServer::VoteRequired()
 {
 	int player_count = 0;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
-			if(i->mode == PLAYER_MODE)
+	for(p_info i : player_info)
+			if(i.mode == PLAYER_MODE)
 			{
 				player_count++;
 
@@ -3177,12 +3166,12 @@ void ZServer::GivePlayerSelectableMapList(int player)
 	string send_str;
 
 	//populate send_str
-	for(vector<string>::iterator i=selectable_map_list.begin(); i!=selectable_map_list.end(); i++)
+	for(string i : selectable_map_list)
 	{
 		if(!send_str.length())
-			send_str += *i;
+			send_str += i;
 		else
-			send_str += "," + *i;
+			send_str += "," + i;
 	}
 
 	//send
@@ -3194,10 +3183,10 @@ void ZServer::GivePlayerSelectableMapList(int player)
 
 bool ZServer::TeamHasBot(int team, bool active_only)
 {
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
-		if(i->team == team && i->mode == BOT_MODE)
+	for(p_info i : player_info)
+		if(i.team == team && i.mode == BOT_MODE)
 		{
-			if(active_only && !i->ignored)
+			if(active_only && !i.ignored)
 				return true;
 			else if(!active_only)
 				return true;
@@ -3394,19 +3383,19 @@ void ZServer::SendPlayerLoginRequired(int player)
 
 void ZServer::MakeAllFortTurretsUnEjectable()
 {
-	for(vector<ZObject*>::iterator i=object_list.begin();i!=object_list.end();i++)
+	for(ZObject* i : object_list)
 	{
 		unsigned char ot, oid;
 
-		(*i)->GetObjectID(ot, oid);
+		i->GetObjectID(ot, oid);
 
 		if(ot != CANNON_OBJECT) continue;
 
 		int x, y;
 
-		(*i)->GetCords(x, y);
+		i->GetCords(x, y);
 
-		if(AreaIsFortTurret(x / 16, y / 16)) (*i)->SetEjectableCannon(false);
+		if(AreaIsFortTurret(x / 16, y / 16)) i->SetEjectableCannon(false);
 	}
 }
 
@@ -3469,15 +3458,15 @@ void ZServer::ReshuffleTeams()
 			team_found[i] = false;
 
 		//populate team_won[]
-		for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+		for(ZObject* obj : object_list)
 		{
 			unsigned char ot, oid;
 			
-			(*obj)->GetObjectID(ot, oid);
+			obj->GetObjectID(ot, oid);
 
 			if(!(ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT || ot == CANNON_OBJECT)) continue;
 
-			team_found[(*obj)->GetOwner()] = true;
+			team_found[obj->GetOwner()] = true;
 		}
 
 		for(int i=RED_TEAM;i<MAX_TEAM_TYPES;i++)
@@ -3501,9 +3490,9 @@ void ZServer::ReshuffleTeams()
 	orig_teams_available = teams_available;
 
 	//logged in players first
-	for(vector<int>::iterator i=loggedin_to_be_changed.begin(); i!=loggedin_to_be_changed.end(); i++)
+	for(int i : loggedin_to_be_changed)
 	{
-		player_info[*i].team = NULL_TEAM;
+		player_info[i].team = NULL_TEAM;
 
 		if(!teams_available.size()) teams_available = orig_teams_available;
 		if(!teams_available.size()) return;
@@ -3512,15 +3501,15 @@ void ZServer::ReshuffleTeams()
 
 		random_c = rand() % teams_available.size();
 
-		ChangePlayerTeam(*i, teams_available[random_c]);
+		ChangePlayerTeam(i, teams_available[random_c]);
 
 		teams_available.erase(teams_available.begin() + random_c);
 	}
 
 	//other players
-	for(vector<int>::iterator i=players_to_be_changed.begin(); i!=players_to_be_changed.end(); i++)
+	for(int i : players_to_be_changed)
 	{
-		player_info[*i].team = NULL_TEAM;
+		player_info[i].team = NULL_TEAM;
 
 		if(!teams_available.size()) teams_available = orig_teams_available;
 		if(!teams_available.size()) return;
@@ -3529,7 +3518,7 @@ void ZServer::ReshuffleTeams()
 
 		random_c = rand() % teams_available.size();
 
-		ChangePlayerTeam(*i, teams_available[random_c]);
+		ChangePlayerTeam(i, teams_available[random_c]);
 
 		teams_available.erase(teams_available.begin() + random_c);
 	}
