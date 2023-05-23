@@ -157,57 +157,11 @@ void ZServer::request_map_event(ZServer *p, char *data, int size, int player)
 	pack_num = -1;
 	memcpy(buf, &pack_num, 4);
 	p->server_socket.SendMessage(player, STORE_MAP, buf, 4);
-
-	/*
-	//send the map file
-	if(p->zmap.Loaded())
-	{
-		FILE *fp;
-		
-		fp = fopen(p->map_name.c_str(), "rb");
-		
-		if(fp)
-		{
-			pack_num = 0;
-			
-			while(1)
-			{
-				read_in = fread(buf + 4, 1, buf_size, fp);
-				
-// 				printf("read_in:%d\n", read_in);
-				
-				if(read_in > 0)
-				{
-					memcpy(buf, &pack_num, 4);
-					p->server_socket.SendMessage(player, STORE_MAP, buf, 4 + read_in);
-					
-					pack_num++;
-				}
-				else
-					break;
-			}
-			
-			pack_num = -1;
-
-			fclose(fp);
-		}
-	}
-	
-	memcpy(buf, &pack_num, 4);
-	p->server_socket.SendMessage(player, STORE_MAP, buf, 4);
-	*/
 }
 
 void ZServer::set_name_event(ZServer *p, char *data, int size, int player)
 {
-	//if(!size) return;
-	//
-	////is the last char a null character?
-	//if(data[size]) return;
-	//
-	//printf("p->player_info.size():%d\n", p->player_info.size());
 
-	//p->player_info[player].name = data;
 }
 
 void ZServer::send_object_list_event(ZServer *p, char *data, int size, int player)
@@ -224,12 +178,6 @@ void ZServer::send_object_list_event(ZServer *p, char *data, int size, int playe
 
 		//send building state and repair anim info
 		p->RelayBuildingState(i, player);
-
-		//send building queue list - sent with state
-		//p->RelayObjectBuildingQueue(*i, player);
-
-		//send group information - sent with RelayNewObject
-		//p->RelayObjectGroupInfo(*i, player);
 
 		//send grenade amount
 		p->RelayObjectGrenadeAmount(i, player);
@@ -287,21 +235,6 @@ void ZServer::set_player_name_event(ZServer *p, char *data, int size, int player
 
 	//update player lists
 	p->RelayLPlayerName(player);
-	//{
-	//	char *data;
-	//	int size;
-
-	//	size = sizeof(int) + p->player_info[player].name.size() + 1;
-	//	data = (char*)malloc(size);
-
-	//	memcpy(data, &(p->player_info[player].p_id), sizeof(int));
-	//	memcpy(data+sizeof(int), p->player_info[player].name.c_str(), p->player_info[player].name.size());
-	//	*(data+sizeof(int)+p->player_info[player].name.size()) = 0;
-
-	//	p->server_socket.SendMessageAll(SET_LPLAYER_NAME, data, size);
-
-	//	free(data);
-	//}
 }
 
 void ZServer::set_player_team_event(ZServer *p, char *data, int size, int player)
@@ -350,9 +283,6 @@ void ZServer::set_player_team_event(ZServer *p, char *data, int size, int player
 	}
 
 	p->ChangePlayerTeam(player, the_team);
-
-	//sprintf(message, "player '%s' set their team to the %s team", p->player_info[player].name.c_str(), team_type_string[the_team].c_str());
-	//p->BroadCastNews(message);
 }
 
 void ZServer::rcv_object_waypoints_event(ZServer *p, char *data, int size, int player)
@@ -360,7 +290,6 @@ void ZServer::rcv_object_waypoints_event(ZServer *p, char *data, int size, int p
 	ZObject *our_object;
 
 	//logged in?
-	//if(p->psettings.require_login && !p->player_info[player].logged_in)
 	if(p->LoginCheckDenied(player))
 	{
 		p->SendNews(player, "move unit error: login required, please type /help", 0, 0, 0);
@@ -413,9 +342,6 @@ void ZServer::rcv_object_waypoints_event(ZServer *p, char *data, int size, int p
 
 	//did any objects get their waypoint list updated?
 	if(!our_object) return;
-
-	//check to make sure this isn't a bunk list
-	//p->CheckObjectWaypoints(our_object);
 
 	//just left cannon = false
 	our_object->SetJustLeftCannon(false);
@@ -481,17 +407,12 @@ void ZServer::start_building_event(ZServer *p, char *data, int size, int player)
 
 	//is this a building that can build?
 	if(!obj->ProducesUnits()) return;
-	//unsigned char ot, oid;
-	//obj->GetObjectID(ot, oid);
-	//if(ot != BUILDING_OBJECT) return;
-	//if(!(oid == FORT_FRONT || oid == FORT_BACK || oid == ROBOT_FACTORY || oid == VEHICLE_FACTORY)) return;
 
 	//is the team business kosher?
 	if(obj->GetOwner() == NULL_TEAM) return;
 	if(p->player_info[player].team != obj->GetOwner()) return;
 
 	//logged in?
-	//if(p->psettings.require_login && !p->player_info[player].logged_in)
 	if(p->LoginCheckDenied(player))
 	{
 		p->SendNews(player, "start production error: login required, please type /help", 0, 0, 0);
@@ -710,15 +631,6 @@ void ZServer::exit_vehicle_event(ZServer *p, char *data, int size, int player)
 				if(ot == CANNON_OBJECT) new_obj->SetJustLeftCannon(true);
 			}
 
-			//new_obj = p->CreateObject(ROBOT_OBJECT, obj->GetDriverType(), x, y, obj->GetOwner(), p->object_list);
-
-			////announce new object
-			//p->RelayNewObject(new_obj);
-
-			////health
-			//new_obj->SetHealth(obj->GetDriverHealth());
-			//p->UpdateObjectHealth(new_obj, current_time());
-
 			//clear out "drivers"
 			obj->ClearDrivers();
 		}
@@ -740,9 +652,6 @@ void ZServer::exit_vehicle_event(ZServer *p, char *data, int size, int player)
 			//force it to stop attacking
 			obj->SetAttackObject(NULL);
 			p->RelayObjectAttackObject(obj);
-			//obj->CreateAttackObjectData(data, size);
-			//p->server_socket.SendMessageAll(SET_ATTACK_OBJECT, data, size);
-			//free(data);
 		}
 	}
 
@@ -781,8 +690,6 @@ void ZServer::set_player_mode_event(ZServer *p, char *data, int size, int player
 	//set history stuff
 	p->CheckOnlineHistoryPlayerCount();
 	p->CheckOnlineHistoryTrayPlayerCount();
-
-	//printf("ZServer::set_player_mode_event:p:%d m:%s\n", player, player_mode_string[p->player_info[player].mode].c_str());
 }
 
 void ZServer::request_player_list_event(ZServer *p, char *data, int size, int player)
@@ -791,7 +698,6 @@ void ZServer::request_player_list_event(ZServer *p, char *data, int size, int pl
 	p->server_socket.SendMessage(player, CLEAR_PLAYER_LIST, NULL, 0);
 
 	//send the list
-	//for(vector<p_info>::iterator i=p->player_info.begin(); i!=p->player_info.end(); i++)
 	for(int i=0;i<p->player_info.size();i++)
 	{
 		p->RelayLAdd(i, player);
@@ -855,11 +761,6 @@ void ZServer::set_pause_game_event(ZServer *p, char *data, int size, int player)
 		p->StartVote(PAUSE_VOTE, -1, player);
 	else
 		p->StartVote(RESUME_VOTE, -1, player);
-
-	//if(pi->game_paused)
-	//	p->PauseGame();
-	//else
-	//	p->ResumeGame();
 }
 
 void ZServer::start_vote_event(ZServer *p, char *data, int size, int player)
@@ -1044,8 +945,6 @@ void ZServer::add_building_queue_event(ZServer *p, char *data, int size, int pla
 	obj = p->GetObjectFromID(pi->ref_id, p->object_list);
 
 	if(!obj) return;
-
-	//printf("add queue %d %d\n", pi->ot, pi->oid);
 
 	//is the team business kosher?
 	if(obj->GetOwner() == NULL_TEAM) return;
