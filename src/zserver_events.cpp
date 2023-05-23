@@ -212,18 +212,18 @@ void ZServer::set_name_event(ZServer *p, char *data, int size, int player)
 
 void ZServer::send_object_list_event(ZServer *p, char *data, int size, int player)
 {
-	for(vector<ZObject*>::iterator i=p->object_list.begin(); i!=p->object_list.end(); i++)
+	for(ZObject* i : p->object_list)
 	{
 		object_init_packet object_info;
 
 		//pack the object info
-		p->RelayNewObject(*i, player);
+		p->RelayNewObject(i, player);
 
 		//send health
-		p->RelayObjectHealth(*i, player);
+		p->RelayObjectHealth(i, player);
 
 		//send building state and repair anim info
-		p->RelayBuildingState(*i, player);
+		p->RelayBuildingState(i, player);
 
 		//send building queue list - sent with state
 		//p->RelayObjectBuildingQueue(*i, player);
@@ -232,10 +232,10 @@ void ZServer::send_object_list_event(ZServer *p, char *data, int size, int playe
 		//p->RelayObjectGroupInfo(*i, player);
 
 		//send grenade amount
-		p->RelayObjectGrenadeAmount(*i, player);
+		p->RelayObjectGrenadeAmount(i, player);
 
 		//send rally points
-		p->RelayObjectRallyPoints(*i, player);
+		p->RelayObjectRallyPoints(i, player);
 	}
 }
 
@@ -326,10 +326,10 @@ void ZServer::set_player_team_event(ZServer *p, char *data, int size, int player
 	{
 		bool player_on_team = false;
 		
-		for(vector<p_info>::iterator i=p->player_info.begin();i!=p->player_info.end();++i)
+		for(p_info i : p->player_info)
 		{
 			//this player on the team, not a bot and not us?
-			if(i->team == the_team && !i->bot_logged_in)
+			if(i.team == the_team && !i.bot_logged_in)
 			{
 				player_on_team = true;
 				break;
@@ -432,10 +432,10 @@ void ZServer::rcv_object_waypoints_event(ZServer *p, char *data, int size, int p
 		our_object->StopMove();
 		p->RelayObjectLoc(our_object);
 
-		for(vector<ZObject*>::iterator i=our_object->GetMinionList().begin(); i!=our_object->GetMinionList().end(); i++)
+		for(ZObject* i : our_object->GetMinionList())
 		{
-			(*i)->StopMove();
-			p->RelayObjectLoc((*i));
+			i->StopMove();
+			p->RelayObjectLoc(i);
 		}
 	}
 }
