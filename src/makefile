@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c -g `sdl-config --cflags` -D DISABLE_OPENGL -D DISABLE_REGCHECK -fopenmp
+CFLAGS=-c -g -std=c++20 `sdl-config --cflags` -D DISABLE_OPENGL -D DISABLE_REGCHECK -fopenmp
 LDFLAGS=`sdl-config --libs` -lSDL_image -lSDL_mixer -lSDL_ttf -lm -lmysqlclient -fopenmp
 INCLUDES=
 BASEFILES = common.cpp zsdl.cpp event_handler.cpp socket_handler.cpp server_socket.cpp client_socket.cpp zhud.cpp zfont_engine.cpp zfont.cpp zmini_map.cpp cursor.cpp zgui_window.cpp zbuildlist.cpp zsound_engine.cpp zmusic_engine.cpp zcomp_message_engine.cpp zpath_finding.cpp zpath_finding_astar.cpp zsettings.cpp zsdl_opengl.cpp zportrait.cpp zteam.cpp ztray.cpp zmysql.cpp zpsettings.cpp ztime.cpp zvote.cpp zunitrating.cpp zencrypt_aes.cpp zolists.cpp zgui_main_menu_base.cpp zgui_main_menu_widget.cpp zgun_placement_heatmap.cpp
