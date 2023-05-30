@@ -140,7 +140,6 @@ void ZMiniMap::DoRender(SDL_Surface *dest, int x, int y)
 		//do we actually render?
 		if(zone_rect.w > 0 && zone_rect.h > 0)
 		{
-			int sdlmap;
 			//sdlmap = SDL_MapRGB(dest->format, team_color[i->owner].r * 0.4, team_color[i->owner].g * 0.4, team_color[i->owner].b * 0.4);
 			//SDL_FillRect(dest, &zone_rect, sdlmap);
 			ZSDL_FillRect(&zone_rect, team_color[i->owner].r * 0.4, team_color[i->owner].g * 0.4, team_color[i->owner].b * 0.4);
@@ -172,7 +171,6 @@ void ZMiniMap::DoRender(SDL_Surface *dest, int x, int y)
 		if(obj_rect.w < 1) obj_rect.w = 1;
 		if(obj_rect.h < 1) obj_rect.h = 1;
 
-		int sdlmap;
 		int towner;
 		towner = (*i)->GetOwner();
 		//sdlmap = SDL_MapRGB(dest->format, team_color[towner].r, team_color[towner].g , team_color[towner].b);

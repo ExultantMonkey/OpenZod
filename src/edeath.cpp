@@ -125,8 +125,6 @@ void EDeath::Process()
 
 void EDeath::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
-
 	if(killme) return;
 
 	zmap.RenderZSurface(wasted_img, x, y);

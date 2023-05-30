@@ -63,8 +63,6 @@ void EPyroFire::Process()
 
 void EPyroFire::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
-
 	if(killme) return;
 
 	zmap.RenderZSurface(&fire_img[fire_i][fire_j], x, y);

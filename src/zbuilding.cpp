@@ -226,7 +226,6 @@ void ZBuilding::ProcessBuildingQueueData(char *data, int size)
 	int expected_packet_size;
 	int queue_amount;
 	int data_ref_id;
-	ZObject *our_object;
 
 	//produces units?
 	if(!ProducesUnits()) return;
@@ -347,7 +346,6 @@ void ZBuilding::ProcessSetBuildingStateData(char *data, int size)
 	double &the_time = ztime->ztime;
 
 	set_building_state_packet *pi = (set_building_state_packet*)data;
-	ZObject *obj;
 
 	//good packet?
 	if(size != sizeof(set_building_state_packet)) return;
@@ -480,8 +478,6 @@ bool ZBuilding::HaveStoredCannon(unsigned char oid)
 
 void ZBuilding::ResetProduction()
 {
-	double &the_time = ztime->ztime;
-
 	if(queue_list.size())
 	{
 		unsigned char ot, oid;

@@ -89,8 +89,6 @@ void ERobotDeath::Process()
 
 void ERobotDeath::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
-
 	if(killme) return;
 
 	zmap.RenderZSurface(&render_img[render_i], x, y);

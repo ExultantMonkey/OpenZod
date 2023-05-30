@@ -573,7 +573,6 @@ bool ZPath_Finding_Engine::ShouldBeAbleToMoveTo(int sx, int sy, int ex, int ey, 
 	//end target ok?
 	{
 		int tx, ty;
-		int cx, cy;
 
 		tx = ex >> 4;
 		ty = ey >> 4;
@@ -862,8 +861,6 @@ int ZPath_Finding_Engine::Find_Path(int sx, int sy, int ex, int ey, bool is_robo
 
 		if(tile_check)
 		{
-			int size;
-
 			response->w = w;
 			response->h = h;
 			response->tile_info = tile_check;

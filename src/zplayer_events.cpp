@@ -77,8 +77,6 @@ void ZPlayer::SetupEHandler()
 
 void ZPlayer::motion_event(ZPlayer *p, char *data, int size, int dummy)
 {
-	bool did_main_menu_motion;
-
 	if(p->MainMenuMotion())
 	{
 		return;
@@ -565,7 +563,6 @@ void ZPlayer::keyup_event(ZPlayer *p, char *data, int size, int dummy)
 {
 	key_event *pi = (key_event*)data;
 	int the_key = pi->the_key;
-	int the_unicode = pi->the_unicode;
 	//printf("keyup:%d\n", the_key);
 
 	p->SetAsciiState(the_key, false);
@@ -680,7 +677,6 @@ void ZPlayer::set_zone_info_event(ZPlayer *p, char *data, int size, int dummy)
 
 void ZPlayer::display_news_event(ZPlayer *p, char *data, int size, int dummy)
 {
-	const double lasting_time = 10.0;
 	news_entry new_entry;
 	//SDL_Color textcolor;
 
@@ -761,9 +757,7 @@ void ZPlayer::set_object_rallypoints_event(ZPlayer *p, char *data, int size, int
 
 void ZPlayer::set_object_loc_event(ZPlayer *p, char *data, int size, int dummy)
 {
-	ZObject *obj;
-
-	obj = p->ProcessObjectLoc(data, size);
+	p->ProcessObjectLoc(data, size);
 	//int ref_id;
 	//object_location new_loc;
 
@@ -974,16 +968,12 @@ void ZPlayer::destroy_object_event(ZPlayer *p, char *data, int size, int dummy)
 
 void ZPlayer::set_building_state_event(ZPlayer *p, char *data, int size, int dummy)
 {
-	ZObject *obj;
-
-	obj = p->ProcessBuildingState(data, size);
+	p->ProcessBuildingState(data, size);
 }
 
 void ZPlayer::set_building_cannon_list_event(ZPlayer *p, char *data, int size, int dummy)
 {
-	ZObject *obj;
-
-	obj = p->ProcessBuildingCannonList(data, size);
+	p->ProcessBuildingCannonList(data, size);
 }
 
 void ZPlayer::set_computer_message_event(ZPlayer *p, char *data, int size, int dummy)
@@ -1028,9 +1018,7 @@ void ZPlayer::set_computer_message_event(ZPlayer *p, char *data, int size, int d
 
 void ZPlayer::set_object_group_info_event(ZPlayer *p, char *data, int size, int dummy)
 {
-	ZObject *obj;
-
-	obj = p->ProcessObjectGroupInfo(data, size);
+	p->ProcessObjectGroupInfo(data, size);
 	//int ref_id;
 	//ZObject *obj;
 
@@ -1104,9 +1092,7 @@ void ZPlayer::set_settings_event(ZPlayer *p, char *data, int size, int dummy)
 
 void ZPlayer::set_lid_open_event(ZPlayer *p, char *data, int size, int dummy)
 {
-	ZObject *obj;
-
-	obj = p->ProcessObjectLidState(data, size);
+	p->ProcessObjectLidState(data, size);
 	//set_lid_state_packet *pi = (set_lid_state_packet*)data;
 	//ZObject *obj;
 
@@ -1441,9 +1427,7 @@ void ZPlayer::set_regkey(ZPlayer *p, char *data, int size, int dummy)
 
 void ZPlayer::set_build_queue_list_event(ZPlayer *p, char *data, int size, int dummy)
 {
-	ZObject *obj;
-
-	obj = p->ProcessBuildingQueueList(data, size);
+	p->ProcessBuildingQueueList(data, size);
 }
 
 void ZPlayer::request_version_event(ZPlayer *p, char *data, int size, int dummy)

@@ -236,9 +236,6 @@ void ZObject::Init(TTF_Font *ttf_font)
 
 void ZObject::InitRealMoveSpeed(ZMap &tmap)
 {
-	int &x = loc.x;
-	int &y = loc.y;
-
 	//real_move_speed = move_speed * tmap.GetTileWalkSpeed(x + (width_pix >> 1), y + (height_pix >> 1));
 	real_move_speed = move_speed * tmap.GetTileWalkSpeed(center_x, center_y);
 }
@@ -559,7 +556,6 @@ void ZObject::RenderHover(ZMap &zmap, SDL_Surface *dest, team_type viewers_team)
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	SDL_Rect from_rect, to_rect;
 	const int hover_name_y_shift = -19;
 
 	if(hover_name_img.GetBaseSurface())
@@ -2237,10 +2233,6 @@ void ZObject::ProcessKillObject()
 
 void ZObject::ProcessAgroWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
-	int &x = loc.x;
-	int &y = loc.y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
 	int ox, oy;
 	ZObject *target_object;
 
@@ -2336,8 +2328,6 @@ void ZObject::ProcessAttackWP(vector<waypoint>::iterator &wp, double time_dif, b
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
 	int ox, oy;
 	ZObject *target_object;
 
@@ -2485,11 +2475,8 @@ void ZObject::ProcessAttackWP(vector<waypoint>::iterator &wp, double time_dif, b
 
 void ZObject::ProcessPickupWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
-	const double z = 0.000001;
 	int &x = loc.x;
 	int &y = loc.y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
 	ZObject *target_object;
 
 	target_object = GetObjectFromID(wp->ref_id, *ols.object_list);
@@ -2588,11 +2575,8 @@ void ZObject::ProcessPickupWP(vector<waypoint>::iterator &wp, double time_dif, b
 
 void ZObject::ProcessEnterWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
-	const double z = 0.000001;
 	int &x = loc.x;
 	int &y = loc.y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
 	ZObject *target_object;
 
 	if(is_new)
@@ -2673,12 +2657,6 @@ void ZObject::ProcessEnterWP(vector<waypoint>::iterator &wp, double time_dif, bo
 
 void ZObject::ProcessDodgeWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
-	const double z = 0.000001;
-	int &x = loc.x;
-	int &y = loc.y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
-
 	if(is_new)
 	{
 		//cur_wp_info.x = wp->x;
@@ -2700,11 +2678,8 @@ void ZObject::ProcessDodgeWP(vector<waypoint>::iterator &wp, double time_dif, bo
 
 void ZObject::ProcessMoveWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap, bool stoppable)
 {
-	const double z = 0.000001;
 	int &x = loc.x;
 	int &y = loc.y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
 
 	//disengage if this is a robot, because they can not fire and walk
 	//also setvelocity
@@ -2780,8 +2755,6 @@ void ZObject::ProcessEnterFortWP(vector<waypoint>::iterator &wp, double time_dif
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
 	ZObject *target_object;
 	bool stoppable;
 
@@ -2919,11 +2892,8 @@ void ZObject::ProcessEnterFortWP(vector<waypoint>::iterator &wp, double time_dif
 
 void ZObject::ProcessCraneRepairWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
-	const double z = 0.000001;
 	int &x = loc.x;
 	int &y = loc.y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
 	ZObject *target_object;
 	bool stoppable;
 
@@ -3097,11 +3067,8 @@ void ZObject::ProcessCraneRepairWP(vector<waypoint>::iterator &wp, double time_d
 
 void ZObject::ProcessUnitRepairWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
-	const double z = 0.000001;
 	int &x = loc.x;
 	int &y = loc.y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
 	ZObject *target_object;
 	bool stoppable;
 	int ent_x, ent_y;
@@ -3426,8 +3393,6 @@ bool ZObject::ReachedTarget()
 	int &y = loc.y;
 	int &cx = center_x;
 	int &cy = center_y;
-	float &dx = loc.dx;
-	float &dy = loc.dy;
 	
 	//we at the target?
 	if(cx == cur_wp_info.x && cy == cur_wp_info.y) 
@@ -3569,9 +3534,6 @@ bool ZObject::ProcessMove(double time_dif, ZMap &tmap, int &stop_x, int &stop_y,
 
 void ZObject::SetVelocity(ZObject *target_object)
 {
-	int &x = loc.x;
-	int &y = loc.y;
-	int ox, oy;
 	float &dx = loc.dx;
 	float &dy = loc.dy;
 	vector<waypoint>::iterator wp;

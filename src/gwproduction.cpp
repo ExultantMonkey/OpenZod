@@ -288,7 +288,6 @@ void GWProduction::ResetShowTime(int new_time)
 void GWProduction::DoRender(ZMap &the_map, SDL_Surface *dest)
 {
 	int lx, ly;
-	SDL_Rect from_rect, to_rect;
 
 	if(killme) return;
 

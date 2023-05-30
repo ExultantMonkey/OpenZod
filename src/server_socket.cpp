@@ -5,8 +5,6 @@ using namespace COMMON;
 
 ServerSocket::ServerSocket()
 {
-	int i;
-	
 	started = 0;
 	bound = 0;
 	listen_socket = -1;
@@ -115,10 +113,8 @@ int ServerSocket::CheckConnects()
 	int so_sndbuf_amount = 200000;
 #ifdef _WIN32
 	int c_temp_addrlen;
-	int tst = sizeof(so_sndbuf_amount);
 #else
 	socklen_t c_temp_addrlen;
-	socklen_t tst = sizeof(so_sndbuf_amount);
 #endif
 	int &s = listen_socket;
 

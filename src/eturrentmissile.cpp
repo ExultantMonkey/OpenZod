@@ -35,10 +35,8 @@ ETurrentMissile::ETurrentMissile(ZTime *ztime_, int start_x, int start_y, int de
 	start_y += 5 - (rand() % 10);
 
 	//set the dx / dy
-	float mag;
 	dx = dest_x - start_x;
 	dy = dest_y - start_y;
-	mag = sqrt((dx * dx) + (dy * dy));
 
 	init_time = the_time;
 	final_time = init_time + offset_time;
@@ -141,7 +139,6 @@ void ETurrentMissile::Init()
 void ETurrentMissile::Process()
 {
 	double &the_time = ztime->ztime;
-	int i, mx, my;
 
 	if(killme) return;
 
@@ -187,8 +184,6 @@ void ETurrentMissile::Process()
 
 void ETurrentMissile::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
-
 	if(killme) return;
 
 	switch(object)

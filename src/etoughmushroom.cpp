@@ -78,8 +78,6 @@ void EToughMushroom::Process()
 
 void EToughMushroom::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
-
 	if(killme) return;
 
 	base_img[render_i].SetSize(zoom_size);

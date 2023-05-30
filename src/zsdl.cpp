@@ -181,7 +181,6 @@ void draw_selection_box(SDL_Surface *surface, SDL_Rect dim, SDL_Color color, int
 {
 	const int padding = 3;
 	const int the_len = 5;
-	int x_i, y_i, x_end, y_end;
 	SDL_Rect line_box;
 	//int sdlmap;
 
@@ -196,9 +195,6 @@ void draw_selection_box(SDL_Surface *surface, SDL_Rect dim, SDL_Color color, int
 	if(dim.y >= max_y) return;
 	if(dim.x + dim.w < 0) return;
 	if(dim.y + dim.h < 0) return;
-
-	x_end = dim.x+dim.w;
-	y_end = dim.y+dim.h;
 
 	//top left corner
 	line_box.x = dim.x;
@@ -336,7 +332,6 @@ void draw_selection_box(SDL_Surface *surface, SDL_Rect dim, SDL_Color color, int
 
 void draw_box(SDL_Surface *surface, SDL_Rect dim, SDL_Color color, int max_x, int max_y)
 {
-	int x_i, y_i;
 	SDL_Rect line_box;
 	//int sdlmap;
 
@@ -597,7 +592,6 @@ void ZSDL_BlitHitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, 
 
 	int start_x, width_x;
 	int start_y, height_y;
-	int to_x, to_y;
 
 	if(srcrect)
 	{
@@ -617,17 +611,6 @@ void ZSDL_BlitHitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, 
 
 	if(width_x > src->w) width_x = src->w;
 	if(height_y > src->h) height_y = src->h;
-
-	if(dstrect)
-	{
-		to_x = dstrect->x;
-		to_y = dstrect->y;
-	}
-	else
-	{
-		to_x = 0;
-		to_y = 0;
-	}
 
 	for(i=start_x;i<width_x;i++)
 		for(j=start_y;j<height_y;j++)
@@ -674,18 +657,14 @@ SDL_Surface *ZSDL_NewSurface(int w, int h)
 
 void put32pixel(SDL_Surface *surface, int x, int y, SDL_Color color)
 {
-	SDL_PixelFormat *fmt;
 	//SDL_Surface *surface;
-	SDL_Color return_color;
-	Uint32 temp, *pixel;
-	Uint8 red, green, blue, alpha;
+	Uint32 *pixel;
 	
 	if(x<0) return;
 	if(y<0) return;
 	if(x>=surface->w) return;
 	if(y>=surface->h) return;
 
-	fmt = surface->format;
 	//SDL_LockSurface(surface);
 	//pixel = *((Uint32*)surface->pixels);
 	//pixel = *((Uint32*)((Uint8 *)surface->pixels + y * surface->pitch + x * surface->format->BytesPerPixel));

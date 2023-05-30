@@ -48,10 +48,8 @@ ERockTurrent::ERockTurrent(ZTime *ztime_, int x_, int y_, int palette_, int max_
 
 	rise = 1.1 + (0.01 * (rand() % 200));
 
-	double mag;
 	dx = ex - sx;
 	dy = ey - sy;
-	mag = sqrt((dx * dx) + (dy * dy));
 
 	init_time = the_time;
 	final_time = init_time + lifetime;
@@ -110,7 +108,6 @@ void ERockTurrent::Process()
 
 	{
 		double time_dif = (the_time - init_time);
-		double up_amount;
 
 		//move
 		x = sx + (dx * time_dif);
@@ -129,7 +126,6 @@ void ERockTurrent::Process()
 
 void ERockTurrent::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
 	//SDL_Surface *surface;
 
 	if(killme) return;

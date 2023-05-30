@@ -99,8 +99,6 @@ void EToughRocket::Process()
 
 void EToughRocket::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
-
 	if(killme) return;
 
 	zmap.RenderZSurface(&bullet_img[0], x, y, false, true);

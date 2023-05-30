@@ -30,10 +30,8 @@ EMapObjectTurrent::EMapObjectTurrent(ZTime *ztime_, int start_x, int start_y, in
 	start_y += 5 - (rand() % 10);
 
 	//set the dx / dy
-	float mag;
 	dx = dest_x - start_x;
 	dy = dest_y - start_y;
-	mag = sqrt((dx * dx) + (dy * dy));
 
 	init_time = the_time;
 	final_time = init_time + offset_time;
@@ -91,7 +89,6 @@ void EMapObjectTurrent::Init()
 void EMapObjectTurrent::Process()
 {
 	double &the_time = ztime->ztime;
-	int i, mx, my;
 
 	if(killme) return;
 
@@ -125,7 +122,6 @@ void EMapObjectTurrent::Process()
 
 void EMapObjectTurrent::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
 	//SDL_Surface *render_img;
 
 	if(killme) return;
@@ -144,7 +140,6 @@ void EMapObjectTurrent::DoRender(ZMap &zmap, SDL_Surface *dest)
 void EMapObjectTurrent::EndExplosion()
 {
 	//SDL_Surface *render_img;
-	int mx, my;
 	int particles;
 
 	//render_img = object_img[object].GetImage(angle, size);

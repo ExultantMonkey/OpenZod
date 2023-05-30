@@ -168,8 +168,6 @@ void ZServer::send_object_list_event(ZServer *p, char *data, int size, int playe
 {
 	for(ZObject* i : p->object_list)
 	{
-		object_init_packet object_info;
-
 		//pack the object info
 		p->RelayNewObject(i, player);
 
@@ -240,7 +238,6 @@ void ZServer::set_player_name_event(ZServer *p, char *data, int size, int player
 void ZServer::set_player_team_event(ZServer *p, char *data, int size, int player)
 {
 	int the_team;
-	char message[500];
 
 	if(size != 4) return;
 
@@ -637,9 +634,6 @@ void ZServer::exit_vehicle_event(ZServer *p, char *data, int size, int player)
 
 		//we need to kill the waypoints too
 		{
-			char *data;
-			int size;
-
 			//clear
 			obj->GetWayPointList().clear();
 

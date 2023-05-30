@@ -139,8 +139,6 @@ void ELightRocket::Process()
 
 void ELightRocket::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
-
 	if(killme) return;
 
 	zmap.RenderZSurface(&bullet_img, x, y);

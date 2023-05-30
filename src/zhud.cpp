@@ -285,7 +285,6 @@ void ZHud::MouseMotion(int x, int y, int screen_w, int screen_h, hud_click_respo
 	{
 		int off_x, off_y;
 		int rx, ry;
-		int i;
 		
 		off_x = screen_w - 648;
 		off_y = screen_h - 484;
@@ -308,7 +307,6 @@ bool ZHud::OverMiniMap(int x, int y, int screen_w, int screen_h, int &mini_x, in
 	{
 		int off_x, off_y;
 		int rx, ry;
-		int i;
 		
 		off_x = screen_w - 648;
 		off_y = screen_h - 484;

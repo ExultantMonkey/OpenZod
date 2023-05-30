@@ -18,9 +18,7 @@ ZGunPlacementHeatMap::ZGunPlacementHeatMap()
 ZGunPlacementHeatMap::~ZGunPlacementHeatMap()
 {
 	for(vector<ZHeatMapBase*>::iterator hmi=hm_list.begin();hmi!=hm_list.end();++hmi)
-	{
-		ZHeatMapBase* hm = *hmi;
-		
+	{		
 		if(*hmi) free(*hmi);
 	}
 	

@@ -263,7 +263,6 @@ namespace ZPath_Finding_AStar
 		const int ticks_until_pause = 90;
 		int total_ticks;
 		int pause_ticks;
-		double start_time, end_time;
 		double tick_time;
 		//vector<pf_point> open_list;
 		//vector<pf_point> closed_list;
@@ -295,8 +294,6 @@ namespace ZPath_Finding_AStar
 
 		//init lists
 		{
-			int size;
-
 			open_list.alloc_size = 1000;
 			open_list.list = (pf_point*)malloc(open_list.alloc_size * sizeof(pf_point));
 			open_list.size = 0;

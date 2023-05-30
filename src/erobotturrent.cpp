@@ -43,10 +43,8 @@ ERobotTurrent::ERobotTurrent(ZTime *ztime_, int x_, int y_, int owner_, int max_
 
 	rise = 1.3 + (0.01 * (rand() % 200));
 
-	double mag;
 	dx = ex - sx;
 	dy = ey - sy;
-	mag = sqrt((dx * dx) + (dy * dy));
 
 	init_time = the_time;
 	final_time = init_time + lifetime;
@@ -110,7 +108,6 @@ void ERobotTurrent::Process()
 		if(the_time < final_time)
 		{
 			double time_dif = (the_time - init_time);
-			double up_amount;
 
 			//move
 			x = sx + (dx * time_dif);
@@ -132,7 +129,6 @@ void ERobotTurrent::Process()
 
 void ERobotTurrent::DoRender(ZMap &zmap, SDL_Surface *dest)
 {
-	SDL_Rect from_rect, to_rect;
 	//SDL_Surface *surface;
 
 	if(killme) return;

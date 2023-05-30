@@ -404,7 +404,7 @@ void GMMWList::RenderEntries(ZMap &the_map, SDL_Surface *dest, int tx, int ty)
 
 void GMMWList::RenderEntry(ZMap &the_map, SDL_Surface *dest, int tx, int ty, int tw, ZSDL_Surface *text, int state)
 {
-	int ix, iy, iw, ih;
+	int ix, iy, iw;
 
 	ZSDL_Surface &top = list_entry_top_img[state];
 	ZSDL_Surface &left = list_entry_left_img[state];

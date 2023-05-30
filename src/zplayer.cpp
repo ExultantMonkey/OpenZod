@@ -106,8 +106,6 @@ bool selection_info::UpdateGroupMember(ZObject *obj)
 
 void selection_info::SetupGroupDetails(bool show_waypoints)
 {
-	double &the_time = ztime->ztime;
-
 	vector<ZObject*>::iterator i, e;
 
 	have_explosives = false;
@@ -596,7 +594,6 @@ void ZPlayer::AddNewsEntry(string message, int r, int g, int b)
 {
 	const double lasting_time = 17.0;
 	news_entry *new_entry;
-	SDL_Color textcolor;
 
 	if(!message.length()) return;
 
@@ -615,9 +612,6 @@ void ZPlayer::AddNewsEntry(string message, int r, int g, int b)
 		new_entry->r = 1;
 
 	//make surface
-	textcolor.r = new_entry->r;
-	textcolor.g = new_entry->g;
-	textcolor.b = new_entry->b;
 	//new_entry.text_image = TTF_RenderText_Solid(p->ttf_font, new_entry.message.c_str(), textcolor);
 	//new_entry->text_image.LoadBaseImage(TTF_RenderText_Solid(p->ttf_font, new_entry->message.c_str(), textcolor));
 	new_entry->text_image.LoadBaseImage(ZFontEngine::GetFont(SMALL_WHITE_FONT).Render(new_entry->message.c_str()));
@@ -646,7 +640,6 @@ void ZPlayer::DisplayPlayerList()
 	string spectators;
 	bool bot_player[MAX_TEAM_TYPES];
 	bool bot_player_ignored[MAX_TEAM_TYPES];
-	bool have_bot_players;
 	int tray_players;
 	int nobodies;
 	char c_message[50];
@@ -660,7 +653,6 @@ void ZPlayer::DisplayPlayerList()
 	//init
 	tray_players = 0;
 	nobodies = 0;
-	have_bot_players = false;
 	for(int i=0;i<MAX_TEAM_TYPES;i++)
 	{
 		bot_player[i] = false;
@@ -689,7 +681,6 @@ void ZPlayer::DisplayPlayerList()
 		case BOT_MODE:
 			bot_player[i->team] = true;
 			bot_player_ignored[i->team] = i->ignored;
-			have_bot_players = true;
 			break;
 		case SPECTATOR_MODE:
 			if(spectators.size())
@@ -881,11 +872,6 @@ void ZPlayer::SetupSelectionImages()
 
 void ZPlayer::Run()
 {
-	double whole_time;
-	double process_time;
-	double render_time;
-	double socket_time;
-
 	while(allow_run)
 	{
 		//whole_time = current_time();
@@ -929,8 +915,6 @@ void ZPlayer::ProcessSocketEvents()
 	int size;
 	int pack_id;
 	SocketHandler* shandler;
-	int packets_processed = 0;
-	double time_took;
 
 	shandler = client_socket.GetHandler();
 
@@ -1151,7 +1135,6 @@ void ZPlayer::PlayBuildingSounds()
 {
 	bool do_play_radar = false;
 	bool do_play_robot = false;
-	bool do_play_vehicle = false;
 
 	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 	{
@@ -1798,7 +1781,6 @@ void ZPlayer::FocusCameraTo(int map_x, int map_y)
 
 void ZPlayer::ProcessFocusCamerato()
 {
-	double the_time = current_time();
 	int shift_x, shift_y, view_w, view_h;
 	double dx, dy;
 	double end_dx, end_dy;
@@ -3546,9 +3528,7 @@ void ZPlayer::SetPlaceCannonCords()
 
 void ZPlayer::RenderPlaceCannon()
 {
-	SDL_Rect from_rect, to_rect;
 	int map_x, map_y;
-	int shift_x, shift_y;
 
 	if(!place_cannon) return;
 

@@ -1942,7 +1942,6 @@ vector<ZObject*> ZBot::ChooseGunBuildOrders(map<ZObject*,BuildingUnit> &fb_list,
 void ZBot::ChooseBuildOrders_2()
 {
 	double &the_time = ztime.ztime;
-	double last_time;
 	const int max_combo_check = 6;
 	
 	//set preferences
@@ -1961,8 +1960,6 @@ void ZBot::ChooseBuildOrders_2()
 	//get robot, vehicle, and fort factory lists
 	vector<ZObject*> vb_list;
 	vector<ZObject*> rb_list;
-	int total_pv_buildings = 0;
-	int total_pr_buildings = 0;
 	
 	//crane data
 	bool building_crane = false;
