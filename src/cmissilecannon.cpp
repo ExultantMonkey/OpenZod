@@ -259,9 +259,9 @@ void CMissileCannon::DoDeathEffect(bool do_fire_death, bool do_missile_death)
 //	return true;
 //}
 
-vector<fire_missile_info> CMissileCannon::ServerFireTurrentMissile(int &damage, int &radius)
+std::vector<fire_missile_info> CMissileCannon::ServerFireTurrentMissile(int &damage, int &radius)
 {
-	vector<fire_missile_info> ret;
+	std::vector<fire_missile_info> ret;
 	fire_missile_info a_missile;
 	int &max_horz = zsettings->max_turrent_horizontal_distance;
 	int &max_vert = zsettings->max_turrent_vertical_distance;

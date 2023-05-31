@@ -15,7 +15,7 @@ ZClient::ZClient() : ZCore()
 	map_data_size = 0;
 }
 
-void ZClient::SetRemoteAddress(string ipaddress)
+void ZClient::SetRemoteAddress(std::string ipaddress)
 {
 	remote_address = ipaddress;
 }
@@ -53,7 +53,7 @@ void ZClient::ProcessDisconnect()
 	printf("ZClient::disconnected from the game server...\n");
 }
 
-void ZClient::SetPlayerName(string player_name_)
+void ZClient::SetPlayerName(std::string player_name_)
 {
    player_name = player_name_;
 }
@@ -192,7 +192,7 @@ p_info &ZClient::OurPInfo()
 {
 	static p_info not_found;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
 			if(i->p_id == p_id)
 				return *i;
 
@@ -659,7 +659,7 @@ bool ZClient::ProcessDeleteLPlayer(char *data, int size)
 	//good packet?
 	if(size != sizeof(add_remove_player_packet)) return false;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();)
 	{
 		if(pi->p_id == i->p_id)
 			i = player_info.erase(i);
@@ -682,7 +682,7 @@ bool ZClient::ProcessSetLPlayerName(char *data, int size)
 
 	memcpy(&p_id, data, sizeof(int));
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
 		if(p_id == i->p_id)
 			i->name = (data+sizeof(int));
 
@@ -699,7 +699,7 @@ bool ZClient::ProcessSetLPlayerTeam(char *data, int size)
 	if(pi->value < 0) return false;
 	if(pi->value >= MAX_TEAM_TYPES) return false;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
 		if(pi->p_id == i->p_id)
 			i->team = (team_type)pi->value;
 
@@ -716,7 +716,7 @@ bool ZClient::ProcessSetLPlayerMode(char *data, int size)
 	if(pi->value < 0) return false;
 	if(pi->value >= MAX_PLAYER_MODES) return false;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
 		if(pi->p_id == i->p_id)
 			i->mode = (player_mode)pi->value;
 
@@ -733,7 +733,7 @@ bool ZClient::ProcessSetLPlayerIgnored(char *data, int size)
 	if(pi->value < 0) return false;
 	if(pi->value >= MAX_PLAYER_MODES) return false;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
 		if(pi->p_id == i->p_id)
 			i->ignored = (player_mode)pi->value;
 
@@ -747,7 +747,7 @@ bool ZClient::ProcessSetLPlayerLogInfo(char *data, int size)
 	//good packet?
 	if(size != sizeof(set_player_loginfo_packet)) return false;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
 		if(pi->p_id == i->p_id)
 		{
 			i->db_id = pi->db_id;
@@ -771,7 +771,7 @@ bool ZClient::ProcessSetLPlayerVoteInfo(char *data, int size)
 	if(pi->value < 0) return false;
 	if(pi->value >= P_MAX_VOTE_CHOICES) return false;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
 		if(pi->p_id == i->p_id)
 			i->vote_choice = pi->value;
 

@@ -60,10 +60,10 @@ bool GMMWTextBox::KeyPress(int c)
 
 void GMMWTextBox::MakeTextImage()
 {
-	string render_str;
+	std::string render_str;
 
 	if(passworded)
-		render_str = string(text.length(), '*');
+		render_str = std::string(text.length(), '*');
 	else
 		render_str = text;
 

@@ -10,14 +10,12 @@
 #include "zportrait.h"
 #include "ztime.h"
 
-using namespace std;
-
 enum hud_buttons
 {
 	A_BUTTON, B_BUTTON, D_BUTTON, G_BUTTON, R_BUTTON, T_BUTTON, V_BUTTON, Z_BUTTON, MENU_BUTTON, MAX_HUD_BUTTONS
 };
 
-const string hub_buttons_string[MAX_HUD_BUTTONS] =
+const std::string hub_buttons_string[MAX_HUD_BUTTONS] =
 {
 	"a_button", "b_button", "d_button", "g_button", "r_button", "t_button", "v_button", "z_button", "menu_button"
 };
@@ -65,7 +63,7 @@ class HubButton
 		hud_buttons GetType();
 		
 	private:
-		string name;
+		std::string name;
 		int type;
 		int state;
 		int x, y;
@@ -94,7 +92,7 @@ class ZHud
 		ZHud();
 		
 		void Init();
-		void Process(double the_time, vector<ZObject*> &object_list);
+		void Process(double the_time, std::vector<ZObject*> &object_list);
 		void DoRender(SDL_Surface *dest, int screen_w, int screen_h);
 		void SetZTime(ZTime *ztime_);
 		void ReRenderAll();
@@ -113,8 +111,8 @@ class ZHud
 		void SetUnitAmount(int unit_amount_);
 		void SetTeam(int team_);
 		void ShowChatMessage(bool show_chat_);
-		void SetChatMessage(string message);
-		void StartEndAnimations(vector<zhud_end_unit> &end_animations_, bool won);
+		void SetChatMessage(std::string message);
+		void StartEndAnimations(std::vector<zhud_end_unit> &end_animations_, bool won);
 
 		void SetSelectedObject(ZObject *selection);
 		void GiveSelectedCommand(bool no_way = false);
@@ -123,7 +121,7 @@ class ZHud
 		ZPortrait &GetPortrait() { return portrait; }
 		ZPortrait &GetAPortrait() { return aportrait; }
 	private:
-		void ProcessA(double the_time, vector<ZObject*> &object_list);
+		void ProcessA(double the_time, std::vector<ZObject*> &object_list);
 		void RenderBackdrop(SDL_Surface *dest, int off_x, int off_y);
 		void RenderTime(SDL_Surface *dest, int off_x, int off_y);
 		void RenderHealth(SDL_Surface *dest, int off_x, int off_y);
@@ -143,7 +141,7 @@ class ZHud
 		bool rerender_chat;
 
 		bool show_chat;
-		string chat_message;
+		std::string chat_message;
 		ZSDL_Surface chat_message_img;
 		int chat_start_x, chat_end_x;
 		int bottom_right_x;
@@ -168,7 +166,7 @@ class ZHud
 		bool do_end_animations;
 		bool do_end_animations_won;
 		double next_end_anim_time;
-		vector<zhud_end_unit> end_animations;
+		std::vector<zhud_end_unit> end_animations;
 
 		ZSDL_Surface *render_icon;
 		ZSDL_Surface *render_label;

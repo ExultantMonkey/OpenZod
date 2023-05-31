@@ -56,7 +56,7 @@ BRepair::BRepair(ZTime *ztime_, ZSettings *zsettings_, planet_type palette_) : Z
 void BRepair::Init()
 {
 	int i, j;
-	string filename;
+	std::string filename;
 	char filename_c[500];
 	
 	//load colors
@@ -369,7 +369,7 @@ void BRepair::DoAfterEffects(ZMap &the_map, SDL_Surface *dest, int shift_x, int 
 	}
 
 	//render effects
-	for(vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
+	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
 		(*i)->DoRender(the_map, dest);
 }
 
@@ -543,7 +543,7 @@ void BRepair::DoRepairBuildingAnim(bool on_, double remaining_time_)
 	}
 }
 
-bool BRepair::RepairUnit(double &the_time, unsigned char &ot, unsigned char &oid, int &driver_type_, vector<driver_info_s> &driver_info_, vector<waypoint> &rwaypoint_list_)
+bool BRepair::RepairUnit(double &the_time, unsigned char &ot, unsigned char &oid, int &driver_type_, std::vector<driver_info_s> &driver_info_, std::vector<waypoint> &rwaypoint_list_)
 {
 	if(!repairing_unit) return false;
 	if(the_time < repair_time) return false;

@@ -388,7 +388,7 @@ void ZSettings::CensorSettings()
 	if(hut_animal_roam_distance < 0) hut_animal_roam_distance = 0;
 }
 
-bool ZSettings::LoadSettings(string filename)
+bool ZSettings::LoadSettings(std::string filename)
 {
 	FILE *fp;
 
@@ -550,7 +550,7 @@ bool ZSettings::LoadSettings(string filename)
 	return loaded;
 }
 
-bool ZSettings::SaveSettings(string filename)
+bool ZSettings::SaveSettings(std::string filename)
 {
 	FILE *fp;
 
@@ -562,7 +562,7 @@ bool ZSettings::SaveSettings(string filename)
 		return false;
 	}
 
-	string type_name;
+	std::string type_name;
 
 	type_name = "unit";
 
@@ -620,7 +620,7 @@ bool ZSettings::SaveSettings(string filename)
 	return true;
 }
 
-void ZUnit_Settings::SaveLine(FILE *fp, string obj_name)
+void ZUnit_Settings::SaveLine(FILE *fp, std::string obj_name)
 {
 	fprintf(fp, "\n");
 	fprintf(fp, "%s.group_amount=%d\n", obj_name.c_str(), group_amount);
@@ -637,7 +637,7 @@ void ZUnit_Settings::SaveLine(FILE *fp, string obj_name)
 	fprintf(fp, "%s.max_run_time=%lf\n", obj_name.c_str(), max_run_time);
 }
 
-void ZUnit_Settings::ReadEntry(string variable, string value)
+void ZUnit_Settings::ReadEntry(std::string variable, std::string value)
 {
 	//printf("ZUnit_Settings::ReadEntry:var:'%s' val:'%s'\n", variable.c_str(), value.c_str());
 

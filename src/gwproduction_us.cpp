@@ -323,7 +323,7 @@ void GWPUnitSelector::SetSelection(unsigned char ot, unsigned char oid)
 	//get bl
 	building_level = building_obj->GetLevel();
 
-	vector<buildlist_object> &blist = buildlist->GetBuildList(building_type, building_level);
+	std::vector<buildlist_object> &blist = buildlist->GetBuildList(building_type, building_level);
 
 	for(int i=0; i<blist.size(); ++i)
 		if(blist[i].ot == ot && blist[i].oid == oid)

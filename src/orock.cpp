@@ -63,7 +63,7 @@ ORock::ORock(ZTime *ztime_, ZSettings *zsettings_, int palette_) : ZObject(ztime
 		
 void ORock::Init()
 {
-	string filename;
+	std::string filename;
 	int i, j;
 
 	for(i=0;i<MAX_PLANET_TYPES;i++)
@@ -331,7 +331,7 @@ void ORock::SetDefaultRender()
 	render_img[0][2] = &rock_single_bottom_under[palette];
 }
 
-void ORock::EditRockRender(ZMap &the_map, vector<ZObject*> object_list, ZObject *robj, bool do_add)
+void ORock::EditRockRender(ZMap &the_map, std::vector<ZObject*> object_list, ZObject *robj, bool do_add)
 {
 	bool **rock_list;
 	int map_w, map_h;
@@ -369,7 +369,7 @@ void ORock::EditRockRender(ZMap &the_map, vector<ZObject*> object_list, ZObject 
 		lx = x + 16;
 		ly = y + 32;
 
-		for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+		for(std::vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
 		{
 			unsigned char ot, oid;
 			int ox, oy;
@@ -393,7 +393,7 @@ void ORock::EditRockRender(ZMap &the_map, vector<ZObject*> object_list, ZObject 
 	}
 }
 
-void ORock::SetupRockRenders(ZMap &the_map, vector<ZObject*> object_list)
+void ORock::SetupRockRenders(ZMap &the_map, std::vector<ZObject*> object_list)
 {
 	bool **rock_list;
 	int map_w, map_h;
@@ -416,7 +416,7 @@ void ORock::SetupRockRenders(ZMap &the_map, vector<ZObject*> object_list)
 			rock_list[i][j] = false;
 
 	//populate the list
-	for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+	for(std::vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
 	{
 		unsigned char ot, oid;
 		int x, y;
@@ -444,7 +444,7 @@ void ORock::SetupRockRenders(ZMap &the_map, vector<ZObject*> object_list)
 	}
 
 	//now tell all the rocks to do their job
-	for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+	for(std::vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
 	{
 		unsigned char ot, oid;
 

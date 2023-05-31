@@ -2,7 +2,7 @@
 
 using namespace COMMON;
 
-void ParseCommandContents(string contents, string *output, int max_values)
+void ParseCommandContents(std::string contents, std::string *output, int max_values)
 {
 	unsigned int pos = 0;
 	unsigned int last_pos = 0;
@@ -17,7 +17,7 @@ void ParseCommandContents(string contents, string *output, int max_values)
 	{
 		pos = contents.find(',', last_pos);
 
-		if(pos == string::npos)
+		if(pos == std::string::npos)
 			output[i] = contents.substr(last_pos);
 		else
 			output[i] = contents.substr(last_pos, pos - last_pos);
@@ -28,7 +28,7 @@ void ParseCommandContents(string contents, string *output, int max_values)
 
 			cpos = output[i].find_first_not_of(' ');
 
-			if(cpos == string::npos)
+			if(cpos == std::string::npos)
 				output[i].clear();
 			else if(cpos != 0)
 				output[i] = output[i].substr(cpos);
@@ -39,18 +39,18 @@ void ParseCommandContents(string contents, string *output, int max_values)
 		last_pos = pos;
 		last_pos++;
 
-		if(pos == string::npos) break;
+		if(pos == std::string::npos) break;
 	}
 }
 
-void ZServer::ProcessPlayerCommand(int player, string full_command)
+void ZServer::ProcessPlayerCommand(int player, std::string full_command)
 {
-	string command, contents;
+	std::string command, contents;
 	unsigned int pos;
 
 	pos = full_command.find(' ');
 	command = full_command.substr(0, pos);
-	if(pos != string::npos) contents = full_command.substr(pos+1);
+	if(pos != std::string::npos) contents = full_command.substr(pos+1);
 
 	if(command == "help")
 		PlayerCommand_Help(player, contents);
@@ -96,12 +96,12 @@ void ZServer::ProcessPlayerCommand(int player, string full_command)
 	printf("processing full_command:'%s' command:'%s'\n", full_command.c_str(), command.c_str());
 }
 
-void ZServer::PlayerCommand_NotFound(int player, string contents)
+void ZServer::PlayerCommand_NotFound(int player, std::string contents)
 {
 	SendNews(player, "command not found, please type /help or /listcommands", 0, 0, 0);
 }
 
-void ZServer::PlayerCommand_Help(int player, string contents)
+void ZServer::PlayerCommand_Help(int player, std::string contents)
 {
 	if(!contents.length() || contents == "help")
 	{
@@ -201,16 +201,16 @@ void ZServer::PlayerCommand_Help(int player, string contents)
 	}
 }
 
-void ZServer::PlayerCommand_ListCommands(int player, string contents)
+void ZServer::PlayerCommand_ListCommands(int player, std::string contents)
 {
 	SendNews(player, "command list: help, listcommands, login, logout, createuser, pause, resume, listmaps, changemap, startbot, stopbot", 0, 0, 0);
 	SendNews(player, "command list: playerinfo, currentmap, resetgame, changeteam, reshuffleteams, buyregistration, changespeed, version", 0, 0, 0);
 }
 
-void ZServer::PlayerCommand_Login(int player, string contents)
+void ZServer::PlayerCommand_Login(int player, std::string contents)
 {
 	const int max_values = 2;
-	string values[max_values];
+	std::string values[max_values];
 
 	ParseCommandContents(contents, values, max_values);
 
@@ -224,15 +224,15 @@ void ZServer::PlayerCommand_Login(int player, string contents)
 	AttemptPlayerLogin(player, values[0], values[1]);
 }
 
-void ZServer::PlayerCommand_Logout(int player, string contents)
+void ZServer::PlayerCommand_Logout(int player, std::string contents)
 {
 	LogoutPlayer(player);
 }
 
-void ZServer::PlayerCommand_CreateUser(int player, string contents)
+void ZServer::PlayerCommand_CreateUser(int player, std::string contents)
 {
 	const int max_values = 4;
-	string values[max_values];
+	std::string values[max_values];
 
 	ParseCommandContents(contents, values, max_values);
 
@@ -264,7 +264,7 @@ void ZServer::PlayerCommand_CreateUser(int player, string contents)
 	if(psettings.use_mysql)
 	{
 		ZMysqlUser user;
-		string err_msg;
+		std::string err_msg;
 
 		user.username = values[0];
 		user.loginname = values[1];
@@ -313,7 +313,7 @@ void ZServer::PlayerCommand_CreateUser(int player, string contents)
 					{
 						AwardAffiliateCreation(user.creation_ip);
 
-						SendNews(player, string("user " + user.username + " created").c_str(), 0, 0, 0);
+						SendNews(player, std::string("user " + user.username + " created").c_str(), 0, 0, 0);
 					}
 					else
 						SendNews(player, "create user error: unknown error", 0, 0, 0);
@@ -323,7 +323,7 @@ void ZServer::PlayerCommand_CreateUser(int player, string contents)
 	}
 }
 
-void ZServer::PlayerCommand_PauseGame(int player, string contents)
+void ZServer::PlayerCommand_PauseGame(int player, std::string contents)
 {
 	if(ztime.IsPaused()) return;
 
@@ -332,7 +332,7 @@ void ZServer::PlayerCommand_PauseGame(int player, string contents)
 	//PauseGame();
 }
 
-void ZServer::PlayerCommand_ResumeGame(int player, string contents)
+void ZServer::PlayerCommand_ResumeGame(int player, std::string contents)
 {
 	if(!ztime.IsPaused()) return;
 
@@ -341,13 +341,13 @@ void ZServer::PlayerCommand_ResumeGame(int player, string contents)
 	//ResumeGame();
 }
 
-void ZServer::PlayerCommand_ListMaps(int player, string contents)
+void ZServer::PlayerCommand_ListMaps(int player, std::string contents)
 {
 	int i;
 
 	for(i=0; i<selectable_map_list.size();)
 	{
-		string send_str;
+		std::string send_str;
 
 		for(int j=0;j<4 && i<selectable_map_list.size();j++,i++)
 		{
@@ -367,10 +367,10 @@ void ZServer::PlayerCommand_ListMaps(int player, string contents)
 	}
 }
 
-void ZServer::PlayerCommand_ChangeMap(int player, string contents)
+void ZServer::PlayerCommand_ChangeMap(int player, std::string contents)
 {
 	const int max_values = 1;
-	string values[max_values];
+	std::string values[max_values];
 
 	ParseCommandContents(contents, values, max_values);
 
@@ -388,10 +388,10 @@ void ZServer::PlayerCommand_ChangeMap(int player, string contents)
 	StartVote(CHANGE_MAP_VOTE, map_num, player);
 }
 
-void ZServer::PlayerCommand_StartBot(int player, string contents)
+void ZServer::PlayerCommand_StartBot(int player, std::string contents)
 {
 	const int max_values = 1;
-	string values[max_values];
+	std::string values[max_values];
 
 	ParseCommandContents(contents, values, max_values);
 
@@ -413,8 +413,8 @@ void ZServer::PlayerCommand_StartBot(int player, string contents)
 
 	if(team_num == -1 || team_num==NULL_TEAM)// || !TeamHasBot(team_num))
 	{
-		string available_teams;
-		string send_str;
+		std::string available_teams;
+		std::string send_str;
 
 		for(int i=NULL_TEAM+1;i<MAX_TEAM_TYPES;i++)
 			//if(TeamHasBot(i))
@@ -434,10 +434,10 @@ void ZServer::PlayerCommand_StartBot(int player, string contents)
 	StartVote(START_BOT, team_num, player);
 }
 
-void ZServer::PlayerCommand_StopBot(int player, string contents)
+void ZServer::PlayerCommand_StopBot(int player, std::string contents)
 {
 	const int max_values = 1;
-	string values[max_values];
+	std::string values[max_values];
 
 	ParseCommandContents(contents, values, max_values);
 
@@ -459,8 +459,8 @@ void ZServer::PlayerCommand_StopBot(int player, string contents)
 
 	if(team_num == -1 || !TeamHasBot(team_num))
 	{
-		string available_teams;
-		string send_str;
+		std::string available_teams;
+		std::string send_str;
 
 		for(int i=0;i<MAX_TEAM_TYPES;i++)
 			if(TeamHasBot(i))
@@ -480,10 +480,10 @@ void ZServer::PlayerCommand_StopBot(int player, string contents)
 	StartVote(STOP_BOT, team_num, player);
 }
 
-void ZServer::PlayerCommand_PlayerInfo(int player, string contents)
+void ZServer::PlayerCommand_PlayerInfo(int player, std::string contents)
 {
 	char num_str[50];
-	string send_str;
+	std::string send_str;
 
 	send_str = "player info: name: '" + player_info[player].name + "'";
 	SendNews(player, send_str.c_str(), 0, 0, 0);
@@ -503,11 +503,11 @@ void ZServer::PlayerCommand_PlayerInfo(int player, string contents)
 		SendNews(player, send_str.c_str(), 0, 0, 0);
 
 		sprintf(num_str, "%d", player_info[player].voting_power);
-		send_str = "player info: voting power: " + string(num_str);
+		send_str = "player info: voting power: " + std::string(num_str);
 		SendNews(player, send_str.c_str(), 0, 0, 0);
 
 		sprintf(num_str, "%d", player_info[player].real_voting_power());
-		send_str = "player info: real voting power: " + string(num_str);
+		send_str = "player info: real voting power: " + std::string(num_str);
 		SendNews(player, send_str.c_str(), 0, 0, 0);
 	}
 	else
@@ -517,24 +517,24 @@ void ZServer::PlayerCommand_PlayerInfo(int player, string contents)
 	}
 }
 
-void ZServer::PlayerCommand_CurrentMap(int player, string contents)
+void ZServer::PlayerCommand_CurrentMap(int player, std::string contents)
 {
-	string send_str;
+	std::string send_str;
 
 	send_str = "current map: " + map_name;
 	SendNews(player, send_str.c_str(), 0, 0, 0);
 }
 
-void ZServer::PlayerCommand_ResetGame(int player, string contents)
+void ZServer::PlayerCommand_ResetGame(int player, std::string contents)
 {
 	StartVote(RESET_GAME_VOTE, -1, player);
 }
 
-void ZServer::PlayerCommand_ChangeTeam(int player, string contents)
+void ZServer::PlayerCommand_ChangeTeam(int player, std::string contents)
 {
 	const int max_values = 1;
-	string values[max_values];
-	string send_str;
+	std::string values[max_values];
+	std::string send_str;
 
 	ParseCommandContents(contents, values, max_values);
 
@@ -581,20 +581,20 @@ void ZServer::PlayerCommand_ChangeTeam(int player, string contents)
 	}
 }
 
-void ZServer::PlayerCommand_ReshuffleTeams(int player, string contents)
+void ZServer::PlayerCommand_ReshuffleTeams(int player, std::string contents)
 {
 	StartVote(RESHUFFLE_TEAMS_VOTE, -1, player);
 }
 
-void ZServer::PlayerCommand_BuyRegistration(int player, string contents)
+void ZServer::PlayerCommand_BuyRegistration(int player, std::string contents)
 {
 	server_socket.SendMessage(player, POLL_BUY_REGKEY, NULL, 0);
 }
 
-void ZServer::PlayerCommand_ChangeSpeed(int player, string contents)
+void ZServer::PlayerCommand_ChangeSpeed(int player, std::string contents)
 {
 	const int max_values = 1;
-	string values[max_values];
+	std::string values[max_values];
 	int new_speed;
 
 	ParseCommandContents(contents, values, max_values);
@@ -625,7 +625,7 @@ void ZServer::PlayerCommand_ChangeSpeed(int player, string contents)
 	//ChangeGameSpeed(new_speed / 100.0);
 }
 
-void ZServer::PlayerCommand_Version(int player, string contents)
+void ZServer::PlayerCommand_Version(int player, std::string contents)
 {
 	//string version_str;
 

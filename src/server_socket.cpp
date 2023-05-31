@@ -21,7 +21,7 @@ int ServerSocket::PlayersConnected()
 
 int ServerSocket::SendMessageAll(int pack_id, const char *data, int size)
 {
-	vector<SocketHandler*>::iterator s;
+	std::vector<SocketHandler*>::iterator s;
 
 	for(s=client_socket.begin();s!=client_socket.end();s++)
 		(*s)->SendMessage(pack_id, data, size);
@@ -41,7 +41,7 @@ int ServerSocket::SendMessageAscii(int player, int pack_id, const char *data)
 	else return 0;
 }
 
-void ServerSocket::SetEventList(list<Event*> *event_list_)
+void ServerSocket::SetEventList(std::list<Event*> *event_list_)
 {
 	event_list = event_list_;
 }
@@ -68,7 +68,7 @@ int ServerSocket::CheckData()
 	char *message;
 	int size;
 	int pack_id;
-	vector<SocketHandler*>::iterator the_sock;
+	std::vector<SocketHandler*>::iterator the_sock;
 
 	for(i=0, the_sock = client_socket.begin();the_sock != client_socket.end();)
 		if(*the_sock)
@@ -134,7 +134,7 @@ int ServerSocket::CheckConnects()
 
 		client_socket.push_back(new SocketHandler(temp_id, temp_in));
 
-		string connect_ip = inet_ntoa(temp_in.sin_addr);
+		std::string connect_ip = inet_ntoa(temp_in.sin_addr);
 		ehandler->ProcessEvent(OTHER_EVENT, CONNECT_EVENT, (char*)connect_ip.c_str(), connect_ip.size()+1, client_socket.size()-1);
 		//event_list->push_back(new Event(OTHER_EVENT, CONNECT_EVENT, client_socket.size()-1, (char*)connect_ip.c_str(), connect_ip.size()+1));
 		//event_list->push_back(new Event(OTHER_EVENT, CONNECT_EVENT, client_socket.size()-1, NULL, 0));

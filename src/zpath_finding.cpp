@@ -711,7 +711,7 @@ bool ZPath_Finding_Engine::HasDestroyableBarrier(int x, int y)
 
 void ZPath_Finding_Engine::Clear_Thread_Id(int thread_id)
 {
-	vector<ZPath_Finding_Thread_Entry>::iterator t;
+	std::vector<ZPath_Finding_Thread_Entry>::iterator t;
 	for(t=thread_list.begin(); t!=thread_list.end(); t++)
 	{
 		if(t->thread_id == thread_id)
@@ -725,7 +725,7 @@ void ZPath_Finding_Engine::Clear_Thread_Id(int thread_id)
 
 void ZPath_Finding_Engine::Clear_Response_List()
 {
-	vector<ZPath_Finding_Response*>::iterator pf;
+	std::vector<ZPath_Finding_Response*>::iterator pf;
 	for(pf=respone_list.begin(); pf!=respone_list.end(); pf++)
 	{
 		//Clear_Thread_Id((*pf)->thread_id);
@@ -739,7 +739,7 @@ void ZPath_Finding_Engine::Clear_Response_List()
 
 void ZPath_Finding_Engine::Clear_Thread_List()
 {
-	vector<ZPath_Finding_Thread_Entry>::iterator t;
+	std::vector<ZPath_Finding_Thread_Entry>::iterator t;
 	for(t=thread_list.begin(); t!=thread_list.end();)
 	{
 		//printf("kill thread_id:%d\n", thread_id);
@@ -761,7 +761,7 @@ void ZPath_Finding_Engine::Clear_Thread_List()
 
 void ZPath_Finding_Engine::Kill_Thread_Id(int thread_id)
 {
-	vector<ZPath_Finding_Thread_Entry>::iterator t;
+	std::vector<ZPath_Finding_Thread_Entry>::iterator t;
 	for(t=thread_list.begin(); t!=thread_list.end(); t++)
 	{
 		if(t->thread_id == thread_id)

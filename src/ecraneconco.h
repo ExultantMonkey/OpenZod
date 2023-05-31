@@ -109,7 +109,7 @@ private:
 	int our_team;
 
 	ECraneConcoItem render_item[ECC_RENDER_ITEM_TYPES];
-	list<ECraneConcoItem*> render_item_list;
+	std::list<ECraneConcoItem*> render_item_list;
 
 	int conco_i;
 

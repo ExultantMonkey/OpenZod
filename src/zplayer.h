@@ -35,7 +35,7 @@ struct news_entry
 {
    public:
       char r,g,b;
-      string message;
+      std::string message;
       double death_time;
       ZSDL_Surface text_image;
 };
@@ -85,8 +85,8 @@ public:
 	bool can_attack;
 	bool can_repair;
 	bool can_be_repaired;
-	vector<ZObject*> selected_list;
-	vector<ZObject*> quick_group[10];
+	std::vector<ZObject*> selected_list;
+	std::vector<ZObject*> quick_group[10];
 
 	ZTime *ztime;
 };
@@ -162,11 +162,11 @@ class ZPlayer : public ZClient
 		void DisableCursor(bool disable_zcursor_);
 		void SetWindowed(bool is_windowed_);
 		void SetUseOpenGL(bool use_opengl_);
-		void SetLoginName(string login_name_);
-		void SetLoginPassword(string login_password_);
+		void SetLoginName(std::string login_name_);
+		void SetLoginPassword(std::string login_password_);
 		void Setup();
 		void Run();
-		vector<ZEffect*> &GetEffectList() { return effect_list; }
+		std::vector<ZEffect*> &GetEffectList() { return effect_list; }
 	private:
 		static int Load_Graphics(void *nothing);
 		void InitSDL();
@@ -239,7 +239,7 @@ class ZPlayer : public ZClient
 		void InitAnimals();
 		void ClearAnimals();
 		void ProcessDisconnect();
-		void AddNewsEntry(string message, int r = 255, int g = 255, int b = 255);
+		void AddNewsEntry(std::string message, int r = 255, int g = 255, int b = 255);
 		void DisplayPlayerList();
 		void DisplayFactoryProductionList();
 		void DisplayFactoryProductionListUnit(ZObject *obj);
@@ -247,7 +247,7 @@ class ZPlayer : public ZClient
 		void SendVoteNo();
 		void SendVotePass();
 		void SendLogin();
-		void SendCreateUser(string username, string lname, string lpass, string email);
+		void SendCreateUser(std::string username, std::string lname, std::string lpass, std::string email);
 		void SendSetPaused(bool paused);
 		void InitMenus();
 		void RefindOurFortRefID();
@@ -373,7 +373,7 @@ class ZPlayer : public ZClient
 		double last_vert_scroll_time, last_horz_scroll_time;
 		double vert_scroll_over, horz_scroll_over;
 		bool collect_chat_message;
-		string chat_message;
+		std::string chat_message;
 		int focus_to_x, focus_to_y;
 		bool do_focus_to;
 		double last_focus_to_time;
@@ -384,8 +384,8 @@ class ZPlayer : public ZClient
 		//bool music_on;
 		int loaded_percent;
 		bool show_chat_history;
-		string login_name;
-		string login_password;
+		std::string login_name;
+		std::string login_password;
 		int fort_ref_id;
 		int sound_setting;
 		
@@ -396,14 +396,14 @@ class ZPlayer : public ZClient
 		ZHud zhud;
 		GWFactoryList *gui_factory_list;
 		ZGuiWindow *gui_window;
-		vector<ZGuiMainMenuBase*> gui_menu_list;
+		std::vector<ZGuiMainMenuBase*> gui_menu_list;
 		float splash_fade;
-		vector<news_entry*> news_list;
+		std::vector<news_entry*> news_list;
 		selection_info select_info;
-		vector<ZEffect*> effect_list;
-		vector<ZEffect*> new_effect_list;
-		vector<ZObject*> bird_list;
-		vector<SpaceBarEvent> space_event_list;
+		std::vector<ZEffect*> effect_list;
+		std::vector<ZEffect*> new_effect_list;
+		std::vector<ZObject*> bird_list;
+		std::vector<SpaceBarEvent> space_event_list;
 		ZCompMessageEngine zcomp_msg;
 
 		bool place_cannon;

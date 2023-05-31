@@ -537,8 +537,8 @@ void ZServer::place_cannon_event(ZServer *p, char *data, int size, int player)
 
 void ZServer::relay_chat_event(ZServer *p, char *data, int size, int player)
 {
-	string out_message;
-	string in_message;
+	std::string out_message;
+	std::string in_message;
 
 	//we are not relaying nothing
 	if(size <= 1) return;
@@ -594,7 +594,7 @@ void ZServer::exit_vehicle_event(ZServer *p, char *data, int size, int player)
 
 			obj->GetCords(x, y);
 
-			vector<driver_info_s>::iterator driver_i;
+			std::vector<driver_info_s>::iterator driver_i;
 			
 			driver_i = obj->GetDrivers().begin();
 
@@ -616,7 +616,7 @@ void ZServer::exit_vehicle_event(ZServer *p, char *data, int size, int player)
 
 			//and the minions...
 			driver_i++;
-			for(vector<ZObject*>::iterator i=new_obj->GetMinionList().begin(); i!=new_obj->GetMinionList().end() && driver_i!=obj->GetDrivers().end(); i++)
+			for(std::vector<ZObject*>::iterator i=new_obj->GetMinionList().begin(); i!=new_obj->GetMinionList().end() && driver_i!=obj->GetDrivers().end(); i++)
 			{
 				p->RelayNewObject(*i);
 
@@ -891,7 +891,7 @@ void ZServer::buy_regkey_event(ZServer *p, char *data, int size, int player)
 
 	//mysql
 	{
-		string err_msg;
+		std::string err_msg;
 
 		if(!p->zmysql.IncreaseUserVariable(err_msg, p->player_info[player].db_id, "voting_power", -REGISTRATION_COST))
 			printf("mysql error: %s\n", err_msg.c_str());
@@ -905,7 +905,7 @@ void ZServer::buy_regkey_event(ZServer *p, char *data, int size, int player)
 	p->server_socket.SendMessage(player, RETURN_REGKEY, (const char*)&packet, sizeof(buy_registration_packet));
 
 	//log the transaction
-	printd_reg((char*)string(p->player_info[player].name + " bought a registration key for " + data_to_hex_string((unsigned char*)pi->buf, 16)).c_str());
+	printd_reg((char*)std::string(p->player_info[player].name + " bought a registration key for " + data_to_hex_string((unsigned char*)pi->buf, 16)).c_str());
 
 #endif
 }

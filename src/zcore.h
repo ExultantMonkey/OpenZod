@@ -59,8 +59,6 @@
 #include "abird.h"
 #include "ahutanimal.h"
 
-using namespace std;
-
 enum p_vote_choice
 {
 	P_NULL_VOTE, P_YES_VOTE, P_NO_VOTE, P_PASS_VOTE, P_MAX_VOTE_CHOICES
@@ -112,14 +110,14 @@ public:
 		return voting_power + (total_games / games_per_vp);
 	}
 
-	string name;
+	std::string name;
 	team_type team;
 	player_mode mode;
 	int vote_choice;
 	bool ignored;
 	int p_id;
 
-	string ip;
+	std::string ip;
 
 	//logged in details
 	bool logged_in;
@@ -153,10 +151,10 @@ class ZCore
 		void InitEncryption();
 		void SetupRandomizer();
 		bool CheckRegistration();
-		int GetObjectIndex(ZObject* &the_object, vector<ZObject*> &the_list);
-		static ZObject* GetObjectFromID_BS(int ref_id, vector<ZObject*> &the_list);
-		static ZObject* GetObjectFromID(int ref_id, vector<ZObject*> &the_list);
-		void CreateWaypointSendData(int ref_id, vector<waypoint> &waypoint_list, char* &data, int &size);
+		int GetObjectIndex(ZObject* &the_object, std::vector<ZObject*> &the_list);
+		static ZObject* GetObjectFromID_BS(int ref_id, std::vector<ZObject*> &the_list);
+		static ZObject* GetObjectFromID(int ref_id, std::vector<ZObject*> &the_list);
+		void CreateWaypointSendData(int ref_id, std::vector<waypoint> &waypoint_list, char* &data, int &size);
 		ZObject* ProcessWaypointData(char *data, int size, bool is_server = false, int ok_team = -1);
 		ZObject* ProcessRallypointData(char *data, int size, bool is_server = false, int ok_team = -1);
 		virtual void DeleteObjectCleanUp(ZObject *obj);
@@ -173,7 +171,7 @@ class ZCore
 		int VotesNeeded();
 		int VotesFor();
 		int VotesAgainst();
-		string VoteAppendDescription();
+		std::string VoteAppendDescription();
 
 		ZMap zmap;
 		ZBuildList buildlist;
@@ -185,11 +183,11 @@ class ZCore
 		ZTime ztime;
 		ZVote zvote;
 		
-		vector<p_info> player_info;
-		vector<ZObject*> object_list;
+		std::vector<p_info> player_info;
+		std::vector<ZObject*> object_list;
 		//vector<string> player_name;
 		//vector<team_type> player_team;
-		vector<string> selectable_map_list;
+		std::vector<std::string> selectable_map_list;
 
 		bool allow_run;
 

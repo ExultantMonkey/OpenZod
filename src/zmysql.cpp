@@ -1,8 +1,8 @@
 #include "zmysql.h"
 
-const string users_table = "users";
-const string online_history_table = "online_history";
-const string affiliate_table = "affiliate";
+const std::string users_table = "users";
+const std::string online_history_table = "online_history";
+const std::string affiliate_table = "affiliate";
 
 ZMysql::ZMysql()
 {
@@ -15,12 +15,12 @@ ZMysql::ZMysql()
 
 ZMysql::~ZMysql()
 {
-	string err_msg;
+	std::string err_msg;
 
 	Disconnect(err_msg);
 }
 
-bool ZMysql::LoadDetails(string &error_msg, ZPSettings &psettings)
+bool ZMysql::LoadDetails(std::string &error_msg, ZPSettings &psettings)
 {
 #ifndef DISABLE_MYSQL
 	host_name = psettings.mysql_hostname;
@@ -44,7 +44,7 @@ bool ZMysql::LoadDetails(string &error_msg, ZPSettings &psettings)
 #endif
 }
 
-bool ZMysql::LoadDetails(string &error_msg, string filename)
+bool ZMysql::LoadDetails(std::string &error_msg, std::string filename)
 {
 #ifndef DISABLE_MYSQL
 	error_msg = "reading from file not yet programmed.";
@@ -55,7 +55,7 @@ bool ZMysql::LoadDetails(string &error_msg, string filename)
 #endif
 }
 
-bool ZMysql::Connect(string &error_msg)
+bool ZMysql::Connect(std::string &error_msg)
 {
 #ifndef DISABLE_MYSQL
 
@@ -68,7 +68,7 @@ bool ZMysql::Connect(string &error_msg)
 	//it create?
 	if(!mysql_conn)
 	{
-		error_msg = "mysql init error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql init error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 
@@ -77,7 +77,7 @@ bool ZMysql::Connect(string &error_msg)
 		return true;
 	else
 	{
-		error_msg = "mysql connect error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql connect error: " + std::string(mysql_error(mysql_conn));
 		mysql_close(mysql_conn);
 		mysql_conn = NULL;
 		return false;
@@ -90,7 +90,7 @@ bool ZMysql::Connect(string &error_msg)
 #endif
 }
 
-bool ZMysql::Disconnect(string &error_msg)
+bool ZMysql::Disconnect(std::string &error_msg)
 {
 #ifndef DISABLE_MYSQL
 	if(mysql_conn)
@@ -105,10 +105,10 @@ bool ZMysql::Disconnect(string &error_msg)
 #endif
 }
 
-bool ZMysql::CreateUserTable(string &error_msg)
+bool ZMysql::CreateUserTable(std::string &error_msg)
 {
 #ifndef DISABLE_MYSQL
-	string sql_cmd;
+	std::string sql_cmd;
 
 	//connected?
 	if(!mysql_conn && !Connect(error_msg)) 
@@ -139,7 +139,7 @@ bool ZMysql::CreateUserTable(string &error_msg)
 	//send command
 	if(mysql_query(mysql_conn, sql_cmd.c_str()))
 	{
-		error_msg = "mysql create table error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql create table error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 
@@ -150,7 +150,7 @@ bool ZMysql::CreateUserTable(string &error_msg)
 #endif
 }
 
-bool ZMysql::AddUser(string &error_msg, ZMysqlUser &nu, bool &user_added)
+bool ZMysql::AddUser(std::string &error_msg, ZMysqlUser &nu, bool &user_added)
 {
 #ifndef DISABLE_MYSQL
 	char sql_cmd_c[5000];
@@ -227,7 +227,7 @@ bool ZMysql::AddUser(string &error_msg, ZMysqlUser &nu, bool &user_added)
 	else
 	{
 		//failed
-		error_msg = "mysql add user error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql add user error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 #else
@@ -236,7 +236,7 @@ bool ZMysql::AddUser(string &error_msg, ZMysqlUser &nu, bool &user_added)
 #endif
 }
 
-bool ZMysql::CheckUserExistance(string &error_msg, ZMysqlUser &user, bool &user_exists)
+bool ZMysql::CheckUserExistance(std::string &error_msg, ZMysqlUser &user, bool &user_exists)
 {
 #ifndef DISABLE_MYSQL
 	char sql_cmd_c[5000];
@@ -273,7 +273,7 @@ bool ZMysql::CheckUserExistance(string &error_msg, ZMysqlUser &user, bool &user_
 	else
 	{
 		//failed
-		error_msg = "mysql check user error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql check user error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 
@@ -284,7 +284,7 @@ bool ZMysql::CheckUserExistance(string &error_msg, ZMysqlUser &user, bool &user_
 #endif
 }
 
-bool ZMysql::LoginUser(string &error_msg, string loginname, string password, ZMysqlUser &user, bool &user_found)
+bool ZMysql::LoginUser(std::string &error_msg, std::string loginname, std::string password, ZMysqlUser &user, bool &user_found)
 {
 #ifndef DISABLE_MYSQL
 	char sql_cmd_c[5000];
@@ -364,7 +364,7 @@ bool ZMysql::LoginUser(string &error_msg, string loginname, string password, ZMy
 	else
 	{
 		//failed
-		error_msg = "mysql check user error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql check user error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 
@@ -375,7 +375,7 @@ bool ZMysql::LoginUser(string &error_msg, string loginname, string password, ZMy
 #endif
 }
 
-bool ZMysql::UpdateUserVariable(string &error_msg, int tabID, string varname, string value)
+bool ZMysql::UpdateUserVariable(std::string &error_msg, int tabID, std::string varname, std::string value)
 {
 #ifndef DISABLE_MYSQL
 	char sql_cmd_c[5000];
@@ -401,7 +401,7 @@ bool ZMysql::UpdateUserVariable(string &error_msg, int tabID, string varname, st
 	else
 	{
 		//failed
-		error_msg = "mysql add user error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql add user error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 
@@ -412,7 +412,7 @@ bool ZMysql::UpdateUserVariable(string &error_msg, int tabID, string varname, st
 #endif
 }
 
-bool ZMysql::UpdateUserVariable(string &error_msg, int tabID, string varname, int value)
+bool ZMysql::UpdateUserVariable(std::string &error_msg, int tabID, std::string varname, int value)
 {
 	char conversion[100];
 
@@ -421,7 +421,7 @@ bool ZMysql::UpdateUserVariable(string &error_msg, int tabID, string varname, in
 	return UpdateUserVariable(error_msg, tabID, varname, conversion);
 }
 
-bool ZMysql::IncreaseUserVariable(string &error_msg, int tabID, string varname, int amount)
+bool ZMysql::IncreaseUserVariable(std::string &error_msg, int tabID, std::string varname, int amount)
 {
 #ifndef DISABLE_MYSQL
 	char sql_cmd_c[5000];
@@ -448,7 +448,7 @@ bool ZMysql::IncreaseUserVariable(string &error_msg, int tabID, string varname, 
 	else
 	{
 		//failed
-		error_msg = "mysql add user error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql add user error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 
@@ -459,7 +459,7 @@ bool ZMysql::IncreaseUserVariable(string &error_msg, int tabID, string varname, 
 #endif
 }
 
-bool ZMysql::IPInUserTable(string &error_msg, string ip, int &users_found)
+bool ZMysql::IPInUserTable(std::string &error_msg, std::string ip, int &users_found)
 {
 #ifndef DISABLE_MYSQL
 	char sql_cmd_c[5000];
@@ -493,7 +493,7 @@ bool ZMysql::IPInUserTable(string &error_msg, string ip, int &users_found)
 	else
 	{
 		//failed
-		error_msg = "mysql ip found error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql ip found error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 
@@ -504,10 +504,10 @@ bool ZMysql::IPInUserTable(string &error_msg, string ip, int &users_found)
 #endif
 }
 
-bool ZMysql::CreateOnlineHistoryTable(string &error_msg)
+bool ZMysql::CreateOnlineHistoryTable(std::string &error_msg)
 {
 #ifndef DISABLE_MYSQL
-	string sql_cmd;
+	std::string sql_cmd;
 
 	//connected?
 	if(!mysql_conn && !Connect(error_msg)) 
@@ -525,7 +525,7 @@ bool ZMysql::CreateOnlineHistoryTable(string &error_msg)
 	//send command
 	if(mysql_query(mysql_conn, sql_cmd.c_str()))
 	{
-		error_msg = "mysql create table error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql create table error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 
@@ -536,7 +536,7 @@ bool ZMysql::CreateOnlineHistoryTable(string &error_msg)
 #endif
 }
 
-bool ZMysql::InsertOnlineHistoryEntry(string &error_msg, int time_stamp, int player_count, int tray_player_count)
+bool ZMysql::InsertOnlineHistoryEntry(std::string &error_msg, int time_stamp, int player_count, int tray_player_count)
 {
 #ifndef DISABLE_MYSQL
 	char sql_cmd_c[5000];
@@ -560,7 +560,7 @@ bool ZMysql::InsertOnlineHistoryEntry(string &error_msg, int time_stamp, int pla
 		else
 		{
 			//failed
-			error_msg = "mysql insert online history error: " + string(mysql_error(mysql_conn));
+			error_msg = "mysql insert online history error: " + std::string(mysql_error(mysql_conn));
 			return false;
 		}
 	}
@@ -601,7 +601,7 @@ bool ZMysql::InsertOnlineHistoryEntry(string &error_msg, int time_stamp, int pla
 					mysql_free_result(res);
 
 					//failed
-					error_msg = "mysql insert online history error: " + string(mysql_error(mysql_conn));
+					error_msg = "mysql insert online history error: " + std::string(mysql_error(mysql_conn));
 					return false;
 				}
 			}
@@ -611,7 +611,7 @@ bool ZMysql::InsertOnlineHistoryEntry(string &error_msg, int time_stamp, int pla
 		else
 		{
 			//failed
-			error_msg = "mysql insert online history error: " + string(mysql_error(mysql_conn));
+			error_msg = "mysql insert online history error: " + std::string(mysql_error(mysql_conn));
 			return false;
 		}
 
@@ -624,10 +624,10 @@ bool ZMysql::InsertOnlineHistoryEntry(string &error_msg, int time_stamp, int pla
 #endif
 }
 
-bool ZMysql::CreateAffiliateTable(string &error_msg)
+bool ZMysql::CreateAffiliateTable(std::string &error_msg)
 {
 #ifndef DISABLE_MYSQL
-	string sql_cmd;
+	std::string sql_cmd;
 
 	//connected?
 	if(!mysql_conn && !Connect(error_msg)) 
@@ -644,7 +644,7 @@ bool ZMysql::CreateAffiliateTable(string &error_msg)
 	//send command
 	if(mysql_query(mysql_conn, sql_cmd.c_str()))
 	{
-		error_msg = "mysql create table error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql create table error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 
@@ -655,7 +655,7 @@ bool ZMysql::CreateAffiliateTable(string &error_msg)
 #endif
 }
 
-bool ZMysql::GetAffiliateId(string &error_msg, string ip, int &aff_id, bool &ip_found)
+bool ZMysql::GetAffiliateId(std::string &error_msg, std::string ip, int &aff_id, bool &ip_found)
 {
 #ifndef DISABLE_MYSQL
 	char sql_cmd_c[5000];
@@ -703,7 +703,7 @@ bool ZMysql::GetAffiliateId(string &error_msg, string ip, int &aff_id, bool &ip_
 	else
 	{
 		//failed
-		error_msg = "mysql get affiliate id error: " + string(mysql_error(mysql_conn));
+		error_msg = "mysql get affiliate id error: " + std::string(mysql_error(mysql_conn));
 		return false;
 	}
 

@@ -122,7 +122,7 @@ void lcase(char *message, int m_size)
 		message[i] = tolower(message[i]);
 }
 
-void lcase(string &message)
+void lcase(std::string &message)
 {
 	for(int i=0;i<message.size();i++)
 		message[i] = tolower(message[i]);
@@ -244,11 +244,11 @@ void printd_reg(char *message)
 	fclose(ofp);
 }
 
-string data_to_hex_string(unsigned char *data, int size)
+std::string data_to_hex_string(unsigned char *data, int size)
 {
 	int i;
 	char buf[50];
-	string output;
+	std::string output;
 
 	for(i=0; i<size; i++)
 	{
@@ -273,9 +273,9 @@ bool file_can_be_written(char *filename)
 	return true;
 }
 
-vector<string> directory_filelist(string foldername)
+std::vector<std::string> directory_filelist(std::string foldername)
 {
-	vector<string> filelist;
+	std::vector<std::string> filelist;
 
 #ifdef _WIN32
 
@@ -322,13 +322,13 @@ vector<string> directory_filelist(string foldername)
 	return filelist;
 }
 
-void parse_filelist(vector<string> &filelist, string extension)
+void parse_filelist(std::vector<std::string> &filelist, std::string extension)
 {
 	lcase(extension);
 
-	for(vector<string>::iterator i=filelist.begin(); i!=filelist.end();)
+	for(std::vector<std::string>::iterator i=filelist.begin(); i!=filelist.end();)
 	{
-		string cur_filename;
+		std::string cur_filename;
 		int pos;
 		int good_pos;
 
@@ -339,14 +339,14 @@ void parse_filelist(vector<string> &filelist, string extension)
 		pos = cur_filename.rfind(extension);
 		good_pos = cur_filename.size() - extension.size();
 
-		if(pos == string::npos || pos != good_pos)
+		if(pos == std::string::npos || pos != good_pos)
 			i = filelist.erase(i);
 		else
 			++i;
 	}
 }
 
-bool sort_string_func (const string &a, const string &b)
+bool sort_string_func (const std::string &a, const std::string &b)
 {
 	return strcmp(a.c_str(), b.c_str()) < 0;
 }

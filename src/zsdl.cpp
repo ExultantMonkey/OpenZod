@@ -13,7 +13,7 @@ SDL_RotoZoomSurface::SDL_RotoZoomSurface()
 			the_surface[i][j] = NULL;
 }
 
-void SDL_RotoZoomSurface::LoadBaseImage(string filename)
+void SDL_RotoZoomSurface::LoadBaseImage(std::string filename)
 {
 	base_surface = IMG_Load_Error(filename);
 }
@@ -75,7 +75,7 @@ SDL_ZoomSurface::SDL_ZoomSurface()
 		zoom_surface[i] = NULL;
 }
 
-void SDL_ZoomSurface::LoadBaseImage(string filename)
+void SDL_ZoomSurface::LoadBaseImage(std::string filename)
 {
 	base_surface = IMG_Load_Error(filename);
 }
@@ -125,7 +125,7 @@ SDL_RotateSurface::SDL_RotateSurface()
 		rotated_surface[i] = NULL;
 }
 
-void SDL_RotateSurface::LoadBaseImage(string filename)
+void SDL_RotateSurface::LoadBaseImage(std::string filename)
 {
 	base_surface = IMG_Load_Error(filename);
 }
@@ -437,7 +437,7 @@ SDL_Surface *ZSDL_ConvertImage(SDL_Surface *src)
 	return src;
 }
 
-SDL_Surface *ZSDL_IMG_Load(string filename)
+SDL_Surface *ZSDL_IMG_Load(std::string filename)
 {
 	SDL_Surface *ret;
 	
@@ -452,7 +452,7 @@ SDL_Surface *ZSDL_IMG_Load(string filename)
 	return ret;
 }
 
-SDL_Surface *IMG_Load_Error(string filename)
+SDL_Surface *IMG_Load_Error(std::string filename)
 {
 	SDL_Surface *ret;
 	
@@ -463,7 +463,7 @@ SDL_Surface *IMG_Load_Error(string filename)
 	return ret;
 }
 
-Mix_Music *MUS_Load_Error(string filename)
+Mix_Music *MUS_Load_Error(std::string filename)
 {
 	Mix_Music *ret;
 	
@@ -472,7 +472,7 @@ Mix_Music *MUS_Load_Error(string filename)
 	return ret;
 }
 
-Mix_Chunk *MIX_Load_Error(string filename)
+Mix_Chunk *MIX_Load_Error(std::string filename)
 {
 	Mix_Chunk *ret;
 	

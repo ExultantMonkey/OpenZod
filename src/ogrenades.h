@@ -17,7 +17,7 @@ class OGrenades : public ZObject
 
 		void SetOwner(team_type owner_);
 		void FireTurrentMissile(int x_, int y_, double offset_time);
-		vector<fire_missile_info> ServerFireTurrentMissile(int &damage, int &radius);
+		std::vector<fire_missile_info> ServerFireTurrentMissile(int &damage, int &radius);
 	private:
 		static ZSDL_Surface render_img;
 

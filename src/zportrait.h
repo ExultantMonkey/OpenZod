@@ -11,8 +11,6 @@ class ZObject;
 
 #include <vector>
 
-using namespace std;
-
 #define ZPORTRAIT_BASE_WIDTH 86
 #define ZPORTRAIT_BASE_HEIGHT 74
 
@@ -54,7 +52,7 @@ enum portrait_anim
 	MAX_PORTRAIT_ANIMS
 };
 
-const string portrait_anim_string[MAX_PORTRAIT_ANIMS] = 
+const std::string portrait_anim_string[MAX_PORTRAIT_ANIMS] = 
 {
 	"YES_SIR_ANIM", "YES_SIR3_ANIM", "UNIT_REPORTING1_ANIM",
 	"UNIT_REPORTING2_ANIM", "GRUNTS_REPORTING_ANIM",
@@ -114,7 +112,7 @@ public:
 
 	void AddFrame(ZPortrait_Frame &new_frame);
 
-	vector<ZPortrait_Frame> frame_list;
+	std::vector<ZPortrait_Frame> frame_list;
 	double total_duration;
 
 	ZPortrait_Anim& operator=(const ZPortrait_Anim &rhs)

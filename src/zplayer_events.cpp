@@ -114,7 +114,7 @@ void ZPlayer::motion_event(ZPlayer *p, char *data, int size, int dummy)
 	{
 		int shift_x, shift_y;
 		int map_x, map_y;
-		vector<ZObject*>::iterator i;
+		std::vector<ZObject*>::iterator i;
 
 		p->zmap.GetViewShift(shift_x, shift_y);
 
@@ -398,7 +398,7 @@ void ZPlayer::runclick_event(ZPlayer *p, char *data, int size, int dummy)
 			unsigned char ot, oid;
 			int shift_x, shift_y;
 			int mouse_x_map, mouse_y_map;
-			vector<ZObject*>::iterator i;
+			std::vector<ZObject*>::iterator i;
 
 			i = p->select_info.selected_list.begin();
 
@@ -1322,9 +1322,9 @@ void ZPlayer::team_ended_event(ZPlayer *p, char *data, int size, int dummy)
 
 	if(pi->team != p->our_team) return;
 
-	vector<zhud_end_unit> end_animations;
+	std::vector<zhud_end_unit> end_animations;
 
-	for(vector<ZObject*>::iterator i=p->object_list.begin(); i!=p->object_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=p->object_list.begin(); i!=p->object_list.end(); i++)
 		if((*i)->GetOwner() == p->our_team)
 	{
 		unsigned char ot, oid;
@@ -1450,7 +1450,7 @@ void ZPlayer::get_version_event(ZPlayer *p, char *data, int size, int dummy)
 {
 	version_packet *pi = (version_packet*)data;
 	char temp_version[MAX_VERSION_PACKET_CHARS];
-	string message;
+	std::string message;
 
 	//good packet?
 	if(size != sizeof(version_packet)) return;

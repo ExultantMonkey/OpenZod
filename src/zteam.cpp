@@ -59,7 +59,7 @@ bool ZTeam_Palette::LoadSurfacePalette(SDL_Surface *src)
 	return true;
 }
 
-bool ZTeam_Palette::SaveSurfacePalette(string filename)
+bool ZTeam_Palette::SaveSurfacePalette(std::string filename)
 {
 	printf("ZTeam_Palette::SaveSurfacePalette: this function requires color arrays be vectors\n");
 	return false;
@@ -257,7 +257,7 @@ void ZTeam::Setup_team_color()
 
 void ZTeam::LoadPalette(int team)
 {
-	string filename;
+	std::string filename;
 	SDL_Surface *surface;
 
 	if(team == ZTEAM_BASE_TEAM) return;
@@ -287,7 +287,7 @@ void ZTeam::SavePalette(int team)
 		return;
 	}
 
-	string filename;
+	std::string filename;
 
 	filename = "assets/teams/" + team_type_string[team] + "_palette.bmp";
 
@@ -357,7 +357,7 @@ void ZTeam::AppendPalette(int team, SDL_Surface *bv, SDL_Surface *rv)
 
 //#define COLLECT_TEAM_COLORS
 
-void ZTeam::LoadZSurface(int team, ZSDL_Surface &bv, ZSDL_Surface &rv, string filename)
+void ZTeam::LoadZSurface(int team, ZSDL_Surface &bv, ZSDL_Surface &rv, std::string filename)
 {
 #ifdef USE_TEAM_COLORS
 	#ifdef COLLECT_TEAM_COLORS

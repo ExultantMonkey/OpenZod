@@ -12,7 +12,7 @@ enum font_type
 	MAX_FONT_TYPES
 };
 
-const string font_type_string[MAX_FONT_TYPES] = 
+const std::string font_type_string[MAX_FONT_TYPES] = 
 {
 	"big_white", "small_white", "green_building", "loading_white", 
 	"yellow_menu"

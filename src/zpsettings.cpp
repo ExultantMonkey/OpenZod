@@ -31,7 +31,7 @@ void ZPSettings::LoadDefaults()
 	mysql_dbname = "zod_db";
 }
 
-bool ZPSettings::LoadSettings(string filename)
+bool ZPSettings::LoadSettings(std::string filename)
 {
 	FILE *fp;
 
@@ -102,7 +102,7 @@ bool ZPSettings::LoadSettings(string filename)
 	return loaded;
 }
 
-bool ZPSettings::SaveSettings(string filename)
+bool ZPSettings::SaveSettings(std::string filename)
 {
 	FILE *fp;
 

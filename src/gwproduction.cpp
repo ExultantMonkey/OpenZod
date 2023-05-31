@@ -170,9 +170,9 @@ void GWProduction::CheckQueueButtonList()
 
 	//items different?
 	{
-		vector<ZBProductionUnit> &bqlist = building_obj->GetQueueList();
-		vector<ZBProductionUnit>::iterator bqi = bqlist.begin();
-		vector<GWPQueueItem>::iterator gqi = queue_button_list.begin();
+		std::vector<ZBProductionUnit> &bqlist = building_obj->GetQueueList();
+		std::vector<ZBProductionUnit>::iterator bqi = bqlist.begin();
+		std::vector<GWPQueueItem>::iterator gqi = queue_button_list.begin();
 
 		for(; gqi!=queue_button_list.end() && bqi!=bqlist.end(); ++bqi, ++gqi)
 		{
@@ -198,13 +198,13 @@ void GWProduction::MakeQueueButtonList()
 	if(!building_obj) return;
 
 	//speed things up
-	vector<ZBProductionUnit> &bqlist = building_obj->GetQueueList();
+	std::vector<ZBProductionUnit> &bqlist = building_obj->GetQueueList();
 
 	//clear
 	queue_button_list.clear();
 
 	//create
-	for(vector<ZBProductionUnit>::iterator bqi=bqlist.begin(); bqi!=bqlist.end(); ++bqi)
+	for(std::vector<ZBProductionUnit>::iterator bqi=bqlist.begin(); bqi!=bqlist.end(); ++bqi)
 	{
 		queue_button_list.push_back(GWPQueueItem(lx, ly, bqi->ot, bqi->oid));
 		ly += button_h + button_margin;
@@ -357,7 +357,7 @@ void GWProduction::RenderQueueButtonList(ZMap &the_map, SDL_Surface *dest)
 {
 	if(!is_expanded) return;
 
-	for(vector<GWPQueueItem>::iterator qb=queue_button_list.begin(); qb!=queue_button_list.end(); ++qb)
+	for(std::vector<GWPQueueItem>::iterator qb=queue_button_list.begin(); qb!=queue_button_list.end(); ++qb)
 	{
 		ZSDL_Surface *name_render;
 
@@ -603,7 +603,7 @@ bool GWProduction::Click(int x_, int y_)
 	//queue_list buttons
 	if(is_expanded)
 	{
-		for(vector<GWPQueueItem>::iterator qb=queue_button_list.begin(); qb!=queue_button_list.end(); ++qb)
+		for(std::vector<GWPQueueItem>::iterator qb=queue_button_list.begin(); qb!=queue_button_list.end(); ++qb)
 			qb->obj_name_button.Click(x_local, y_local);
 	}
 

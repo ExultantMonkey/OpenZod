@@ -11,7 +11,7 @@ Mix_Music *ZMusicEngine::planet_music[MAX_PLANET_TYPES];
 bool ZMusicEngine::playing_planet_music = false;
 int ZMusicEngine::d_level = M_CALM;
 int ZMusicEngine::p_type = DESERT;
-vector<d_level_start_info> ZMusicEngine::d_level_start[MAX_PLANET_TYPES][M_MAX_DANGER_LEVELS];
+std::vector<d_level_start_info> ZMusicEngine::d_level_start[MAX_PLANET_TYPES][M_MAX_DANGER_LEVELS];
 
 bool ZMusicEngine::do_next_reset = false;
 double ZMusicEngine::next_reset_time = 0;
@@ -19,7 +19,7 @@ double ZMusicEngine::next_change_d_level_time = 0;
 
 void ZMusicEngine::Init()
 {
-	string filename;
+	std::string filename;
 
 	splash_music = MUS_Load_Error("assets/sounds/ABATTLE.mp3");
 	
@@ -210,7 +210,7 @@ void ZMusicEngine::PlayPlanetMusic(int p_type_)
 	d_level = M_CALM;
 }
 
-void ZMusicEngine::Process(vector<ZObject*> &object_list, ZMap &tmap, int our_team, int fort_ref_id)
+void ZMusicEngine::Process(std::vector<ZObject*> &object_list, ZMap &tmap, int our_team, int fort_ref_id)
 {
 	if(!playing_planet_music) return;
 
@@ -241,7 +241,7 @@ void ZMusicEngine::Process(vector<ZObject*> &object_list, ZMap &tmap, int our_te
 
 				our_fort->GetCenterCords(fx, fy);
 
-				for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+				for(std::vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
 				{
 					unsigned char ot, oid;
 
@@ -268,7 +268,7 @@ void ZMusicEngine::Process(vector<ZObject*> &object_list, ZMap &tmap, int our_te
 			//are we under attack?
 			if(new_d_level == M_CALM)
 			{
-				for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+				for(std::vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
 				{
 					if(!(*obj)->GetAttackObject()) continue;
 

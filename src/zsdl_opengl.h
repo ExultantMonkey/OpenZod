@@ -13,8 +13,6 @@
 #include "SDL_rotozoom.h"
 #include <string>
 
-using namespace std;
-
 class ZSDL_Surface
 {
 public:
@@ -32,7 +30,7 @@ public:
 	static int GetMapBlitInfo(SDL_Surface *src, int x, int y, SDL_Rect &from_rect, SDL_Rect &to_rect);
 
 	void Unload();
-	void LoadBaseImage(string filename);
+	void LoadBaseImage(std::string filename);
 	void LoadBaseImage(SDL_Surface *sdl_surface_, bool delete_surface = true);
 	void LoadNewSurface(int w, int h);
 	void UseDisplayFormat();
@@ -72,7 +70,7 @@ private:
 	bool LoadGLtexture();
 	bool LoadRotoZoomSurface();
 
-	string image_filename;
+	std::string image_filename;
 	SDL_Surface *sdl_surface;
 	SDL_Surface *sdl_rotozoom;
 #ifndef DISABLE_OPENGL

@@ -6,8 +6,6 @@
 #include "zmap.h"
 #include "zfont_engine.h"
 
-using namespace std;
-
 #define MAX_VOTE_TIME 30
 
 enum vote_type
@@ -17,7 +15,7 @@ enum vote_type
 	MAX_VOTE_TYPES
 };
 
-const string vote_type_string[MAX_VOTE_TYPES] = 
+const std::string vote_type_string[MAX_VOTE_TYPES] = 
 {
 	"Pause Game", "Resume Game", "Change Map", "Start Bot", "Stop Bot",
 	"Reset Game", "Reshuffle Teams", "Set Game Speed"
@@ -31,7 +29,7 @@ public:
 	static void Init();
 
 	void DoRender(ZMap &the_map);
-	void SetupImages(int have, int needed, int for_votes, int against_votes, string append_description);
+	void SetupImages(int have, int needed, int for_votes, int against_votes, std::string append_description);
 	bool VoteInProgress() { return in_progress;}
 	bool StartVote(int vote_type_, int value_ = -1);
 	void ResetVote();

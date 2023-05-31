@@ -9,7 +9,6 @@
 #include <SDL/SDL_ttf.h>
 
 using namespace COMMON;
-using namespace std;
 
 enum editor_mode
 {
@@ -17,7 +16,7 @@ enum editor_mode
 	TAKES_TRACKS_MODE, CRATER_TYPE_MODE, MAX_MODES
 };
 
-const string editor_mode_string[MAX_MODES] =
+const std::string editor_mode_string[MAX_MODES] =
 {
 	"NORMAL_MODE", "MAP_MODE", "USABLE_MODE", "PASSABLE_MODE", 
 	"TAKES_TRACKS_MODE", "CRATER_TYPE_MODE"

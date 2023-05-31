@@ -49,7 +49,7 @@ void HubButton::SetShift(int shift_x_, int shift_y_)
 
 void HubButton::Init()
 {
-	string filename;
+	std::string filename;
 	
 	if(type == -1) return;
 
@@ -180,7 +180,7 @@ void ZHud::ResetGame()
 	unit_amount_text.Unload();
 }
 
-void ZHud::StartEndAnimations(vector<zhud_end_unit> &end_animations_, bool won)
+void ZHud::StartEndAnimations(std::vector<zhud_end_unit> &end_animations_, bool won)
 {
 	do_end_animations = true;
 	do_end_animations_won = won;
@@ -460,7 +460,7 @@ HubButton &ZHud::GetButton(int button_num)
 	return button[button_num];
 }
 
-void ZHud::Process(double the_time, vector<ZObject*> &object_list)
+void ZHud::Process(double the_time, std::vector<ZObject*> &object_list)
 {
 	//rerender_backdrop = portrait.Process();
 
@@ -515,7 +515,7 @@ void ZHud::Process(double the_time, vector<ZObject*> &object_list)
 	}
 }
 
-void ZHud::ProcessA(double the_time, vector<ZObject*> &object_list)
+void ZHud::ProcessA(double the_time, std::vector<ZObject*> &object_list)
 {
 	if(a_ref_id == -1) return;
 
@@ -536,7 +536,7 @@ void ZHud::ProcessA(double the_time, vector<ZObject*> &object_list)
 		next_a_check_time = the_time + 0.25;
 
 		bool found = false;
-		for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+		for(std::vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 			if((*i)->GetAttackObject() == obj)
 			{
 				found = true;
@@ -1259,7 +1259,7 @@ void ZHud::ShowChatMessage(bool show_chat_)
 	}
 }
 
-void ZHud::SetChatMessage(string message)
+void ZHud::SetChatMessage(std::string message)
 {
 	chat_message = "Say:: " + message;
 
@@ -1277,7 +1277,7 @@ void ZHud::SetZTime(ZTime *ztime_)
 void ZHud::Init()
 {
 	int i, j;
-	string filename;
+	std::string filename;
 	//char filename_c[500];
 	
 	for(i=0;i<MAX_HUD_BUTTONS;i++)

@@ -8,7 +8,7 @@ enum ETRACK_TYPE
 	ET_TANK, ET_JEEP, MAX_ETRACK_TYPES
 };
 
-const string etrack_type_string[MAX_ETRACK_TYPES] = 
+const std::string etrack_type_string[MAX_ETRACK_TYPES] = 
 {
 	"tank", "jeep"
 };

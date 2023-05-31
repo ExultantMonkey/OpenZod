@@ -29,14 +29,14 @@ OHut::OHut(ZTime *ztime_, ZSettings *zsettings_, int palette_) : ZObject(ztime_,
 OHut::~OHut()
 {
 	//delete all hut animals
-	for(vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end(); ++i) delete *i;
+	for(std::vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end(); ++i) delete *i;
 
 	hut_animals.clear();
 }
 		
 void OHut::Init()
 {
-	string filename;
+	std::string filename;
 	int i;
 
 	for(i=0;i<MAX_PLANET_TYPES;i++)
@@ -65,7 +65,7 @@ void OHut::DoRender(ZMap &the_map, SDL_Surface *dest, int shift_x, int shift_y)
 void OHut::DoPreRender(ZMap &the_map, SDL_Surface *dest, int shift_x, int shift_y)
 {
 	//only for rendering the animals
-	for(vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end(); ++i)
+	for(std::vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end(); ++i)
 		(*i)->DoRender(the_map, dest, shift_x, shift_y);
 }
 
@@ -80,7 +80,7 @@ int OHut::Process()
 	//process animals
 	{
 		//kill some?
-		for(vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end();)
+		for(std::vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end();)
 		{
 			if((*i)->KillMe(the_time))
 			{
@@ -92,7 +92,7 @@ int OHut::Process()
 		}
 
 		//process
-		for(vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end();i++)
+		for(std::vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end();i++)
 			(*i)->Process();
 	}
 
@@ -139,7 +139,7 @@ void OHut::SendAnimalsHome(int amount)
 	int amount_going_home = 0;
 
 	//find amount already going
-	for(vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end(); ++i)
+	for(std::vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end(); ++i)
 		if((*i)->IsGoingHome())
 			amount_going_home++;
 
@@ -148,7 +148,7 @@ void OHut::SendAnimalsHome(int amount)
 	if(amount <= 0) return;
 
 	//send some home
-	for(vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end(); ++i)
+	for(std::vector<AHutAnimal*>::iterator i=hut_animals.begin(); i!=hut_animals.end(); ++i)
 		if(!(*i)->IsGoingHome())
 		{
 			(*i)->GoHome();
@@ -160,7 +160,7 @@ void OHut::SendAnimalsHome(int amount)
 
 bool OHut::GetExitToTile(int &tx, int &ty)
 {
-	vector<xy_struct> possible_list;
+	std::vector<xy_struct> possible_list;
 	int itx, ity;
 	int ctx, cty;
 	int rand_choice;

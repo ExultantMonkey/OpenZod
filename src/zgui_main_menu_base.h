@@ -36,7 +36,7 @@ enum gmm_event_type
 	GMM_WHEELDOWN_EVENT, MAC_GMM_EVENTS
 };
 
-const string gmm_event_type_string[MAC_GMM_EVENTS] =
+const std::string gmm_event_type_string[MAC_GMM_EVENTS] =
 {
 	"unknown", "click", "unclick", "motion", "keypress",
 	"wheelup", "wheeldown"
@@ -55,8 +55,8 @@ public:
 		reset_map = false;
 	}
 
-	string text1;
-	string text2;
+	std::string text1;
+	std::string text2;
 	bool quit_game;
 	bool reset_map;
 };
@@ -139,8 +139,8 @@ public:
 	void GetCoords(int &x_, int &y_) { x_ = x; y_ = y; }
 	void GetDimensions(int &w_, int &h_) { w_ = w; h_ = h; }
 	bool IsOverHUD(int hud_left, int hud_top);
-	void SetPlayerInfoList(vector<p_info> *player_info_) { player_info = player_info_; }
-	void SetSelectableMapList(vector<string> *selectable_map_list_) { selectable_map_list = selectable_map_list_; }
+	void SetPlayerInfoList(std::vector<p_info> *player_info_) { player_info = player_info_; }
+	void SetSelectableMapList(std::vector<std::string> *selectable_map_list_) { selectable_map_list = selectable_map_list_; }
 	void SetPlayerTeam(int *player_team_) { player_team=player_team_; }
 	void SetSoundSetting(int *sound_setting_) { sound_setting = sound_setting_; }
 	void SetZTime(ZTime *ztime_) { ztime=ztime_; }
@@ -172,11 +172,11 @@ protected:
 	bool killme;
 	int menu_type;
 	int x, y, w, h;
-	string title;
+	std::string title;
 	ZSDL_Surface title_img;
 	gmm_flag gmm_flags;
-	vector<p_info> *player_info;
-	vector<string> *selectable_map_list;
+	std::vector<p_info> *player_info;
+	std::vector<std::string> *selectable_map_list;
 	int *player_team;
 	int *sound_setting;
 	ZTime *ztime;
@@ -185,7 +185,7 @@ protected:
 	bool click_grabbed;
 	int grab_x, grab_y;
 
-	vector<ZGMMWidget*> widget_list;
+	std::vector<ZGMMWidget*> widget_list;
 
 	GMMWButton close_button;
 };

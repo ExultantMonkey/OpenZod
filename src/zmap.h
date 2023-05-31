@@ -11,8 +11,6 @@
 #include "zteam.h"
 #include "zmap_crater_graphics.h"
 
-using namespace std;
-
 #define MAX_SHIFT_CLICK 1
 #define SHIFT_CLICK_S 320
 #define SHIFT_CLICK_STREAM 0.1
@@ -31,7 +29,7 @@ enum map_object_type
 	MAX_MAP_OBJECT_TYPES
 };
 
-const string map_object_type_string[MAX_MAP_OBJECT_TYPES] =
+const std::string map_object_type_string[MAX_MAP_OBJECT_TYPES] =
 {
 	"rock", "bridge", "building", "cannon", "vehicle", "robot", "animal", "map_item"
 };
@@ -97,7 +95,7 @@ class map_zone_info_tile
 struct map_zone_info
 {
 	team_type owner;
-	vector<map_zone_info_tile> tile;
+	std::vector<map_zone_info_tile> tile;
 	int x, y, w, h;
 	int id;
 };
@@ -194,13 +192,13 @@ class ZMap
 		void DoZoneEffects(double the_time, SDL_Surface *dest, int shift_x = 0, int shift_y = 0);
 		void SetupAllZoneInfo();
 		map_zone_info *GetZone(int x, int y);
-		vector<map_zone_info> &GetZoneInfoList();
+		std::vector<map_zone_info> &GetZoneInfoList();
 		//void PlayMusic(bool normal = true);
 		bool Loaded();
 		void MarkAreaStamped(int x, int y, int w, int h);
 		bool PermStamp(int x_, int y_, ZSDL_Surface *surface, bool mark_stamped = true);
 		bool PermStamp(int x_, int y_, SDL_Surface *surface, bool mark_stamped = true);
-		vector<map_effect_info> &GetMapWaterList() { return map_water_list; }
+		std::vector<map_effect_info> &GetMapWaterList() { return map_water_list; }
 		void CreateCrater(int x, int y, bool is_big, double chance = 1.0);
 		int CoordCraterType(int tx, int ty);
 		
@@ -230,8 +228,8 @@ class ZMap
 		//map editor stuff
 		void ChangeTile(unsigned int index, map_tile new_tile);
 		void PlaceObject(map_object new_object);
-		vector<map_object> &GetObjectList();
-		vector<map_zone> &GetZoneList();
+		std::vector<map_object> &GetObjectList();
+		std::vector<map_zone> &GetZoneList();
 		static ZSDL_Surface *GetZoneMarkers();
 		int AddZone(map_zone new_zone);
 		int RemoveZone(int x, int y);
@@ -293,9 +291,9 @@ class ZMap
 		
 		//the basics that exist in the file
 		map_basics basic_info;
-		vector<map_zone> zone_list;
-		vector<map_object> object_list;
-		vector<map_tile> tile_list;
+		std::vector<map_zone> zone_list;
+		std::vector<map_object> object_list;
+		std::vector<map_tile> tile_list;
 
 		//for speed increases
 		int width_pix;
@@ -328,13 +326,13 @@ class ZMap
 		//static Mix_Music *music[MAX_PLANET_TYPES];
 
 		//effect stuff
-		vector<map_effect_info> map_effect_list;
-		vector<map_effect_info> map_water_list;
-		static vector<unsigned int> map_water_plist[MAX_PLANET_TYPES];
-		static vector<unsigned int> map_water_effect_plist[MAX_PLANET_TYPES];
+		std::vector<map_effect_info> map_effect_list;
+		std::vector<map_effect_info> map_water_list;
+		static std::vector<unsigned int> map_water_plist[MAX_PLANET_TYPES];
+		static std::vector<unsigned int> map_water_effect_plist[MAX_PLANET_TYPES];
 
 		//other runtime
-		vector<map_zone_info> zone_list_info;
+		std::vector<map_zone_info> zone_list_info;
 		
 		//shift stuff
 		int shift_x, shift_y;

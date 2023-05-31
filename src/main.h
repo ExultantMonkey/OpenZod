@@ -4,8 +4,6 @@
 #include "constants.h"
 #include <string>
 
-using namespace std;
-
 class input_options
 {
 	public:
@@ -30,16 +28,16 @@ class input_options
 		bool read_loginname;
 		bool read_password;
 		
-		string connect_address;
-		string map_name;
-		string map_list;
-		string resolution;
-		string player_name;
-		string player_team_str;
-		string settings_filename;
-		string p_settings_filename;
-		string loginname;
-		string password;
+		std::string connect_address;
+		std::string map_name;
+		std::string map_list;
+		std::string resolution;
+		std::string player_name;
+		std::string player_team_str;
+		std::string settings_filename;
+		std::string p_settings_filename;
+		std::string loginname;
+		std::string password;
 		int team;
 		int resolution_width;
 		int resolution_height;

@@ -5,8 +5,6 @@
 #include <vector>
 #include <stdlib.h>
 
-using namespace std;
-
 namespace COMMON
 {
 	//structs
@@ -22,7 +20,7 @@ namespace COMMON
 	extern void split(char *dest, char *message, char split, int *initial, int d_size, int m_size);
 	extern void clean_newline(char *message, int size);
 	extern void lcase(char *message, int m_size);
-	extern void lcase(string &message);
+	extern void lcase(std::string &message);
 	extern double current_time();
 	extern void uni_pause(int m_sec);
 	extern double distance(int x1, int y1, int x2, int y2);
@@ -32,11 +30,11 @@ namespace COMMON
 	extern bool good_user_char(int c);
 	extern bool good_user_string(const char *message);
 	extern void printd_reg(char *message);
-	extern string data_to_hex_string(unsigned char *data, int size);
+	extern std::string data_to_hex_string(unsigned char *data, int size);
 	extern bool file_can_be_written(char *filename);
-	extern vector<string> directory_filelist(string foldername);
-	extern void parse_filelist(vector<string> &filelist, string extension);
-	extern bool sort_string_func (const string &a, const string &b);
+	extern std::vector<std::string> directory_filelist(std::string foldername);
+	extern void parse_filelist(std::vector<std::string> &filelist, std::string extension);
+	extern bool sort_string_func (const std::string &a, const std::string &b);
 
 	//inline functions...
 	inline bool isz(float num) { return (num < 0.00001 && num > -0.00001); };

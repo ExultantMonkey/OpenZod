@@ -26,7 +26,7 @@ class BRepair : public ZBuilding
 		bool SetRepairUnit(ZObject *unit_obj);
 		void CreateRepairAnimData(char *&data, int &size, bool play_sound = true);
 		void DoRepairBuildingAnim(bool on_, double remaining_time_);
-		bool RepairUnit(double &the_time, unsigned char &ot, unsigned char &oid, int &driver_type_, vector<driver_info_s> &driver_info_, vector<waypoint> &rwaypoint_list_);
+		bool RepairUnit(double &the_time, unsigned char &ot, unsigned char &oid, int &driver_type_, std::vector<driver_info_s> &driver_info_, std::vector<waypoint> &rwaypoint_list_);
 	private:
 		static ZSDL_Surface base[MAX_PLANET_TYPES][MAX_TEAM_TYPES];
 		static ZSDL_Surface base_destroyed[MAX_PLANET_TYPES];
@@ -48,7 +48,7 @@ class BRepair : public ZBuilding
 		bool repairing_unit;
 		double repair_time;
 		unsigned char rot, roid;
-		vector<waypoint> rwaypoint_list;
+		std::vector<waypoint> rwaypoint_list;
 };
 
 #endif

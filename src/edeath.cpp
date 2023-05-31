@@ -92,7 +92,7 @@ EDeath::EDeath(ZTime *ztime_, int x_, int y_, int object, ZSDL_Surface *prefered
 EDeath::~EDeath()
 {
 	//no memory leaks
-	for(vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.begin(); i++)
+	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.begin(); i++)
 		delete *i;
 }
 
@@ -119,7 +119,7 @@ void EDeath::Process()
 		return;
 	}
 
-	for(vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
+	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
 		(*i)->Process();
 }
 
@@ -131,7 +131,7 @@ void EDeath::DoRender(ZMap &zmap, SDL_Surface *dest)
 	//if(zmap.GetBlitInfo( wasted_img, x, y, from_rect, to_rect))
 	//	SDL_BlitSurface( wasted_img, &from_rect, dest, &to_rect);
 
-	for(vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
+	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
 		(*i)->DoRender(zmap, dest);
 }
 

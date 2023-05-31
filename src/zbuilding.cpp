@@ -47,7 +47,7 @@ ZBuilding::ZBuilding(ZTime *ztime_, ZSettings *zsettings_, planet_type palette_)
 ZBuilding::~ZBuilding()
 {
 	//no memory leaks
-	for(vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.begin(); i++)
+	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.begin(); i++)
 		delete *i;
 
 	extra_effects.clear();
@@ -214,7 +214,7 @@ void ZBuilding::CreateBuildingQueueData(char *&data, int &size)
 
 	//populate
 	message += 8;
-	for(vector<ZBProductionUnit>::iterator j=queue_list.begin(); j!=queue_list.end();j++)
+	for(std::vector<ZBProductionUnit>::iterator j=queue_list.begin(); j!=queue_list.end();j++)
 	{
 		memcpy(message, &(*j), sizeof(ZBProductionUnit));
 		message += sizeof(ZBProductionUnit);
@@ -433,7 +433,7 @@ int ZBuilding::CannonsInZone(ZOLists &ols)
 	//the zbuilding version starts with built_cannon_list.size()
 	int cannons_found = built_cannon_list.size();
 
-	for(vector<ZObject*>::iterator i=ols.object_list->begin();i!=ols.object_list->end();i++)
+	for(std::vector<ZObject*>::iterator i=ols.object_list->begin();i!=ols.object_list->end();i++)
 	//for(vector<ZObject*>::iterator i=sol.cannon_object_list.begin();i!=sol.cannon_object_list.end();i++)
 		if(this != *i && connected_zone == (*i)->GetConnectedZone())
 		{
@@ -456,7 +456,7 @@ int ZBuilding::CannonsInZone(ZOLists &ols)
 bool ZBuilding::RemoveStoredCannon(unsigned char oid)
 {
 	//find it
-	for(vector<unsigned char>::iterator i=built_cannon_list.begin();i!=built_cannon_list.end();i++)
+	for(std::vector<unsigned char>::iterator i=built_cannon_list.begin();i!=built_cannon_list.end();i++)
 		if(oid == *i)
 		{
 			built_cannon_list.erase(i);
@@ -469,7 +469,7 @@ bool ZBuilding::RemoveStoredCannon(unsigned char oid)
 bool ZBuilding::HaveStoredCannon(unsigned char oid)
 {
 	//find it
-	for(vector<unsigned char>::iterator i=built_cannon_list.begin();i!=built_cannon_list.end();i++)
+	for(std::vector<unsigned char>::iterator i=built_cannon_list.begin();i!=built_cannon_list.end();i++)
 		if(oid == *i)
 			return true;
 
@@ -547,7 +547,7 @@ void ZBuilding::SetOwner(team_type owner_)
 	do_base_rerender = true;
 }
 
-vector<unsigned char> &ZBuilding::GetBuiltCannonList()
+std::vector<unsigned char> &ZBuilding::GetBuiltCannonList()
 {
 	return built_cannon_list;
 }
@@ -567,7 +567,7 @@ void ZBuilding::DoReviveEffect()
 	do_base_rerender = true;
 
 	//no memory leaks
-	for(vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.begin(); i++)
+	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.begin(); i++)
 		delete *i;
 
 	extra_effects.clear();
@@ -579,7 +579,7 @@ void ZBuilding::ProcessBuildingsEffects(double &the_time)
 	int should_effects;
 	bool effects_added = false;
 
-	for(vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
+	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
 		(*i)->Process();
 
 	damage_percent = 1.0 * health / max_health;

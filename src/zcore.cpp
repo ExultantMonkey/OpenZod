@@ -169,10 +169,10 @@ bool ZCore::CheckRegistration()
 	return is_registered;
 }
 
-int ZCore::GetObjectIndex(ZObject* &the_object, vector<ZObject*> &the_list)
+int ZCore::GetObjectIndex(ZObject* &the_object, std::vector<ZObject*> &the_list)
 {
 	int i;
-	vector<ZObject*>::iterator obj;
+	std::vector<ZObject*>::iterator obj;
 
 	for(i=0, obj=the_list.begin(); obj!=the_list.end();obj++, i++)
 		if(*obj == the_object)
@@ -181,7 +181,7 @@ int ZCore::GetObjectIndex(ZObject* &the_object, vector<ZObject*> &the_list)
 	return -1;
 }
 
-ZObject* ZCore::GetObjectFromID(int ref_id, vector<ZObject*> &the_list)
+ZObject* ZCore::GetObjectFromID(int ref_id, std::vector<ZObject*> &the_list)
 {
 	return ZObject::GetObjectFromID_BS(ref_id, the_list);
 }
@@ -378,7 +378,7 @@ void ZCore::ResetZoneOwnagePercentages(bool notify_players)
 	}
 
 	//tally
-	for(vector<ZObject*>::iterator of=object_list.begin(); of!=object_list.end(); of++)
+	for(std::vector<ZObject*>::iterator of=object_list.begin(); of!=object_list.end(); of++)
 	{
 		unsigned char ot, oid;
 
@@ -398,7 +398,7 @@ void ZCore::ResetZoneOwnagePercentages(bool notify_players)
 			team_zone_percentage[i] = 1.0 * zone_ownage[i] / zones;
 
 	//tell all the buildings
-	for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+	for(std::vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
 		(*obj)->SetZoneOwnage(team_zone_percentage[(*obj)->GetOwner()]);
 }
 
@@ -406,7 +406,7 @@ int ZCore::VotesNeeded()
 {
 	int needed_power = 0;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
 		if(i->vote_choice != P_PASS_VOTE)
 			needed_power += i->real_voting_power();
 			//needed_power += i->voting_power;
@@ -421,7 +421,7 @@ int ZCore::VotesFor()
 {
 	int votes = 0;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
 		if(i->vote_choice == P_YES_VOTE)
 			votes += i->real_voting_power();
 			//votes += i->voting_power;
@@ -433,7 +433,7 @@ int ZCore::VotesAgainst()
 {
 	int votes = 0;
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
 		if(i->vote_choice == P_NO_VOTE)
 			votes += i->real_voting_power();
 			//votes += i->voting_power;
@@ -441,7 +441,7 @@ int ZCore::VotesAgainst()
 	return votes;
 }
 
-string ZCore::VoteAppendDescription()
+std::string ZCore::VoteAppendDescription()
 {
 	int vote_type;
 	int value;
@@ -472,9 +472,9 @@ string ZCore::VoteAppendDescription()
 	return "";
 }
 
-void ZCore::CreateWaypointSendData(int ref_id, vector<waypoint> &waypoint_list, char* &data, int &size)
+void ZCore::CreateWaypointSendData(int ref_id, std::vector<waypoint> &waypoint_list, char* &data, int &size)
 {
-	vector<waypoint>::iterator j;
+	std::vector<waypoint>::iterator j;
 	char *message;
 	int waypoint_amount = waypoint_list.size();
 
@@ -659,7 +659,7 @@ bool ZCore::CannonPlacable(ZObject *building_obj, int tx, int ty)
 	if(y + 32 > building_obj->GetConnectedZone()->y + building_obj->GetConnectedZone()->h - 16) return false;
 
 	//it over lap any particular objects like buildings or other cannons?
-	for(vector<ZObject*>::iterator i=object_list.begin();i!=object_list.end();i++)
+	for(std::vector<ZObject*>::iterator i=object_list.begin();i!=object_list.end();i++)
 	{
 		unsigned char ot, oid;
 
@@ -696,7 +696,7 @@ bool ZCore::AreaIsFortTurret(int tx, int ty)
 	right = x + 32;
 	bottom = y + 32;
 
-	for(vector<ZObject*>::iterator i=object_list.begin();i!=object_list.end();i++)
+	for(std::vector<ZObject*>::iterator i=object_list.begin();i!=object_list.end();i++)
 	{
 		unsigned char ot, oid;
 
@@ -730,7 +730,7 @@ bool ZCore::CheckUnitLimitReached()
 	for(i=0;i<MAX_TEAM_TYPES;i++)
 		team_units_available[i] = 0;
 
-	for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+	for(std::vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
 	{
 		unsigned char ot, oid;
 		

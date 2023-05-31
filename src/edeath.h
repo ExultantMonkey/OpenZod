@@ -29,7 +29,7 @@ class EDeath : ZEffect
 		static ZSDL_Surface crane_wasted;
 
 		ZSDL_Surface *wasted_img;
-		vector<EStandard*> extra_effects;
+		std::vector<EStandard*> extra_effects;
 
 		int x, y;
 		double next_process_time;

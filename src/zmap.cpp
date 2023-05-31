@@ -5,8 +5,8 @@
 
 ZSDL_Surface ZMap::planet_template[MAX_PLANET_TYPES];
 palette_tile_info ZMap::planet_tile_info[MAX_PLANET_TYPES][MAX_PLANET_TILES];
-vector<unsigned int> ZMap::map_water_plist[MAX_PLANET_TYPES];
-vector<unsigned int> ZMap::map_water_effect_plist[MAX_PLANET_TYPES];
+std::vector<unsigned int> ZMap::map_water_plist[MAX_PLANET_TYPES];
+std::vector<unsigned int> ZMap::map_water_effect_plist[MAX_PLANET_TYPES];
 ZSDL_Surface ZMap::zone_marker[MAX_TEAM_TYPES];
 ZSDL_Surface ZMap::zone_marker_water[MAX_TEAM_TYPES];
 SDL_mutex *ZMap::init_mutex = SDL_CreateMutex();
@@ -46,7 +46,7 @@ void ZMap::Init()
 
 	for(i=0;i<MAX_TEAM_TYPES;i++)
 	{
-		string filename;
+		std::string filename;
 		
 		filename = "assets/planets/zone_marker_" + team_type_string[i] + ".png";
 		//zone_marker[i].LoadBaseImage(filename);// = IMG_Load_Error ( filename );
@@ -59,7 +59,7 @@ void ZMap::Init()
 	
 	for(i=0;i<MAX_PLANET_TYPES;i++)
 	{
-		string filename;
+		std::string filename;
 		
 		//filename = "assets/sounds/music_" + planet_type_string[i] + ".mp3";
 		//music[i] = MUS_Load_Error ( filename.c_str() );
@@ -117,7 +117,7 @@ void ZMap::LoadPaletteInfo(int terrain_type)
 	FILE *fp;
 	int &i = terrain_type;
 	int ret;
-	string filename;
+	std::string filename;
 
 	SDL_LockMutex(init_mutex);
 
@@ -189,7 +189,7 @@ palette_tile_info &ZMap::GetMapPaletteTileInfo(planet_type palette, int tile)
 int ZMap::WriteMapPaletteTileInfo(planet_type palette)
 {
 	FILE *fp;
-	string filename;
+	std::string filename;
 	
 	filename = "assets/planets/" + planet_type_string[palette] + ".tileinfo";
 	
@@ -207,7 +207,7 @@ int ZMap::WriteMapPaletteTileInfo(planet_type palette)
 int ZMap::UpdatePalettesTileFormat()
 {
 	FILE *fp;
-	string filename;
+	std::string filename;
 	palette_tile_info_new planet_tile_info_new[MAX_PLANET_TYPES][MAX_PLANET_TILES];
 
 	for(int i=0;i<MAX_PLANET_TYPES;i++)
@@ -362,7 +362,7 @@ void ZMap::DebugMapInfo()
 
 void ZMap::MakeNewMap(const char *new_name, planet_type palette, int width, int height)
 {
-	vector<unsigned short> start_tile_list;
+	std::vector<unsigned short> start_tile_list;
 	
 	if(file_loaded) ClearMap();
 	
@@ -413,7 +413,7 @@ void ZMap::MakeNewMap(const char *new_name, planet_type palette, int width, int 
 
 void ZMap::ReplaceUnusableTiles()
 {
-	vector<unsigned short> start_tile_list;
+	std::vector<unsigned short> start_tile_list;
 
 	for(int i=0;i<MAX_PLANET_TILES;i++)
 	{
@@ -496,7 +496,7 @@ bool ZMap::CheckLoad()
 	}
 	
 	//do all the tiles check out?
-	for(vector<map_tile>::iterator i=tile_list.begin(); i != tile_list.end(); ++i)
+	for(std::vector<map_tile>::iterator i=tile_list.begin(); i != tile_list.end(); ++i)
 	{
 		if(i->tile > MAX_PLANET_TILES)
 		{
@@ -722,7 +722,7 @@ int ZMap::DoEffects(double the_time, SDL_Surface *dest, int shift_x, int shift_y
 	}
 	
 	//goto next frame and render
-	for(vector<map_effect_info>::iterator i=map_effect_list.begin(); i != map_effect_list.end();)
+	for(std::vector<map_effect_info>::iterator i=map_effect_list.begin(); i != map_effect_list.end();)
 	{
 		unsigned int map_tile = i->tile;
 		SDL_Rect src, dest;
@@ -823,7 +823,7 @@ int ZMap::DoEffects(double the_time, SDL_Surface *dest, int shift_x, int shift_y
 	
 	//start a water effect?
 	if(map_water_effect_plist[basic_info.terrain_type].size())
-	for(vector<map_effect_info>::iterator i=map_water_list.begin(); i != map_water_list.end(); ++i)
+	for(std::vector<map_effect_info>::iterator i=map_water_list.begin(); i != map_water_list.end(); ++i)
 	{
 		if(the_time < i->next_effect_time) continue;
 
@@ -1082,21 +1082,21 @@ int ZMap::Write(const char* filename)
 	if(!ret) return 0;
 
 	//write zone_list
-	for(vector<map_zone>::iterator i=zone_list.begin(); i != zone_list.end(); ++i)
+	for(std::vector<map_zone>::iterator i=zone_list.begin(); i != zone_list.end(); ++i)
 	{
 		ret = fwrite(&*i, sizeof(map_zone), 1, fp);
 		if(!ret) return 0;
 	}
 	
 	//write object_list map_object
-	for(vector<map_object>::iterator i=object_list.begin(); i != object_list.end(); ++i)
+	for(std::vector<map_object>::iterator i=object_list.begin(); i != object_list.end(); ++i)
 	{
 		ret = fwrite(&*i, sizeof(map_object), 1, fp);
 		if(!ret) return 0;
 	}
 	
 	//write tile_list map_tile
-	for(vector<map_tile>::iterator i=tile_list.begin(); i != tile_list.end(); ++i)
+	for(std::vector<map_tile>::iterator i=tile_list.begin(); i != tile_list.end(); ++i)
 	{
 		ret = fwrite(&*i, sizeof(map_tile), 1, fp);
 		if(!ret) return 0;
@@ -1122,7 +1122,7 @@ void ZMap::ChangeTile(unsigned int index, map_tile new_tile)
 		if(to_info.is_effect)
 		{
 			//map_effect_list.push_back(index);
-			for(vector<map_effect_info>::iterator i=map_effect_list.begin();i!=map_effect_list.end();)
+			for(std::vector<map_effect_info>::iterator i=map_effect_list.begin();i!=map_effect_list.end();)
 			{
 				//if(*i == index)
 				if(i->tile == index)
@@ -1135,7 +1135,7 @@ void ZMap::ChangeTile(unsigned int index, map_tile new_tile)
 		if(to_info.is_water && !to_info.is_effect) 
 		{
 			//map_water_list.push_back(index);
-			for(vector<map_effect_info>::iterator i=map_water_list.begin();i!=map_water_list.end();)
+			for(std::vector<map_effect_info>::iterator i=map_water_list.begin();i!=map_water_list.end();)
 			{
 				//if(*i == index)
 				if(i->tile == index)
@@ -1591,12 +1591,12 @@ void ZMap::PlaceObject(map_object new_object)
 	object_list.push_back(new_object);
 }
 
-vector<map_object> &ZMap::GetObjectList()
+std::vector<map_object> &ZMap::GetObjectList()
 {
 	return object_list;
 }
 
-vector<map_zone> &ZMap::GetZoneList()
+std::vector<map_zone> &ZMap::GetZoneList()
 {
 	return zone_list;
 }
@@ -1610,7 +1610,7 @@ int ZMap::AddZone(map_zone new_zone)
 	if(new_zone.h > basic_info.height) return 0;
 	
 	//does it already exist?
-	for(vector<map_zone>::iterator i=zone_list.begin(); i!=zone_list.end(); i++)
+	for(std::vector<map_zone>::iterator i=zone_list.begin(); i!=zone_list.end(); i++)
 		if(i->x == new_zone.x && i->y == new_zone.y)
 			return 0;
 	
@@ -1623,7 +1623,7 @@ int ZMap::AddZone(map_zone new_zone)
 
 int ZMap::RemoveZone(int x, int y)
 {
-	for(vector<map_zone>::iterator i=zone_list.begin(); i!=zone_list.end(); i++)
+	for(std::vector<map_zone>::iterator i=zone_list.begin(); i!=zone_list.end(); i++)
 		if(i->x == x && i->y == y)
 	{
 		zone_list.erase(i);
@@ -1638,7 +1638,7 @@ int ZMap::RemoveZone(int x, int y)
 
 map_zone *ZMap::GetZoneExact(int x, int y)
 {
-	for(vector<map_zone>::iterator i=zone_list.begin(); i!=zone_list.end(); i++)
+	for(std::vector<map_zone>::iterator i=zone_list.begin(); i!=zone_list.end(); i++)
 		if(i->x == x && i->y == y)
 			return &(*i);
 	
@@ -1647,7 +1647,7 @@ map_zone *ZMap::GetZoneExact(int x, int y)
 
 map_zone_info *ZMap::GetZone(int x, int y)
 {
-   for(vector<map_zone_info>::iterator i = zone_list_info.begin();i!=zone_list_info.end();i++)
+   for(std::vector<map_zone_info>::iterator i = zone_list_info.begin();i!=zone_list_info.end();i++)
    {
       if(x < i->x) continue;
       if(y < i->y) continue;
@@ -1660,7 +1660,7 @@ map_zone_info *ZMap::GetZone(int x, int y)
    return NULL;
 }
 
-vector<map_zone_info> &ZMap::GetZoneInfoList()
+std::vector<map_zone_info> &ZMap::GetZoneInfoList()
 {
    return zone_list_info;
 }
@@ -1765,12 +1765,12 @@ void ZMap::SetupAllZoneInfo()
 void ZMap::DoZoneEffects(double the_time, SDL_Surface *dest, int shift_x, int shift_y)
 {
 	
-	for(vector<map_zone_info>::iterator i=zone_list_info.begin();i!=zone_list_info.end();i++)
+	for(std::vector<map_zone_info>::iterator i=zone_list_info.begin();i!=zone_list_info.end();i++)
 	{
 		//is it rendered at all?
 		
 		//go through the tiles
-		for(vector<map_zone_info_tile>::iterator j=i->tile.begin();j!=i->tile.end();j++)
+		for(std::vector<map_zone_info_tile>::iterator j=i->tile.begin();j!=i->tile.end();j++)
 		{
 			SDL_Rect from_rect, to_rect;
 			
@@ -1929,7 +1929,7 @@ void ZMap::CreateCrater(int x, int y, bool is_big, double chance)
 		}
 		else
 		{
-			vector<xy_struct> ok_points;
+			std::vector<xy_struct> ok_points;
 
 			if(!stamp_list[tx][ty]) ok_points.push_back(xy_struct(tx, ty));
 			if(!stamp_list[tx+1][ty]) ok_points.push_back(xy_struct(tx+1, ty));
@@ -1967,7 +1967,7 @@ void ZMap::CreateCrater(int x, int y, bool is_big, double chance)
 			is_big = false;
 
 			//can not do a big but maybe a small?
-			vector<xy_struct> ok_points;
+			std::vector<xy_struct> ok_points;
 
 			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, tile_crater_type)) ok_points.push_back(xy_struct(tx,ty));
 			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, rct)) ok_points.push_back(xy_struct(tx+1,ty));
@@ -2001,7 +2001,7 @@ void ZMap::InitPathfinding()
 
 	i=0;
 	j=0;
-	for(vector<map_tile>::iterator x=tile_list.begin(); x!=tile_list.end(); x++)
+	for(std::vector<map_tile>::iterator x=tile_list.begin(); x!=tile_list.end(); x++)
 	{
 		if(planet_tile_info[basic_info.terrain_type][x->tile].is_passable)
 		{
@@ -2170,7 +2170,7 @@ void ZMap::InitSubmergeAmounts()
 	//populate
 	i=0;
 	j=0;
-	for(vector<map_tile>::iterator x=tile_list.begin(); x!=tile_list.end(); x++)
+	for(std::vector<map_tile>::iterator x=tile_list.begin(); x!=tile_list.end(); x++)
 	{
 		if(planet_tile_info[basic_info.terrain_type][x->tile].is_water)
 			submerge_amount[i][j] = 8;

@@ -45,7 +45,7 @@ public:
 	void SetZTime(ZTime *ztime_);
 	void Process(double the_time);
 	void DoRender(ZMap &the_map, SDL_Surface *dest);
-	void SetObjectList(vector<ZObject*> *object_list_);
+	void SetObjectList(std::vector<ZObject*> *object_list_);
 	void SetTeam(int our_team_);
 	void DisplayMessage(int comp_message_, int ref_id_);
 	bool AbsorbedLClick(int x, int y, ZMap &the_map);
@@ -76,7 +76,7 @@ private:
 	int ref_id;
 	SDL_Rect render_box;
 	comp_msg_flags cmflags;
-	vector<ZObject*> *object_list;
+	std::vector<ZObject*> *object_list;
 	int our_team;
 	int rendered_gun_ref_id[MAX_RENDERABLE_STORED_GUNS];
 	int rendered_guns;

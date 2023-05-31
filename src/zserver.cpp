@@ -167,7 +167,7 @@ void ZServer::InitPerpetualServerSettings()
 
 	if(psettings.use_database && psettings.use_mysql)
 	{
-		string err_msg;
+		std::string err_msg;
 
 		if(zmysql.LoadDetails(err_msg, psettings))
 		{
@@ -228,7 +228,7 @@ void ZServer::ProcessEndGame()
 	server_socket.SendMessageAll(END_GAME, NULL, 0);
 }
 
-void ZServer::DoResetGame(string map_name)
+void ZServer::DoResetGame(std::string map_name)
 {
 	//load next map
 	LoadNextMap(map_name);
@@ -305,7 +305,7 @@ void ZServer::ResetGame()
 	ols.DeleteAllObjects();
 }
 
-void ZServer::LoadNextMap(string override_map_name)
+void ZServer::LoadNextMap(std::string override_map_name)
 {
 	//clear stuff
 	ResetGame();
@@ -438,9 +438,9 @@ bool ZServer::ReadSelectableMapList()
 	return loaded;
 }
 
-bool ZServer::ReadSelectableMapListFromFolder(string foldername)
+bool ZServer::ReadSelectableMapListFromFolder(std::string foldername)
 {
-	vector<string> mlist;
+	std::vector<std::string> mlist;
 
 	//read list
 	mlist = directory_filelist(foldername);
@@ -520,7 +520,7 @@ void ZServer::InitZones()
 	ResetZoneOwnagePercentages();
 }
 
-ZObject *ZServer::CreateRobotGroup(unsigned char oid, int x, int y, int owner, vector<ZObject*> *obj_list, int robot_amount, int health_percent)
+ZObject *ZServer::CreateRobotGroup(unsigned char oid, int x, int y, int owner, std::vector<ZObject*> *obj_list, int robot_amount, int health_percent)
 {
 	//int robot_amount;
 	int i;
@@ -556,7 +556,7 @@ ZObject *ZServer::CreateRobotGroup(unsigned char oid, int x, int y, int owner, v
 	return leader_obj;
 }
 
-ZObject *ZServer::CreateObject(unsigned char ot, unsigned char oid, int x, int y, int owner, vector<ZObject*> *obj_list, int blevel, unsigned short extra_links, int health_percent)
+ZObject *ZServer::CreateObject(unsigned char ot, unsigned char oid, int x, int y, int owner, std::vector<ZObject*> *obj_list, int blevel, unsigned short extra_links, int health_percent)
 {
    	ZObject *new_object_ptr = NULL;
 
@@ -922,7 +922,7 @@ void ZServer::ProcessMissiles()
 {
 	double &the_time = ztime.ztime;
 
-	for(vector<damage_missile>::iterator i=damage_missile_list.begin(); i!=damage_missile_list.end();)
+	for(std::vector<damage_missile>::iterator i=damage_missile_list.begin(); i!=damage_missile_list.end();)
 	{
 		if(the_time >= i->explode_time)
 		{
@@ -1336,7 +1336,7 @@ void ZServer::ProcessChangeObjectAmount()
 	CheckUnitLimitReached();
 }
 
-ZObject *ZServer::BuildingRepairUnit(ZObject *obj, unsigned char ot, unsigned char oid, int driver_type, vector<driver_info_s> &driver_info, vector<waypoint> &rwaypoint_list)
+ZObject *ZServer::BuildingRepairUnit(ZObject *obj, unsigned char ot, unsigned char oid, int driver_type, std::vector<driver_info_s> &driver_info, std::vector<waypoint> &rwaypoint_list)
 {
 	int x, y;
 	int w, h;
@@ -1387,7 +1387,7 @@ ZObject *ZServer::BuildingRepairUnit(ZObject *obj, unsigned char ot, unsigned ch
 	//append old waypoints too
 	if(rwaypoint_list.size() > 1)
 	{
-		for(vector<waypoint>::iterator wp=rwaypoint_list.begin()+1;wp!=rwaypoint_list.end();wp++)
+		for(std::vector<waypoint>::iterator wp=rwaypoint_list.begin()+1;wp!=rwaypoint_list.end();wp++)
 			new_obj->GetWayPointList().push_back(*wp);
 	}
 
@@ -1557,7 +1557,7 @@ void ZServer::CheckDestroyedFort(ZObject *obj)
 	}
 
 	//annouce the news
-	BroadCastNews(string("The " + team_type_string[team] + " team has been eliminated").c_str());
+	BroadCastNews(std::string("The " + team_type_string[team] + " team has been eliminated").c_str());
 }
 
 void ZServer::RelayObjectDeath(ZObject *obj, int killer_ref_id)
@@ -1568,7 +1568,7 @@ void ZServer::RelayObjectDeath(ZObject *obj, int killer_ref_id)
 	char *send_data;
 	int size;
 	int i;
-	vector<fire_missile_info> missile_list;
+	std::vector<fire_missile_info> missile_list;
 
 	send_data_base.ref_id = obj->GetRefID();
 	send_data_base.killer_ref_id = killer_ref_id;
@@ -1984,22 +1984,22 @@ void ZServer::ResetObjectTeam(ZObject *obj, team_type new_team)
 	ProcessChangeObjectAmount();
 }
 
-void ZServer::SetMapName(string map_name_)
+void ZServer::SetMapName(std::string map_name_)
 {
 	map_name = map_name_;
 }
 
-void ZServer::SetMapList(string map_list_name_)
+void ZServer::SetMapList(std::string map_list_name_)
 {
 	map_list_name = map_list_name_;
 }
 
-void ZServer::SetSettingsFilename(string settings_filename_)
+void ZServer::SetSettingsFilename(std::string settings_filename_)
 {
 	settings_filename = settings_filename_;
 }
 
-void ZServer::SetPerpetualSettingsFilename(string p_settings_filename_)
+void ZServer::SetPerpetualSettingsFilename(std::string p_settings_filename_)
 {
 	p_settings_filename = p_settings_filename_;
 }
@@ -2219,7 +2219,7 @@ void ZServer::CheckObjectWaypoints(ZObject *obj)
 
 	obj->GetObjectID(ot, oid);
 
-	for(vector<waypoint>::iterator wp=obj->GetWayPointList().begin(); wp!=obj->GetWayPointList().end(); )
+	for(std::vector<waypoint>::iterator wp=obj->GetWayPointList().begin(); wp!=obj->GetWayPointList().end(); )
 	{
 		//clients are not allowed to set forcemove waypoints
 		if(wp->mode == FORCE_MOVE_WP) wp->mode = MOVE_WP;
@@ -2398,7 +2398,7 @@ bool ZServer::LoginPlayer(int player, ZMysqlUser &user)
 
 	if(psettings.use_mysql)
 	{
-		string err_msg;
+		std::string err_msg;
 
 		if(!zmysql.UpdateUserVariable(err_msg, user.tabID, "last_time", time(0)))
 			printf("mysql error: %s\n", err_msg.c_str());
@@ -2407,7 +2407,7 @@ bool ZServer::LoginPlayer(int player, ZMysqlUser &user)
 			printf("mysql error: %s\n", err_msg.c_str());
 	}
 
-	BroadCastNews(string(player_info[player].name + " logged in").c_str());
+	BroadCastNews(std::string(player_info[player].name + " logged in").c_str());
 
 	//tell everyone
 	RelayLPlayerName(player);
@@ -2435,13 +2435,13 @@ bool ZServer::LogoutPlayer(int player, bool connection_exists)
 	{
 		//append total_time
 		{
-			string err_msg;
+			std::string err_msg;
 
 			if(!zmysql.IncreaseUserVariable(err_msg, player_info[player].db_id, "total_time", time(0) - player_info[player].last_time))
 				printf("mysql error: %s\n", err_msg.c_str());
 		}
 
-		BroadCastNews(string(player_info[player].name + " logged out").c_str());
+		BroadCastNews(std::string(player_info[player].name + " logged out").c_str());
 
 		player_info[player].logout();
 
@@ -2641,7 +2641,7 @@ void ZServer::UpdateUsersWinLoses()
 	for(p_info i : player_info)
 		if(i.logged_in && i.team != NULL_TEAM)
 		{
-			string err_msg;
+			std::string err_msg;
 
 			i.total_games++;
 
@@ -2682,7 +2682,7 @@ void ZServer::CheckUpdateOnlineHistory()
 
 	if(the_time >= next_online_history_time)
 	{
-		string err_msg;
+		std::string err_msg;
 
 		//last double check
 		CheckOnlineHistoryPlayerCount();
@@ -2739,9 +2739,9 @@ void ZServer::CheckOnlineHistoryTrayPlayerCount()
 		next_online_history_tray_player_count = current_player_count;
 }
 
-void ZServer::AwardAffiliateCreation(string ip)
+void ZServer::AwardAffiliateCreation(std::string ip)
 {
-	string err_msg;
+	std::string err_msg;
 	int users_found;
 
 	if(!zmysql.IPInUserTable(err_msg, ip, users_found))
@@ -2927,7 +2927,7 @@ bool ZServer::StartVote(int vote_type, int value, int player)
 		if(player != -1)
 		{
 			char message[500];
-			string append_description;
+			std::string append_description;
 
 			append_description = VoteAppendDescription();
 
@@ -3151,10 +3151,10 @@ void ZServer::GivePlayerID(int player)
 
 void ZServer::GivePlayerSelectableMapList(int player)
 {
-	string send_str;
+	std::string send_str;
 
 	//populate send_str
-	for(string i : selectable_map_list)
+	for(std::string i : selectable_map_list)
 	{
 		if(!send_str.length())
 			send_str += i;
@@ -3205,7 +3205,7 @@ void ZServer::SetTeamsBotsIgnored(int team, bool ignored)
 
 	if(change_happened)
 	{
-		string send_str;
+		std::string send_str;
 
 		if(ignored)
 			send_str = "the " + team_type_string[team] + " team bot has been stopped";
@@ -3216,7 +3216,7 @@ void ZServer::SetTeamsBotsIgnored(int team, bool ignored)
 	}
 }
 
-void ZServer::AttemptPlayerLogin(int player, string loginname, string password)
+void ZServer::AttemptPlayerLogin(int player, std::string loginname, std::string password)
 {
 	//we using a database?
 	if(!psettings.use_database)
@@ -3246,7 +3246,7 @@ void ZServer::AttemptPlayerLogin(int player, string loginname, string password)
 	if(psettings.use_mysql)
 	{
 		ZMysqlUser user;
-		string err_msg;
+		std::string err_msg;
 
 		bool user_found;
 		if(!zmysql.LoginUser(err_msg, loginname, password, user, user_found))
@@ -3271,7 +3271,7 @@ void ZServer::AttemptPlayerLogin(int player, string loginname, string password)
 	}
 }
 
-void ZServer::AttemptCreateUser(int player, string username, string loginname, string password, string email)
+void ZServer::AttemptCreateUser(int player, std::string username, std::string loginname, std::string password, std::string email)
 {
 	if(!username.length() || !loginname.length() || !password.length() || !email.length())
 	{
@@ -3295,7 +3295,7 @@ void ZServer::AttemptCreateUser(int player, string username, string loginname, s
 	if(psettings.use_mysql)
 	{
 		ZMysqlUser user;
-		string err_msg;
+		std::string err_msg;
 
 		user.username = username;
 		user.loginname = loginname;
@@ -3344,7 +3344,7 @@ void ZServer::AttemptCreateUser(int player, string username, string loginname, s
 					{
 						AwardAffiliateCreation(user.creation_ip);
 
-						SendNews(player, string("user " + user.username + " created").c_str(), 0, 0, 0);
+						SendNews(player, std::string("user " + user.username + " created").c_str(), 0, 0, 0);
 
 						//log them in
 						AttemptPlayerLogin(player, loginname, password);
@@ -3404,7 +3404,7 @@ bool ZServer::ChangePlayerTeam(int player, int team)
 
 	//send update text if team is new
 	{
-		string send_str = "you have been set to the " + team_type_string[player_info[player].team] + " team";
+		std::string send_str = "you have been set to the " + team_type_string[player_info[player].team] + " team";
 		SendNews(player, send_str.c_str(), 0, 0, 0);
 	}
 
@@ -3422,10 +3422,10 @@ void ZServer::SendPlayerTeam(int player)
 
 void ZServer::ReshuffleTeams()
 {
-	vector<int> loggedin_to_be_changed;
-	vector<int> players_to_be_changed;
-	vector<int> teams_available;
-	vector<int> orig_teams_available;
+	std::vector<int> loggedin_to_be_changed;
+	std::vector<int> players_to_be_changed;
+	std::vector<int> teams_available;
+	std::vector<int> orig_teams_available;
 
 	//collect players that need changed
 	for(int i=0; i<player_info.size(); i++)

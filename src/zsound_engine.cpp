@@ -45,7 +45,7 @@ ZSound::ZSound()
 	repeat_channel = -1;
 }
 
-void ZSound::LoadSound(string filename, int base_volume_, int volume_shift_, double play_time_shift_)
+void ZSound::LoadSound(std::string filename, int base_volume_, int volume_shift_, double play_time_shift_)
 {
 	base_volume = base_volume_;
 	volume_shift = volume_shift_;

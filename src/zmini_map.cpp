@@ -15,7 +15,7 @@ ZMiniMap::ZMiniMap()
 	show_terrain = false;
 }
 
-void ZMiniMap::Setup(ZMap *zmap_, vector<ZObject*> *object_list_)
+void ZMiniMap::Setup(ZMap *zmap_, std::vector<ZObject*> *object_list_)
 {
 	zmap = zmap_;
 	object_list = object_list_;
@@ -93,7 +93,7 @@ void ZMiniMap::DoRender(SDL_Surface *dest, int x, int y)
 
 	//render terrain
 	if(show_terrain)
-	for(vector<map_effect_info>::iterator i=zmap->GetMapWaterList().begin(); i!=zmap->GetMapWaterList().end(); ++i)
+	for(std::vector<map_effect_info>::iterator i=zmap->GetMapWaterList().begin(); i!=zmap->GetMapWaterList().end(); ++i)
 	{
 		SDL_Rect water_rect;
 		int ix, iy;
@@ -115,7 +115,7 @@ void ZMiniMap::DoRender(SDL_Surface *dest, int x, int y)
 
 
 	//render zones
-	for(vector<map_zone_info>::iterator i=zmap->GetZoneInfoList().begin(); i!=zmap->GetZoneInfoList().end(); i++)
+	for(std::vector<map_zone_info>::iterator i=zmap->GetZoneInfoList().begin(); i!=zmap->GetZoneInfoList().end(); i++)
 	{
 		SDL_Rect zone_rect;
 
@@ -147,7 +147,7 @@ void ZMiniMap::DoRender(SDL_Surface *dest, int x, int y)
 	}
 
 	//draw objects
-	for(vector<ZObject*>::iterator i=object_list->begin(); i!=object_list->end(); i++)
+	for(std::vector<ZObject*>::iterator i=object_list->begin(); i!=object_list->end(); i++)
 	{
 		SDL_Rect obj_rect;
 		int x, y, w, h;

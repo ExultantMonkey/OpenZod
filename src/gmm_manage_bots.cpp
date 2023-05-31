@@ -82,7 +82,7 @@ void GMMManageBots::CheckBots()
 	for(int i=0;i<MAX_TEAM_TYPES;i++) team_has_bot[i] = false;
 
 	//populate
-	for(vector<p_info>::iterator i=player_info->begin(); i!=player_info->end(); ++i)
+	for(std::vector<p_info>::iterator i=player_info->begin(); i!=player_info->end(); ++i)
 		if(i->mode == BOT_MODE && !i->ignored)
 			team_has_bot[i->team] = true;
 

@@ -6,8 +6,6 @@
 #include <SDL/SDL_thread.h>
 #include <vector>
 
-using namespace std;
-
 enum pf_tile_types
 {
 	PF_NORMAL, PF_IMPASSABLE, PF_WATER, PF_ROAD, MAX_PF_TILE_TYPES
@@ -45,7 +43,7 @@ public:
 	bool is_robot;
 	bool kill_thread;
 	map_pathfinding_info_tile **tile_info;
-	vector<ZPath_Finding_AStar::pf_point> pf_point_list;
+	std::vector<ZPath_Finding_AStar::pf_point> pf_point_list;
 };
 
 class ZPath_Finding_Thread_Entry
@@ -129,7 +127,7 @@ public:
 	void Kill_Thread_Id(int thread_id);
 	inline void Lock_List() { SDL_LockMutex(list_mutex); }
 	inline void Unlock_List() { SDL_UnlockMutex(list_mutex); } 
-	inline vector<ZPath_Finding_Response*> &GetList() { return respone_list; }
+	inline std::vector<ZPath_Finding_Response*> &GetList() { return respone_list; }
 	
 	int Find_Path(int sx, int sy, int ex, int ey, bool is_robot, bool has_explosives, int obj_ref_id );
 	bool Direct_Path_Possible(int sx, int sy, int ex, int ey, bool is_robot, bool has_explosives);
@@ -150,10 +148,10 @@ private:
 	void AllocAllTileInfo();
 
 	SDL_mutex* list_mutex;
-	vector<ZPath_Finding_Response*> respone_list;
+	std::vector<ZPath_Finding_Response*> respone_list;
 
 	int next_thread_id;
-	vector<ZPath_Finding_Thread_Entry> thread_list;
+	std::vector<ZPath_Finding_Thread_Entry> thread_list;
 
 	int w, h;
 	int width_pix, height_pix;

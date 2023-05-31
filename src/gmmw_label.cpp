@@ -10,7 +10,7 @@ GMMWLabel::GMMWLabel() : ZGMMWidget()
 	font = YELLOW_MENU_FONT;
 }
 
-void GMMWLabel::SetText(string text_)
+void GMMWLabel::SetText(std::string text_)
 {
 	if(text_ == rendered_text) return;
 

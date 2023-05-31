@@ -137,7 +137,7 @@ void update_callback(ZTray *tray)
 {
 	bool has_players = false;
 
-	for(vector<p_info>::iterator i=tray->GetPlayerInfoList().begin(); i!=tray->GetPlayerInfoList().end(); i++)
+	for(std::vector<p_info>::iterator i=tray->GetPlayerInfoList().begin(); i!=tray->GetPlayerInfoList().end(); i++)
 		if(i->mode == PLAYER_MODE)
 		{
 			has_players = true;

@@ -60,7 +60,7 @@ class ZBuilding : public ZObject
 		virtual bool RemoveStoredCannon(unsigned char oid);
 		virtual bool HaveStoredCannon(unsigned char oid);
 		virtual void SetOwner(team_type owner_);
-		vector<unsigned char> &GetBuiltCannonList();
+		std::vector<unsigned char> &GetBuiltCannonList();
 		virtual void DoDeathEffect(bool do_fire_death, bool do_missile_death);
 		virtual void DoReviveEffect();
 		int CannonsInZone(ZOLists &ols);
@@ -71,7 +71,7 @@ class ZBuilding : public ZObject
 		double BuildTimeModified(double base_build_time);
 		void CreateBuildingQueueData(char *&data, int &size);
 		void ProcessBuildingQueueData(char *data, int size);
-		vector<ZBProductionUnit> &GetQueueList() { return queue_list; }
+		std::vector<ZBProductionUnit> &GetQueueList() { return queue_list; }
 	protected:
 		void ResetShowTime(int new_time);
 
@@ -83,16 +83,16 @@ class ZBuilding : public ZObject
 		double binit_time, bfinal_time, btotal_time;
 		int unit_create_x, unit_create_y;
 		int unit_move_x, unit_move_y;
-		vector<unsigned char> built_cannon_list;
+		std::vector<unsigned char> built_cannon_list;
 		float zone_ownage;
-		vector<ZBProductionUnit> queue_list;
+		std::vector<ZBProductionUnit> queue_list;
 
 		int show_time;
 		ZSDL_Surface show_time_img;
 
 		SDL_Rect effects_box;
 		int max_effects;
-		vector<EStandard*> extra_effects;
+		std::vector<EStandard*> extra_effects;
 		
 		static ZSDL_Surface level_img[MAX_BUILDING_LEVELS];
 		static ZSDL_Surface exhaust[13];

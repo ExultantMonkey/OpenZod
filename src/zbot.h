@@ -28,29 +28,29 @@ class ZBot : public ZClient
 
 		//AI 2
 		bool Stage1AI_2();
-		void GiveOutOrders_2(vector<ZObject*> unit_list, vector<ZObject*> target_list, vector<ZObject*> &repair_building_list, vector<ZObject*> &grenade_box_list);
+		void GiveOutOrders_2(std::vector<ZObject*> unit_list, std::vector<ZObject*> target_list, std::vector<ZObject*> &repair_building_list, std::vector<ZObject*> &grenade_box_list);
 
 		//AI 3
 		bool Stage1AI_3();
-		void CollectOurUnits_3(vector<ZObject*> &units_list, vector<ZObject*> &targeted_list);
-		void CollectOurTargets_3(vector<ZObject*> &targets_list, bool all_out);
-		void ReduceUnitsToPercent(vector<ZObject*> &units_list, double max_percent);
-		void RemoveTargetedFromTargets(vector<ZObject*> &targets_list, vector<ZObject*> &targeted_list);
-		bool CullTargetFromCrane(ZObject* u, ZObject* t, vector<ZObject*> &ct_list);
-		void MatchTargets_3(vector<ZObject*> &units_list, vector<ZObject*> &targets_list);
-		void GiveOutOrders_3(vector<ZObject*> &units_list, vector<ZObject*> &targets_list);
+		void CollectOurUnits_3(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targeted_list);
+		void CollectOurTargets_3(std::vector<ZObject*> &targets_list, bool all_out);
+		void ReduceUnitsToPercent(std::vector<ZObject*> &units_list, double max_percent);
+		void RemoveTargetedFromTargets(std::vector<ZObject*> &targets_list, std::vector<ZObject*> &targeted_list);
+		bool CullTargetFromCrane(ZObject* u, ZObject* t, std::vector<ZObject*> &ct_list);
+		void MatchTargets_3(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list);
+		void GiveOutOrders_3(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list);
 		bool GoAllOut_3(double &percent_to_order, double &order_delay);
 		
 		void PlaceCannons();
 
 		void ChooseBuildOrders();
 		void ChooseBuildOrders_2();
-		vector<ZObject*> ChooseGunBuildOrders(map<ZObject*,BuildingUnit> &fb_list, vector<ZObject*> &guns_building_list, vector<ZObject*> &total_buildings_list);
-		BuildCombo GetBestBuildCombo(vector<ZObject*> &b_list, vector<PreferredUnit> &pu_list);
-		bool GetBestBuildComboIncCI(vector<int> &ci, int max_pu);
-		bool GetBestBuildComboBuildretn(vector<int> &ci, vector<ZObject*> &b_list, vector<PreferredUnit> &pu_list, BuildCombo &retn);
+		std::vector<ZObject*> ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit> &fb_list, std::vector<ZObject*> &guns_building_list, std::vector<ZObject*> &total_buildings_list);
+		BuildCombo GetBestBuildCombo(std::vector<ZObject*> &b_list, std::vector<PreferredUnit> &pu_list);
+		bool GetBestBuildComboIncCI(std::vector<int> &ci, int max_pu);
+		bool GetBestBuildComboBuildretn(std::vector<int> &ci, std::vector<ZObject*> &b_list, std::vector<PreferredUnit> &pu_list, BuildCombo &retn);
 		bool CanBuildAt(ZObject *b);
-		void AddBuildingProductionSums(ZObject *b, vector<PreferredUnit> &preferred_build_list);
+		void AddBuildingProductionSums(ZObject *b, std::vector<PreferredUnit> &preferred_build_list);
 
 		void SendBotDevWaypointList(ZObject *obj);
 		
@@ -104,10 +104,10 @@ class ZBot : public ZClient
 		static void set_team_event(ZBot *p, char *data, int size, int dummy);
 		static void set_build_queue_list_event(ZBot *p, char *data, int size, int dummy);
 
-		vector<ZObject*> flag_object_list;
+		std::vector<ZObject*> flag_object_list;
 		
 		ZGunPlacementHeatMap gp_heatmap;
-		vector<PreferredUnit> preferred_build_list;
+		std::vector<PreferredUnit> preferred_build_list;
 		double next_ai_time;
 		double last_order_time;
 };
@@ -148,7 +148,7 @@ class BuildCombo
 public:
 	void Debug();
 	
-	vector<BuildingUnit> b_list;
+	std::vector<BuildingUnit> b_list;
 	double target_distance;
 };
 

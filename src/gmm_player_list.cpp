@@ -51,7 +51,7 @@ void GMMPlayerList::SetupList()
 	player_list.GetEntryList().clear();
 
 	//add the players
-	for(vector<p_info>::iterator i=player_info->begin(); i!=player_info->end(); ++i)
+	for(std::vector<p_info>::iterator i=player_info->begin(); i!=player_info->end(); ++i)
 	{
 		if(i->mode == PLAYER_MODE)
 			player_list.GetEntryList().push_back(mmlist_entry(team_type_string[i->team] + ": " + i->name, i->p_id, i->team));
@@ -62,7 +62,7 @@ void GMMPlayerList::SetupList()
 	players_onnum_label.SetText(num_c);
 
 	//add the bots
-	//for(vector<p_info>::iterator i=player_info->begin(); i!=player_info->end(); ++i)
+	//for(std::vector<p_info>::iterator i=player_info->begin(); i!=player_info->end(); ++i)
 	//{
 	//	if(i->mode == BOT_MODE && !i->ignored)
 	//		player_list.GetEntryList().push_back(mmlist_entry(team_type_string[i->team] + ": " + i->name, i->p_id, i->team + MAX_TEAM_TYPES));

@@ -8,8 +8,6 @@
 
 #include <vector>
 
-using namespace std;
-
 enum music_danger_level
 {
 	M_CALM, M_ATTACKING, M_FORT, M_MAX_DANGER_LEVELS
@@ -40,7 +38,7 @@ public:
 	static void PlaySplashMusic();
 	static void PlayPlanetMusic(int p_type_);
 
-	static void Process(vector<ZObject*> &object_list, ZMap &tmap, int our_team, int fort_ref_id);
+	static void Process(std::vector<ZObject*> &object_list, ZMap &tmap, int our_team, int fort_ref_id);
 	static void SetDangerLevel(int d_level_);
 	static void ResetMusic();
 	static int GetDangerLevel() { return d_level; }
@@ -56,7 +54,7 @@ private:
 	static bool playing_planet_music;
 	static int d_level;
 	static int p_type;
-	static vector<d_level_start_info> d_level_start[MAX_PLANET_TYPES][M_MAX_DANGER_LEVELS];
+	static std::vector<d_level_start_info> d_level_start[MAX_PLANET_TYPES][M_MAX_DANGER_LEVELS];
 
 	static bool do_next_reset;
 	static double next_reset_time;

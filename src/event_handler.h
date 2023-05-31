@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-using namespace std;
-
 //these transfer packets must have a uniform makeup / size
 #pragma pack(1)
 
@@ -315,10 +313,10 @@ class EventHandler
 		void AddFunction(int event_type, int event_number, void (*tfp)(T *, char *, int, int));
 		void ProcessEvents();
 		int ProcessEvent(int event_type, int event_number, char *data, int size, int player);
-		list<Event*> &GetEventList();
+		std::list<Event*> &GetEventList();
 	private:
 		void (*fp[MAX_EVENT_TYPES][MAX_FUNCTIONS])(T *, char *, int, int);
-		list<Event*> event_list;
+		std::list<Event*> event_list;
 		T* parent;
 };
 
@@ -336,7 +334,7 @@ template <typename T> void EventHandler<T>::SetParent(T* parent_)
 	parent = parent_;
 }
 
-template <typename T> list<Event*> &EventHandler<T>::GetEventList()
+template <typename T> std::list<Event*> &EventHandler<T>::GetEventList()
 {
 	return event_list;
 }
@@ -395,7 +393,7 @@ template <typename T> int EventHandler<T>::ProcessEvent(int event_type, int even
 
 template <typename T> void EventHandler<T>::ProcessEvents()
 {
-	list<Event*>::iterator i;
+	std::list<Event*>::iterator i;
 
 	//process the list
 	for(i=event_list.begin(); i != event_list.end(); ++i)

@@ -68,7 +68,7 @@ void OFlag::DoRender(ZMap &the_map, SDL_Surface *dest, int shift_x, int shift_y)
 	}
 }
 
-void OFlag::SetZone(map_zone_info *the_zone, ZMap &zmap, vector<ZObject*> &oobject_list)
+void OFlag::SetZone(map_zone_info *the_zone, ZMap &zmap, std::vector<ZObject*> &oobject_list)
 {
    connected_zone = the_zone;
    
@@ -78,7 +78,7 @@ void OFlag::SetZone(map_zone_info *the_zone, ZMap &zmap, vector<ZObject*> &oobje
    
    //connect to buildings
    //and set their initial owner
-   for(vector<ZObject*>::iterator i=oobject_list.begin(); i!=oobject_list.end(); i++)
+   for(std::vector<ZObject*>::iterator i=oobject_list.begin(); i!=oobject_list.end(); i++)
    {
       unsigned char object_type;
       unsigned char object_id;
@@ -97,7 +97,7 @@ void OFlag::SetZone(map_zone_info *the_zone, ZMap &zmap, vector<ZObject*> &oobje
    }
 }
 
-vector<ZObject*> &OFlag::GetLinkedObjects()
+std::vector<ZObject*> &OFlag::GetLinkedObjects()
 {
 	return connected_object_list;
 }
@@ -109,7 +109,7 @@ map_zone_info *OFlag::GetLinkedZone()
 
 bool OFlag::HasRadar()
 {
-	for(vector<ZObject*>::iterator i=connected_object_list.begin(); i!=connected_object_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=connected_object_list.begin(); i!=connected_object_list.end(); i++)
    {
       unsigned char ot, oid;
       

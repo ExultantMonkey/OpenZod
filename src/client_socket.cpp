@@ -22,7 +22,7 @@ int ClientSocket::SendMessageAscii(int pack_id, const char *data)
 	else return 0;
 }
 
-void ClientSocket::SetEventList(list<Event*> *event_list_)
+void ClientSocket::SetEventList(std::list<Event*> *event_list_)
 {
 	event_list = event_list_;
 }

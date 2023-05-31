@@ -63,8 +63,6 @@ class ZPortrait;
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 
-using namespace std;
-
 enum object_mode
 {
 	NULL_MODE, JUST_PLACED_MODE, ROTATING_MODE, 
@@ -118,7 +116,7 @@ public:
 	//pathfinding stuff
 	int path_finding_id;
 	bool got_pf_response;
-	vector<ZPath_Finding_AStar::pf_point> pf_point_list;
+	std::vector<ZPath_Finding_AStar::pf_point> pf_point_list;
 
 	waypoint_information() {clear();}
 
@@ -243,8 +241,8 @@ public:
 	bool repair_unit;
 	unsigned char rot, roid;
 	int rdriver_type;
-	vector<driver_info_s> rdriver_info;
-	vector<waypoint> rwaypoint_list;
+	std::vector<driver_info_s> rdriver_info;
+	std::vector<waypoint> rwaypoint_list;
 	bool recheck_lid_status;
 	//ZObject* destroy_fort_building;
 	int destroy_fort_building_ref_id;
@@ -295,11 +293,11 @@ class ZObject
 		virtual ~ZObject();
 
 		static void Init(TTF_Font *ttf_font);
-		static void SetDamageMissileList(vector<damage_missile> *damage_missile_list_) { damage_missile_list = damage_missile_list_; }
+		static void SetDamageMissileList(std::vector<damage_missile> *damage_missile_list_) { damage_missile_list = damage_missile_list_; }
 		
-		string GetObjectName();
+		std::string GetObjectName();
 		void SetMap(ZMap *zmap_);
-		void SetEffectList(vector<ZEffect*> *effect_list_) { effect_list = effect_list_; }
+		void SetEffectList(std::vector<ZEffect*> *effect_list_) { effect_list = effect_list_; }
 		virtual void SetOwner(team_type owner_);
 		inline team_type GetOwner() { return owner; }
 		inline void GetDimensions(int &w, int &h) { w = width; h = height; }
@@ -308,7 +306,7 @@ class ZObject
 		int ProcessObject();
 // 		virtual SDL_Surface *GetRender();
 		void RenderWaypointLine(int sx, int sy, int ex, int ey, int view_h, int view_w);
-		virtual void DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, vector<ZObject*> &object_list, bool is_rally_points = false, int shift_x = 0, int shift_y = 0);
+		virtual void DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZObject*> &object_list, bool is_rally_points = false, int shift_x = 0, int shift_y = 0);
 		virtual void DoPreRender(ZMap &the_map, SDL_Surface *dest, int shift_x = 0, int shift_y = 0);
 		virtual void DoRender(ZMap &the_map, SDL_Surface *dest, int shift_x = 0, int shift_y = 0);
 		virtual void DoAfterEffects(ZMap &the_map, SDL_Surface *dest, int shift_x = 0, int shift_y = 0);
@@ -320,13 +318,13 @@ class ZObject
 		bool IntersectsObject(ZObject &obj);
 		double DistanceFromObject(ZObject &obj);
 		double DistanceFromCoords(int x, int y);
-		ZObject* NearestObjectFromList(vector<ZObject*> &the_list);
-		static void RemoveObjectFromList(ZObject* the_object, vector<ZObject*> &the_list);
-		static ZObject* NextSelectableObjectAboveID(vector<ZObject*> &the_list, int unit_type, int only_team, int min_ref_id);
-		static ZObject* NearestSelectableObject(vector<ZObject*> &the_list, int unit_type, int only_team, int x, int y);
-		static ZObject* NearestObjectToCoords(vector<ZObject*> &the_list, int x, int y);
-		static void ClearAndDeleteList(vector<ZObject*> &the_list);
-		static void ProcessList(vector<ZObject*> &the_list);
+		ZObject* NearestObjectFromList(std::vector<ZObject*> &the_list);
+		static void RemoveObjectFromList(ZObject* the_object, std::vector<ZObject*> &the_list);
+		static ZObject* NextSelectableObjectAboveID(std::vector<ZObject*> &the_list, int unit_type, int only_team, int min_ref_id);
+		static ZObject* NearestSelectableObject(std::vector<ZObject*> &the_list, int unit_type, int only_team, int x, int y);
+		static ZObject* NearestObjectToCoords(std::vector<ZObject*> &the_list, int x, int y);
+		static void ClearAndDeleteList(std::vector<ZObject*> &the_list);
+		static void ProcessList(std::vector<ZObject*> &the_list);
 		virtual void FireMissile(int x_, int y_);
 		virtual void FireTurrentMissile(int x_, int y_, double offset_time);
 		virtual ZGuiWindow *MakeGuiWindow();
@@ -339,10 +337,10 @@ class ZObject
 		virtual void RemoveGroupMinion(ZObject *obj);
 		virtual void SetGroupLeader(ZObject *obj);
 		virtual ZObject* GetGroupLeader();
-		virtual vector<ZObject*> &GetMinionList();
+		virtual std::vector<ZObject*> &GetMinionList();
 		virtual void ClearGroupInfo();
 		virtual void CreateGroupInfoData(char *&data, int &size);
-		virtual void ProcessGroupInfoData(char *data, int size, vector<ZObject*> &object_list);
+		virtual void ProcessGroupInfoData(char *data, int size, std::vector<ZObject*> &object_list);
 		virtual void CloneMinionWayPoints();
 		virtual bool IsMinion();
 		virtual bool IsApartOfAGroup();
@@ -355,7 +353,7 @@ class ZObject
 		virtual void SetDriverType(int driver_type_);
 		virtual void AddDriver(int driver_health_);
 		virtual void AddDriver(driver_info_s new_driver);
-		virtual vector<driver_info_s> &GetDrivers();
+		virtual std::vector<driver_info_s> &GetDrivers();
 		virtual void ClearDrivers();
 		virtual int GetDriverType();
 		virtual int GetDriverHealth();
@@ -412,12 +410,12 @@ class ZObject
 		void SetRefID(int id);
 		void ShowWaypoints();
 		int GetRefID();
-		vector<waypoint> &GetWayPointList();
-		vector<waypoint> &GetWayPointDevList();
-		vector<waypoint> &GetRallyPointList() { return rallypoint_list; }
+		std::vector<waypoint> &GetWayPointList();
+		std::vector<waypoint> &GetWayPointDevList();
+		std::vector<waypoint> &GetRallyPointList() { return rallypoint_list; }
 		void RenderHover(ZMap &zmap, SDL_Surface *dest, team_type viewers_team);
 		void RenderHealth(ZMap &zmap, SDL_Surface *dest);
-		void RenderAttackRadius(ZMap &zmap, SDL_Surface *dest, vector<ZObject*> &avoid_list);
+		void RenderAttackRadius(ZMap &zmap, SDL_Surface *dest, std::vector<ZObject*> &avoid_list);
 		virtual void RenderSelection(ZMap &zmap, SDL_Surface *dest);
 		virtual bool UnderCursor(int &map_x, int &map_y);
 		virtual bool UnderCursorCanAttack(int &map_x, int &map_y) { return true; }
@@ -442,17 +440,17 @@ class ZObject
 		bool WithinAutoGrabFlagRadius(int ox, int oy);
 		bool WithinAttackRadius(int ox, int oy);
 		bool WithinAttackRadius(ZObject *obj);
-		bool WithinAttackRadiusOf(vector<ZObject*> &avoid_list, int ox, int oy);
+		bool WithinAttackRadiusOf(std::vector<ZObject*> &avoid_list, int ox, int oy);
 		int GetAttackRadius() { return attack_radius; }
-		static ZObject* GetObjectFromID_BS(int ref_id, vector<ZObject*> &the_list);
-		static ZObject* GetObjectFromID(int ref_id, vector<ZObject*> &the_list);
+		static ZObject* GetObjectFromID_BS(int ref_id, std::vector<ZObject*> &the_list);
+		static ZObject* GetObjectFromID(int ref_id, std::vector<ZObject*> &the_list);
 		bool StopMove();
 		virtual void SetAttackObject(ZObject *obj);
 		ZObject* GetAttackObject();
 		void RemoveObject(ZObject *obj);
 		void SmoothMove(double &the_time);
 		ZSDL_Surface &GetHoverNameImg();
-		static string GetHoverName(unsigned char ot, unsigned char oid);
+		static std::string GetHoverName(unsigned char ot, unsigned char oid);
 		static ZSDL_Surface &GetHoverNameImgStatic(unsigned char ot, unsigned char oid);
 		virtual void ProcessSetBuildingStateData(char *data, int size);
 		virtual void ProcessSetBuiltCannonData(char *data, int size);
@@ -489,21 +487,21 @@ class ZObject
 		void SetVelocity(ZObject *target_object = NULL);
 		void CreateLocationData(char *&data, int &size);
 		void CreateAttackObjectData(char *&data, int &size);
-		void ProcessMoveWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap, bool stoppable);
-		void ProcessDodgeWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
-		void ProcessAttackWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
-		void ProcessAgroWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
-		void ProcessPickupWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
-		void ProcessEnterWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
-		void ProcessEnterFortWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
-		void ProcessCraneRepairWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
-		void ProcessUnitRepairWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
-		bool CheckAttackTo(vector<waypoint>::iterator &wp, ZOLists &ols);
-		void KillWP(vector<waypoint>::iterator &wp);
+		void ProcessMoveWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap, bool stoppable);
+		void ProcessDodgeWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
+		void ProcessAttackWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
+		void ProcessAgroWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
+		void ProcessPickupWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
+		void ProcessEnterWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
+		void ProcessEnterFortWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
+		void ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
+		void ProcessUnitRepairWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap);
+		bool CheckAttackTo(std::vector<waypoint>::iterator &wp, ZOLists &ols);
+		void KillWP(std::vector<waypoint>::iterator &wp);
 		bool CanOverwriteWP();
 		bool DoAttackImpassableAtCoords(ZOLists &ols, int x, int y);
 		bool DodgeMissile(int tx, int ty, double time_till_explode);
-		bool ProcessMoveOrKillWP(double time_dif, ZMap &tmap, vector<waypoint>::iterator &wp, ZOLists &ols, bool stoppable = true);
+		bool ProcessMoveOrKillWP(double time_dif, ZMap &tmap, std::vector<waypoint>::iterator &wp, ZOLists &ols, bool stoppable = true);
 		bool ProcessMove(double time_dif, ZMap &tmap, bool stoppable = true) { int sx, sy; return ProcessMove(time_dif, tmap, sx, sy, stoppable); }
 		bool ProcessMove(double time_dif, ZMap &tmap, int &stop_x, int &stop_y, bool stoppable = true);
 		bool ReachedTarget();
@@ -516,7 +514,7 @@ class ZObject
 		void CheckPassiveEngage(double &the_time, ZOLists &ols);
 		bool IsMoving();
 		//virtual bool ServerFireTurrentMissile(int &x_, int &y_, int &damage, int &radius, double &offset_time);
-		virtual vector<fire_missile_info> ServerFireTurrentMissile(int &damage, int &radius);
+		virtual std::vector<fire_missile_info> ServerFireTurrentMissile(int &damage, int &radius);
 		virtual bool SetBuildingDefaultProduction() { return false; }
 		virtual bool SetBuildingProduction(unsigned char ot, unsigned char oid) { return false; }
 		virtual void CreateBuildingStateData(char *&data, int &size) { data = NULL; size = 0; }
@@ -524,7 +522,7 @@ class ZObject
 		virtual void ProcessBuildingQueueData(char *data, int size) {}
 		virtual bool StopBuildingProduction(bool clear_queue_list = true) { return false; }
 		virtual bool BuildUnit(double &the_time, unsigned char &ot, unsigned char &oid);
-		virtual bool RepairUnit(double &the_time, unsigned char &ot, unsigned char &oid, int &driver_type_, vector<driver_info_s> &driver_info_, vector<waypoint> &rwaypoint_list_);
+		virtual bool RepairUnit(double &the_time, unsigned char &ot, unsigned char &oid, int &driver_type_, std::vector<driver_info_s> &driver_info_, std::vector<waypoint> &rwaypoint_list_);
 		virtual bool StoreBuiltCannon(unsigned char oid);
 		virtual void CreateBuiltCannonData(char *&data, int &size) { data = NULL; size = 0; }
 		virtual void CreateTeamData(char *&data, int &size);
@@ -533,7 +531,7 @@ class ZObject
 		virtual bool RemoveStoredCannon(unsigned char oid);
 		virtual bool HaveStoredCannon(unsigned char oid);
 		virtual int CannonsInZone(ZOLists &ols);
-		virtual vector<unsigned char> &GetBuiltCannonList();
+		virtual std::vector<unsigned char> &GetBuiltCannonList();
 		bool DoAutoRepair(ZMap &tmap, ZOLists &ols);
 		void StopAutoRepair();
 		bool HasDestroyedFortInZone(ZOLists &ols);
@@ -556,8 +554,8 @@ class ZObject
 		void AttemptStartRun();
 
 		//AI stuff
-		vector<ZObject*> &GetAIList() { return ai_list; }
-		vector<ZObject*> &GetAIOrigList() { return ai_orig_list; }
+		std::vector<ZObject*> &GetAIList() { return ai_list; }
+		std::vector<ZObject*> &GetAIOrigList() { return ai_orig_list; }
 		void AddToAIList(ZObject *obj) { ai_list.push_back(obj); obj->GetAIList().push_back(this); }
 		double GetLastSetAIBuildTime() { return ai_last_set_build_time; }
 		void SetLastSetAIBuildTime(double val) { ai_last_set_build_time = val; }
@@ -574,13 +572,13 @@ class ZObject
 		//static Mix_Chunk *selected_robot_wav[MAX_ROBOT_TYPES];
 		//static Mix_Chunk *acknowledge_wav[12];
 
-		static vector<damage_missile> *damage_missile_list;
+		static std::vector<damage_missile> *damage_missile_list;
 
 		ZBuildList *buildlist;
 		ZSettings *zsettings;
 		ZMap *zmap;
 		ZTime *ztime;
-		vector<ZEffect*> *effect_list;
+		std::vector<ZEffect*> *effect_list;
 
 		bool can_be_destroyed;
 		bool destroyed;
@@ -607,7 +605,7 @@ class ZObject
 		int width, height;
 		int width_pix, height_pix;
 		team_type owner;
-		string object_name;
+		std::string object_name;
 		int mode;
 		int direction;
 		unsigned char object_type;
@@ -618,13 +616,13 @@ class ZObject
 		int move_i;
 		int attack_i;
 		bool show_waypoints;
-		vector<waypoint> waypoint_list;
-		vector<waypoint> waypoint_dev_list;
-		vector<waypoint> rallypoint_list;
+		std::vector<waypoint> waypoint_list;
+		std::vector<waypoint> waypoint_dev_list;
+		std::vector<waypoint> rallypoint_list;
 		ZCursor waypoint_cursor;
 		waypoint_information cur_wp_info;
 		int group_num;
-		string hover_name;
+		std::string hover_name;
 		ZSDL_Surface hover_name_img;
 		ZSDL_Surface hover_name_star_img;
 		int hover_name_x_shift;
@@ -654,7 +652,7 @@ class ZObject
 
 		//driver
 		int driver_type;
-		vector<driver_info_s> driver_info;
+		std::vector<driver_info_s> driver_info;
 
 		//attacking stuff
 		ZObject *attack_object;
@@ -674,12 +672,12 @@ class ZObject
 		waypoint last_wp;
 
 		//group stuff
-		vector<ZObject*> minion_list;
+		std::vector<ZObject*> minion_list;
 		ZObject *leader_obj;
 
 		//AI Stuff
-		vector<ZObject*> ai_list;
-		vector<ZObject*> ai_orig_list;
+		std::vector<ZObject*> ai_list;
+		std::vector<ZObject*> ai_orig_list;
 		double ai_last_set_build_time;
 
 		bool do_auto_repair;

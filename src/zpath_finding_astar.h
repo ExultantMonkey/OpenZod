@@ -7,8 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-using namespace std;
-
 //from zpath_finding.h
 struct map_pathfinding_info_tile;
 class ZPath_Finding_Response;

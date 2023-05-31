@@ -430,7 +430,7 @@ void ECraneConco::DoRender(ZMap &zmap, SDL_Surface *dest)
 
 	if(killme) return;
 
-	for(list<ECraneConcoItem*>::iterator r=render_item_list.begin(); r!=render_item_list.end(); r++)
+	for(std::list<ECraneConcoItem*>::iterator r=render_item_list.begin(); r!=render_item_list.end(); r++)
 	{
 		surface = NULL;
 

@@ -37,7 +37,7 @@ class ZEffect
 		ZEffect(ZTime *ztime_);
 		virtual ~ZEffect() {}
 
-		static void SetEffectList(vector<ZEffect*> *effect_list_);
+		static void SetEffectList(std::vector<ZEffect*> *effect_list_);
 		static void SetSettings(ZSettings *zsettings_);
 		static void SetMap(ZMap *zmap_) { zmap = zmap_; }
 
@@ -51,7 +51,7 @@ class ZEffect
 
 		static ZSettings *zsettings;
 		static ZSettings default_settings;
-		static vector<ZEffect*> *effect_list;
+		static std::vector<ZEffect*> *effect_list;
 		static ZMap *zmap;
 		ZTime *ztime;
 

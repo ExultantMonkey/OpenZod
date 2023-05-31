@@ -10,14 +10,12 @@
 #include "SDL_rotozoom.h"
 #include "zsdl_opengl.h"
 
-using namespace std;
-
 enum sound_setting
 {
 	SOUND_0, SOUND_25, SOUND_50, SOUND_75, SOUND_100, MAX_SOUND_SETTINGS
 };
 
-const string sound_setting_string[MAX_SOUND_SETTINGS] = 
+const std::string sound_setting_string[MAX_SOUND_SETTINGS] = 
 {
 	"0%", "25%", "50%", "75%", "100%"
 };
@@ -27,7 +25,7 @@ class SDL_RotoZoomSurface
 public:
 	SDL_RotoZoomSurface();
 
-	void LoadBaseImage(string filename);
+	void LoadBaseImage(std::string filename);
 	SDL_Surface *GetImage(int angle, double zoom);
 	SDL_Surface *CreateImage(int angle, double zoom);
 
@@ -41,7 +39,7 @@ class SDL_ZoomSurface
 public:
 	SDL_ZoomSurface();
 
-	void LoadBaseImage(string filename);
+	void LoadBaseImage(std::string filename);
 	SDL_Surface *GetImage(double zoom);
 	SDL_Surface *CreateImage(double zoom);
 
@@ -55,7 +53,7 @@ class SDL_RotateSurface
 public:
 	SDL_RotateSurface();
 
-	void LoadBaseImage(string filename);
+	void LoadBaseImage(std::string filename);
 	SDL_Surface *GetImage(int angle);
 
 private:
@@ -64,10 +62,10 @@ private:
 };
 
 SDL_Surface *ZSDL_ConvertImage(SDL_Surface *src);
-SDL_Surface *ZSDL_IMG_Load(string filename);
-SDL_Surface *IMG_Load_Error(string filename);
-Mix_Music *MUS_Load_Error(string filename);
-Mix_Chunk *MIX_Load_Error(string filename);
+SDL_Surface *ZSDL_IMG_Load(std::string filename);
+SDL_Surface *IMG_Load_Error(std::string filename);
+Mix_Music *MUS_Load_Error(std::string filename);
+Mix_Chunk *MIX_Load_Error(std::string filename);
 SDL_Surface *CopyImage(SDL_Surface *original);
 SDL_Surface *CopyImageShifted(SDL_Surface *original, int x, int y);
 void put32pixel(SDL_Surface *surface, int x, int y, SDL_Color color);

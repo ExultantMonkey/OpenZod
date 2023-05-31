@@ -29,7 +29,7 @@ ZPortrait::ZPortrait()
 void ZPortrait::Init()
 {
 	int i, j;
-	string filename;
+	std::string filename;
 
 	filename = "assets/other/hud/backdrop_vehicle.bmp";
 	backdrop_vehicle.LoadBaseImage(filename);
@@ -256,8 +256,8 @@ int ZPortrait::Process()
 
 			//set current frame
 			double cur_duration = 0;
-			vector<ZPortrait_Frame> *cur_list = &anim_info[cur_anim].frame_list;
-			for(vector<ZPortrait_Frame>::iterator i=cur_list->begin(); i!=cur_list->end(); ++i)
+			std::vector<ZPortrait_Frame> *cur_list = &anim_info[cur_anim].frame_list;
+			for(std::vector<ZPortrait_Frame>::iterator i=cur_list->begin(); i!=cur_list->end(); ++i)
 			{
 				if(cur_duration <= time_in)
 					render_frame = &(*i);
@@ -545,7 +545,7 @@ void ZPortrait_Anim::AddFrame(ZPortrait_Frame &new_frame)
 
 	//recalc the total duration
 	total_duration = 0;
-	for(vector<ZPortrait_Frame>::iterator i=frame_list.begin(); i!=frame_list.end(); ++i)
+	for(std::vector<ZPortrait_Frame>::iterator i=frame_list.begin(); i!=frame_list.end(); ++i)
 		total_duration += i->duration;
 }
 

@@ -18,7 +18,7 @@ void GMMWTeamColor::Init()
 {
 	for(int i=0;i<MAX_TEAM_TYPES;i++)
 	{
-		string filename;
+		std::string filename;
 
 		filename = "assets/other/main_menu_gui/team_color_" + team_type_string[i] + ".png";
 

@@ -45,7 +45,7 @@ class ZSound
 public:
 	ZSound();
 
-	void LoadSound(string filename, int base_volume_ = 40, int volume_shift_ = 20, double play_time_shift_ = 0);
+	void LoadSound(std::string filename, int base_volume_ = 40, int volume_shift_ = 20, double play_time_shift_ = 0);
 	void PlaySound();
 	void RepeatSound();
 	void StopRepeatSound();

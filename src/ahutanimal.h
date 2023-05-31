@@ -12,7 +12,7 @@ enum hut_animal_type
 	MAX_HUT_ANIMAL_TYPES
 };
 
-const string hut_animal_type_string[MAX_HUT_ANIMAL_TYPES] =
+const std::string hut_animal_type_string[MAX_HUT_ANIMAL_TYPES] =
 {
 	"green_snake", "green_lizard", "desert_rabit", "raptor",
 	"mini_raptor", "pig_dino", "yellow_worm", "arctic_rabit", 
@@ -63,7 +63,7 @@ public:
 private:
 	static bool finished_init;
 	static hut_animal_graphics ha_graphics[MAX_HUT_ANIMAL_TYPES];
-	static vector<int> animals_in_palette[MAX_PLANET_TYPES];
+	static std::vector<int> animals_in_palette[MAX_PLANET_TYPES];
 
 	void SetStateNothing();
 

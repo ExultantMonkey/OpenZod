@@ -33,7 +33,7 @@ ZCompMessageEngine::ZCompMessageEngine()
 	show_message_img = NULL;
 }
 
-void ZCompMessageEngine::SetObjectList(vector<ZObject*> *object_list_)
+void ZCompMessageEngine::SetObjectList(std::vector<ZObject*> *object_list_)
 {
 	object_list = object_list_;
 }
@@ -295,7 +295,7 @@ void ZCompMessageEngine::RenderGuns(ZMap &the_map, SDL_Surface *dest)
 
 	rendered_guns = 0;
 
-	for(vector<ZObject*>::iterator i=object_list->begin(); i!=object_list->end(); i++)
+	for(std::vector<ZObject*>::iterator i=object_list->begin(); i!=object_list->end(); i++)
 	{
 		unsigned char ot, oid;
 

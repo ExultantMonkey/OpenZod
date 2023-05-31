@@ -102,7 +102,7 @@ SDL_Surface *ZSDL_Surface::GetBaseSurface()
 	return sdl_surface;
 }
 
-void ZSDL_Surface::LoadBaseImage(string filename)
+void ZSDL_Surface::LoadBaseImage(std::string filename)
 {
 	//set this for later debugging purposes
 	image_filename = filename;

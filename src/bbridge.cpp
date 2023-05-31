@@ -34,7 +34,7 @@ BBridge::~BBridge()
 void BBridge::Init()
 {
 	int i;
-	string filename;
+	std::string filename;
 
 	for(i=0;i<MAX_PLANET_TYPES;i++)
 	{

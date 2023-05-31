@@ -69,15 +69,15 @@ void ZTray::SetUpdateCallBack(void (*update_func_)(ZTray*))
 	update_func = update_func_;
 }
 
-vector<p_info> &ZTray::GetPlayerInfoList()
+std::vector<p_info> &ZTray::GetPlayerInfoList()
 {
 	return player_info;
 }
 
 void ZTray::UpdateDisplay()
 {
-	string team_players[MAX_TEAM_TYPES];
-	string spectators;
+	std::string team_players[MAX_TEAM_TYPES];
+	std::string spectators;
 	bool bot_player[MAX_TEAM_TYPES];
 	bool bot_player_ignored[MAX_TEAM_TYPES];
 	int tray_players;
@@ -111,7 +111,7 @@ void ZTray::UpdateDisplay()
 		bot_player_ignored[i] = false;
 	}
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
 	{
 		//char message[500];
 
@@ -153,16 +153,16 @@ void ZTray::UpdateDisplay()
 			if(bot_player[i])
 			{
 				if(bot_player_ignored[i])
-					printf(string(team_type_string[i] + " team -b: " + team_players[i] + "\n").c_str());
+					printf(std::string(team_type_string[i] + " team -b: " + team_players[i] + "\n").c_str());
 				else
-					printf(string(team_type_string[i] + " team +b: " + team_players[i] + "\n").c_str());
+					printf(std::string(team_type_string[i] + " team +b: " + team_players[i] + "\n").c_str());
 			}
 			else
-				printf(string(team_type_string[i] + " team: " + team_players[i] + "\n").c_str());
+				printf(std::string(team_type_string[i] + " team: " + team_players[i] + "\n").c_str());
 		}
 
 	if(spectators.size())
-		printf(string("spectators: " + spectators + "\n").c_str());
+		printf(std::string("spectators: " + spectators + "\n").c_str());
 
 	if(tray_players)
 	{

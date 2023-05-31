@@ -52,7 +52,7 @@ BRadar::BRadar(ZTime *ztime_, ZSettings *zsettings_, planet_type palette_) : ZBu
 void BRadar::Init()
 {
 	int i, j;
-	string filename;
+	std::string filename;
 	char filename_c[500];
 	
 	//load colors
@@ -288,7 +288,7 @@ void BRadar::DoAfterEffects(ZMap &the_map, SDL_Surface *dest, int shift_x, int s
 	}
 
 	//render effects
-	for(vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
+	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
 		(*i)->DoRender(the_map, dest);
 }
 

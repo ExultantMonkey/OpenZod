@@ -5,8 +5,6 @@
 #include <vector>
 #include <utility>
 
-using namespace std;
-
 class ZCore;
 class ZObject;
 class ZMap;
@@ -51,7 +49,7 @@ public:
 private:
 	bool LazyCreateRedTile();
 	
-	vector<ZHeatMapBase*> hm_list;
+	std::vector<ZHeatMapBase*> hm_list;
 	ZHeatMapBase hm_final;
 	double time_till_next_process;
 	

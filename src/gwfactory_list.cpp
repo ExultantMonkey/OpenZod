@@ -257,7 +257,7 @@ bool GWFactoryList::Click(int x_, int y_)
 	down_button.Click(x_local, y_local);
 
 	//test
-	for(vector<gwfl_render_entry>::iterator e=entry_list.begin(); e!=entry_list.end(); e++)
+	for(std::vector<gwfl_render_entry>::iterator e=entry_list.begin(); e!=entry_list.end(); e++)
 	{
 		if(x_local < e->x) continue;
 		if(y_local < e->y) continue;
@@ -332,15 +332,15 @@ void GWFactoryList::DoDownButton()
 
 void GWFactoryList::CollectEntries()
 {
-	vector<ZObject*> fort_list;
-	vector<ZObject*> robot_list;
-	vector<ZObject*> vehicle_list;
+	std::vector<ZObject*> fort_list;
+	std::vector<ZObject*> robot_list;
+	std::vector<ZObject*> vehicle_list;
 
 	if(!ols) return;
 
 	entry_list.clear();
 
-	for(vector<ZObject*>::iterator i=ols->building_olist.begin(); i!=ols->building_olist.end(); i++)
+	for(std::vector<ZObject*>::iterator i=ols->building_olist.begin(); i!=ols->building_olist.end(); i++)
 	{
 		if((*i)->GetOwner() != our_team) continue;
 
@@ -361,9 +361,9 @@ void GWFactoryList::CollectEntries()
 		}
 	}
 
-	for(vector<ZObject*>::iterator i=fort_list.begin(); i!=fort_list.end(); i++) AddEntry(*i);
-	for(vector<ZObject*>::iterator i=robot_list.begin(); i!=robot_list.end(); i++) AddEntry(*i);
-	for(vector<ZObject*>::iterator i=vehicle_list.begin(); i!=vehicle_list.end(); i++) AddEntry(*i);
+	for(std::vector<ZObject*>::iterator i=fort_list.begin(); i!=fort_list.end(); i++) AddEntry(*i);
+	for(std::vector<ZObject*>::iterator i=robot_list.begin(); i!=robot_list.end(); i++) AddEntry(*i);
+	for(std::vector<ZObject*>::iterator i=vehicle_list.begin(); i!=vehicle_list.end(); i++) AddEntry(*i);
 }
 
 void GWFactoryList::AddEntry(ZObject *obj)

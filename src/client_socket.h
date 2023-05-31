@@ -19,15 +19,13 @@
 #include <arpa/inet.h>
 #endif
 
-using namespace std;
-
 class ClientSocket
 {
 	public:
 		ClientSocket();
 		
 		int Start(const char *address_ = "localhost", int port_ = 8000);
-		void SetEventList(list<Event*> *event_list_);
+		void SetEventList(std::list<Event*> *event_list_);
 		int Process();
 		
 		int SendMessage(int pack_id, const char *data, int size);
@@ -39,12 +37,12 @@ class ClientSocket
 		int CreateSocket();
 		int Connect();
 		
-		string address;
+		std::string address;
 		int port;
 		int s;
 		
 		SocketHandler* shandler;
-		list<Event*> *event_list;
+		std::list<Event*> *event_list;
 };
 
 #endif

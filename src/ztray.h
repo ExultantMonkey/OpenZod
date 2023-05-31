@@ -12,7 +12,7 @@ class ZTray : public ZClient
 		void Run();
 
 		void SetUpdateCallBack(void (*update_func_)(ZTray*));
-		vector<p_info> &GetPlayerInfoList();
+		std::vector<p_info> &GetPlayerInfoList();
 	private:
 		void SetupEHandler();
 		void ProcessDisconnect();

@@ -7,8 +7,6 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
 class gwfl_render_entry
 {
 public:
@@ -22,8 +20,8 @@ public:
 		w=h=0;
 	}
 
-	string message_left[3];
-	string message_right[3];
+	std::string message_left[3];
+	std::string message_right[3];
 	bool colored[3];
 	double percent[3];
 	int ref_id;
@@ -67,7 +65,7 @@ private:
 	static ZSDL_Surface entry_bar_grey_img;
 	static ZSDL_Surface entry_bar_white_i_img;
 
-	vector<gwfl_render_entry> entry_list;
+	std::vector<gwfl_render_entry> entry_list;
 	int show_able_entries;
 	int show_start_entry;
 

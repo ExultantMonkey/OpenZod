@@ -7,8 +7,6 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
 #define ZTEAM_BASE_TEAM RED_TEAM
 
 extern SDL_Color team_color[MAX_TEAM_TYPES];
@@ -19,7 +17,7 @@ class ZTeam_Palette
 {
 public:
 	bool LoadSurfacePalette(SDL_Surface *surface);
-	bool SaveSurfacePalette(string filename);
+	bool SaveSurfacePalette(std::string filename);
 	bool AddColor(SDL_Color &bc, SDL_Color &rc);
 	bool GetReplacement(Uint8 &r, Uint8 &g, Uint8 &b, SDL_Color &c);
 
@@ -39,7 +37,7 @@ public:
 	static void SavePalette(int team);
 	static void SaveAllPalettes();
 	static void AppendPalette(int team, SDL_Surface *base_version, SDL_Surface *this_version);
-	static void LoadZSurface(int team, ZSDL_Surface &bv, ZSDL_Surface &rv, string filename);
+	static void LoadZSurface(int team, ZSDL_Surface &bv, ZSDL_Surface &rv, std::string filename);
 
 	static SDL_Surface *Make(int team, SDL_Surface *base_version);
 

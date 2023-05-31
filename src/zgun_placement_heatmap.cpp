@@ -17,7 +17,7 @@ ZGunPlacementHeatMap::ZGunPlacementHeatMap()
 
 ZGunPlacementHeatMap::~ZGunPlacementHeatMap()
 {
-	for(vector<ZHeatMapBase*>::iterator hmi=hm_list.begin();hmi!=hm_list.end();++hmi)
+	for(std::vector<ZHeatMapBase*>::iterator hmi=hm_list.begin();hmi!=hm_list.end();++hmi)
 	{		
 		if(*hmi) free(*hmi);
 	}
@@ -35,7 +35,7 @@ void ZGunPlacementHeatMap::Process(double the_time, ZOLists &ols, ZMap &tmap, in
 	time_till_next_process = the_time + process_time_inc;
 	
 	//process heatmaps
-	for(vector<ZHeatMapBase*>::iterator hmi=hm_list.begin();hmi!=hm_list.end();++hmi)
+	for(std::vector<ZHeatMapBase*>::iterator hmi=hm_list.begin();hmi!=hm_list.end();++hmi)
 	{
 		ZHeatMapBase* hm = *hmi;
 		
@@ -71,7 +71,7 @@ void ZGunPlacementHeatMap::ProcessFinalHeatMap(double the_time, ZOLists &ols, ZM
 	if(!hm_size) return;
 	if(!hm_data) return;
 	
-	for(vector<ZHeatMapBase*>::iterator hmi=hm_list.begin();hmi!=hm_list.end();++hmi)
+	for(std::vector<ZHeatMapBase*>::iterator hmi=hm_list.begin();hmi!=hm_list.end();++hmi)
 	{
 		if((*hmi)->GetHeatMapSize() != hm_size) return;
 		if(!(*hmi)->GetHeatMapData()) return;
@@ -80,7 +80,7 @@ void ZGunPlacementHeatMap::ProcessFinalHeatMap(double the_time, ZOLists &ols, ZM
 	//do add
 	for(int i=0;i<hm_size;i++)
 	{
-		for(vector<ZHeatMapBase*>::iterator hmi=hm_list.begin();hmi!=hm_list.end();++hmi)
+		for(std::vector<ZHeatMapBase*>::iterator hmi=hm_list.begin();hmi!=hm_list.end();++hmi)
 			hm_data[i] += (*hmi)->GetHeatMapData()[i];
 		
 		//if(hm_data[i] > max_val)
@@ -146,7 +146,7 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 	if(zyte - zyts < 2) return false;
 	
 	{
-		map<float, vector< pair<int,int> > > results;
+		std::map<float, std::vector< std::pair<int,int> > > results;
 		int h = tmap.GetMapBasics().height;
 		double c_attack_radius = zsettings.GetUnitSettings(CANNON_OBJECT, coid).attack_radius;
 		int c_tile_dist = ceil((float)(zsettings.GetUnitSettings(CANNON_OBJECT, coid).attack_radius / 16));
@@ -216,7 +216,7 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 						}
 					
 					
-					if(val > 0) results[val].push_back(pair<int,int>(i,j));
+					if(val > 0) results[val].push_back(std::pair<int,int>(i,j));
 				}
 			
 			//free cannon heat
@@ -234,20 +234,20 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 					float val = hm_data[xy_to_i(i,j,h)] + hm_data[xy_to_i(i+1,j,h)] +
 									hm_data[xy_to_i(i,j+1,h)] + hm_data[xy_to_i(i+1,j+1,h)];
 									
-					if(val > 0) results[val].push_back(pair<int,int>(i,j));
+					if(val > 0) results[val].push_back(std::pair<int,int>(i,j));
 				}
 		}
 		
 		if(results.size())
 		{
-			map<float, vector< pair<int,int> > >::reverse_iterator r = results.rbegin();
+			std::map<float, std::vector< std::pair<int,int> > >::reverse_iterator r = results.rbegin();
 			
 			float best_val = r->first;
 			
 			//build list of choices within % of top choices
 			if(best_val > 0)
 			{
-				vector< pair<int,int> > choose_list = r->second;
+				std::vector< std::pair<int,int> > choose_list = r->second;
 
 				for(r++;r!=results.rend();++r)
 					if(fabs((best_val - r->first) / best_val) < 0.005)
@@ -255,7 +255,7 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 					
 				if(choose_list.size())
 				{
-					pair<int,int> choosen = choose_list[rand() % choose_list.size()];
+					std::pair<int,int> choosen = choose_list[rand() % choose_list.size()];
 					
 					tx = choosen.first;
 					ty = choosen.second;
@@ -469,7 +469,7 @@ void ZFlagHeatMap::Process(double the_time, ZOLists &ols, ZMap &tmap, int our_te
 	DoClear();
 	
 	//for all our flags add heat
-	for(vector<ZObject*>::iterator o=ols.flag_olist.begin(); o!=ols.flag_olist.end(); o++)
+	for(std::vector<ZObject*>::iterator o=ols.flag_olist.begin(); o!=ols.flag_olist.end(); o++)
 	{
 		unsigned char ot, oid;
 		
@@ -534,7 +534,7 @@ void ZUnitHistoryHeatMap::Process(double the_time, ZOLists &ols, ZMap &tmap, int
 	}
 	
 	//add in current enemy units
-	for(vector<ZObject*>::iterator o=ols.mobile_olist.begin(); o!=ols.mobile_olist.end(); o++)
+	for(std::vector<ZObject*>::iterator o=ols.mobile_olist.begin(); o!=ols.mobile_olist.end(); o++)
 	{
 		unsigned char ot, oid;
 		
@@ -571,7 +571,7 @@ void ZBuildingHeatMap::Process(double the_time, ZOLists &ols, ZMap &tmap, int ou
 	
 	//for all enemy building entrances
 	//and our fort entrances
-	for(vector<ZObject*>::iterator o=ols.building_olist.begin(); o!=ols.building_olist.end(); o++)
+	for(std::vector<ZObject*>::iterator o=ols.building_olist.begin(); o!=ols.building_olist.end(); o++)
 	{
 		unsigned char ot, oid;
 		ZObject* oo = *o;
@@ -627,7 +627,7 @@ void ZOurCannonHeatMap::Process(double the_time, ZOLists &ols, ZMap &tmap, int o
 	DoClear();
 	
 	//add in negative heat from cannons
-	for(vector<ZObject*>::iterator o=ols.cannon_olist.begin(); o!=ols.cannon_olist.end(); o++)
+	for(std::vector<ZObject*>::iterator o=ols.cannon_olist.begin(); o!=ols.cannon_olist.end(); o++)
 	{
 		unsigned char ot, oid;
 		

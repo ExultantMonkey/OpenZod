@@ -15,8 +15,6 @@
 #include <string>
 #include <stdio.h>
 
-using namespace std;
-
 #include "zpsettings.h"
 #include "constants.h"
 #include "common.h"
@@ -29,17 +27,17 @@ public:
 	ZMysqlUser() {clear();}
 
 	int tabID;
-	string username;
-	string loginname;
-	string password;
-	string email;
+	std::string username;
+	std::string loginname;
+	std::string password;
+	std::string email;
 	bool activated;
 	int voting_power;
 	int wins;
 	int loses;
 	int total_games;
-	string creation_ip;
-	string last_ip;
+	std::string creation_ip;
+	std::string last_ip;
 	int creation_time;
 	int last_time;
 	int total_time;
@@ -122,33 +120,33 @@ public:
 	ZMysql();
 	~ZMysql();
 
-	bool LoadDetails(string &error_msg, string filename = "mysql.txt");
-	bool LoadDetails(string &error_msg, ZPSettings &psettings);
+	bool LoadDetails(std::string &error_msg, std::string filename = "mysql.txt");
+	bool LoadDetails(std::string &error_msg, ZPSettings &psettings);
 
-	bool Connect(string &error_msg);
-	bool Disconnect(string &error_msg);
-	bool CreateUserTable(string &error_msg);
-	bool AddUser(string &error_msg, ZMysqlUser &new_user, bool &user_added);
-	bool CheckUserExistance(string &error_msg, ZMysqlUser &user, bool &user_exists);
-	bool LoginUser(string &error_msg, string loginname, string password, ZMysqlUser &user, bool &user_found);
-	bool UpdateUserVariable(string &error_msg, int tabID, string varname, string value);
-	bool UpdateUserVariable(string &error_msg, int tabID, string varname, int value);
-	bool IncreaseUserVariable(string &error_msg, int tabID, string varname, int amount);
-	bool IPInUserTable(string &error_msg, string ip, int &users_found);
+	bool Connect(std::string &error_msg);
+	bool Disconnect(std::string &error_msg);
+	bool CreateUserTable(std::string &error_msg);
+	bool AddUser(std::string &error_msg, ZMysqlUser &new_user, bool &user_added);
+	bool CheckUserExistance(std::string &error_msg, ZMysqlUser &user, bool &user_exists);
+	bool LoginUser(std::string &error_msg, std::string loginname, std::string password, ZMysqlUser &user, bool &user_found);
+	bool UpdateUserVariable(std::string &error_msg, int tabID, std::string varname, std::string value);
+	bool UpdateUserVariable(std::string &error_msg, int tabID, std::string varname, int value);
+	bool IncreaseUserVariable(std::string &error_msg, int tabID, std::string varname, int amount);
+	bool IPInUserTable(std::string &error_msg, std::string ip, int &users_found);
 
-	bool CreateOnlineHistoryTable(string &error_msg);
-	bool InsertOnlineHistoryEntry(string &error_msg, int time_stamp, int player_count, int tray_player_count);
+	bool CreateOnlineHistoryTable(std::string &error_msg);
+	bool InsertOnlineHistoryEntry(std::string &error_msg, int time_stamp, int player_count, int tray_player_count);
 
-	bool CreateAffiliateTable(string &error_msg);
-	bool GetAffiliateId(string &error_msg, string ip, int &aff_id, bool &ip_found);
+	bool CreateAffiliateTable(std::string &error_msg);
+	bool GetAffiliateId(std::string &error_msg, std::string ip, int &aff_id, bool &ip_found);
 private:
 	bool details_loaded;
 
-	string host_name;
-	string database_name;
-	string login_name;
-	string login_password;
-	string root_password;
+	std::string host_name;
+	std::string database_name;
+	std::string login_name;
+	std::string login_password;
+	std::string root_password;
 	
 #ifndef DISABLE_MYSQL
 	MYSQL *mysql_conn;

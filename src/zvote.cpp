@@ -54,11 +54,11 @@ void ZVote::DoRender(ZMap &the_map)
 	}
 }
 
-void ZVote::SetupImages(int have, int needed, int for_votes, int against_votes, string append_description)
+void ZVote::SetupImages(int have, int needed, int for_votes, int against_votes, std::string append_description)
 {
 	const int max_description_len = 112 - 8;
 	char message[500];
-	string description;
+	std::string description;
 
 	description = vote_type_string[vote_type];
 

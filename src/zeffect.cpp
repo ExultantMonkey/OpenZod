@@ -2,7 +2,7 @@
 
 ZSettings ZEffect::default_settings;
 ZSettings *ZEffect::zsettings = &ZEffect::default_settings;
-vector<ZEffect*> *ZEffect::effect_list = NULL;
+std::vector<ZEffect*> *ZEffect::effect_list = NULL;
 ZMap *ZEffect::zmap = NULL;
 
 ZEffect::ZEffect(ZTime *ztime_)
@@ -16,7 +16,7 @@ void ZEffect::SetSettings(ZSettings *zsettings_)
 	zsettings = zsettings_;
 }
 
-void ZEffect::SetEffectList(vector<ZEffect*> *effect_list_)
+void ZEffect::SetEffectList(std::vector<ZEffect*> *effect_list_)
 {
 	effect_list = effect_list_;
 }

@@ -24,13 +24,13 @@ GMMWButton::GMMWButton() : ZGMMWidget()
 
 void GMMWButton::Init()
 {
-	string filename;
+	std::string filename;
 
 	//normal button images
 	for(int t=MMGENERIC_BUTTON+1;t<MAX_MMBUTTON_TYPES;t++)
 		for(int i=0;i<MAX_MMBUTTON_STATES;i++)
 		{
-			string token;
+			std::string token;
 
 			switch(i)
 			{
@@ -46,7 +46,7 @@ void GMMWButton::Init()
 	//generic button images
 	for(int i=0;i<MAX_MMBUTTON_STATES;i++)
 	{
-		string token;
+		std::string token;
 
 		switch(i)
 		{

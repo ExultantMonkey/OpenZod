@@ -173,7 +173,7 @@ void ZBot::delete_object_event(ZBot *p, char *data, int size, int dummy)
 	if(!obj) return;
 
 	//clean up all parts of the bot who use this pointer
-	vector<ZObject*>::iterator i;
+	std::vector<ZObject*>::iterator i;
 	for(i=p->object_list.begin();i!=p->object_list.end();i++)
 		(*i)->RemoveObject(obj);
 }

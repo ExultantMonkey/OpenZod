@@ -70,16 +70,16 @@ private:
 	void ClearLists();
 	void LoadLists();
 	void LoadUnitToLists(unsigned char ot, unsigned char oid);
-	void DoRenderList(ZMap &the_map, SDL_Surface *dest, int lx, int ly, vector<ZObject*> &the_list);
+	void DoRenderList(ZMap &the_map, SDL_Surface *dest, int lx, int ly, std::vector<ZObject*> &the_list);
 	void LoadButtonList();
-	void AppendButtonList(int lx, int ly, vector<ZObject*> &the_list);
+	void AppendButtonList(int lx, int ly, std::vector<ZObject*> &the_list);
 	void CalculateWH();
 	void CalculateXY();
 
-	vector<ZObject*> robot_list;
-	vector<ZObject*> vehicle_list;
-	vector<ZObject*> cannon_list;
-	vector<GWPFullUnitSelectorButton> button_list;
+	std::vector<ZObject*> robot_list;
+	std::vector<ZObject*> vehicle_list;
+	std::vector<ZObject*> cannon_list;
+	std::vector<GWPFullUnitSelectorButton> button_list;
 	int lists_building_type;
 	int lists_building_level;
 
@@ -267,7 +267,7 @@ class GWProduction : public ZGuiWindow
 		bool rerender_show_time;
 		ZBuilding *building_obj;
 		//ZObject *draw_obj;
-		vector<GWPQueueItem> queue_button_list;
+		std::vector<GWPQueueItem> queue_button_list;
 
 		int show_time;
 		ZSDL_Surface show_time_img;

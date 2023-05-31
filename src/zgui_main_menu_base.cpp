@@ -61,7 +61,7 @@ void ZGuiMainMenuBase::ProcessWidgets()
 	close_button.Process();
 
 	//widgets
-	for(vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
+	for(std::vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
 		(*i)->Process();
 }
 
@@ -116,7 +116,7 @@ bool ZGuiMainMenuBase::Motion(int x_, int y_)
 	tx = x_ - x;
 	ty = y_ - y;
 
-	for(vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
+	for(std::vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
 		if((*i)->Motion(tx, ty))
 		{
 			HandleWidgetEvent(GMM_MOTION_EVENT, *i);
@@ -132,7 +132,7 @@ bool ZGuiMainMenuBase::KeyPress(int c)
 
 	gmm_flags.clear();
 
-	for(vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
+	for(std::vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
 		if((*i)->KeyPress(c))
 		{
 			HandleWidgetEvent(GMM_KEYPRESS_EVENT, *i);
@@ -148,7 +148,7 @@ bool ZGuiMainMenuBase::WheelUpButton()
 
 	gmm_flags.clear();
 
-	for(vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
+	for(std::vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
 		if((*i)->WheelUpButton())
 		{
 			HandleWidgetEvent(GMM_WHEELUP_EVENT, *i);
@@ -164,7 +164,7 @@ bool ZGuiMainMenuBase::WheelDownButton()
 
 	gmm_flags.clear();
 
-	for(vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
+	for(std::vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
 		if((*i)->WheelDownButton())
 		{
 			HandleWidgetEvent(GMM_WHEELDOWN_EVENT, *i);
@@ -189,7 +189,7 @@ bool ZGuiMainMenuBase::Click(int x_, int y_)
 	if(close_button.Click(tx, ty)) action_taken = true;
 
 	//normal widgets
-	for(vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
+	for(std::vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
 		if((*i)->Click(tx, ty))
 		{
 			HandleWidgetEvent(GMM_CLICK_EVENT, *i);
@@ -230,7 +230,7 @@ bool ZGuiMainMenuBase::UnClick(int x_, int y_)
 	}
 
 	//normal widgets
-	for(vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
+	for(std::vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
 		if((*i)->UnClick(tx, ty))
 		{
 			HandleWidgetEvent(GMM_UNCLICK_EVENT, *i);
@@ -273,7 +273,7 @@ void ZGuiMainMenuBase::DoRender(ZMap &the_map, SDL_Surface *dest)
 void ZGuiMainMenuBase::RenderWidgets(ZMap &the_map, SDL_Surface *dest)
 {
 	//widgets
-	for(vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
+	for(std::vector<ZGMMWidget*>::iterator i=widget_list.begin(); i!=widget_list.end(); ++i)
 		(*i)->DoRender(the_map, dest, x, y);
 }
 

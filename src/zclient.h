@@ -9,8 +9,8 @@ class ZClient : public ZCore
 	public:
 		ZClient();
 		
-		void SetRemoteAddress(string ipaddress);
-		void SetPlayerName(string player_name_);
+		void SetRemoteAddress(std::string ipaddress);
+		void SetPlayerName(std::string player_name_);
 		virtual void SetPlayerTeam(team_type player_team);
 		virtual void SetDesiredTeam(team_type player_team);
 	protected:
@@ -59,8 +59,8 @@ class ZClient : public ZCore
 		virtual void DeleteObjectCleanUp(ZObject *obj);
 		
 		
-		string remote_address;
-		string player_name;
+		std::string remote_address;
+		std::string player_name;
 		team_type our_team;
 		team_type desired_team;
 		player_mode our_mode;

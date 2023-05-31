@@ -382,7 +382,7 @@ namespace ZPath_Finding_AStar
 		}
 		//end_time = current_time();
 
-		vector<pf_point> final_path;
+		std::vector<pf_point> final_path;
 		if(cp.x == end_x && cp.y == end_y)
 		while(1)
 		{
@@ -461,7 +461,7 @@ namespace ZPath_Finding_AStar
 		//remove redundents
 		int previous_dir = -1;
 		int cur_dir;
-		for(vector<pf_point>::iterator i=final_path.begin();i!=final_path.end();)
+		for(std::vector<pf_point>::iterator i=final_path.begin();i!=final_path.end();)
 		{
 			if(i!=final_path.begin() && i+1!=final_path.end())
 			{
@@ -479,7 +479,7 @@ namespace ZPath_Finding_AStar
 
 
 		//convert list to actual x,y cords
-		for(vector<pf_point>::iterator i=final_path.begin();i!=final_path.end();i++)
+		for(std::vector<pf_point>::iterator i=final_path.begin();i!=final_path.end();i++)
 		{
 			i->x *= 16;
 			i->y *= 16;

@@ -9,7 +9,7 @@ ZSettings ZObject::default_zsettings;
 ZSDL_Surface ZObject::group_tag[10];
 
 //vector<ZEffect*> *ZObject::effect_list = NULL;
-vector<damage_missile> *ZObject::damage_missile_list = NULL;
+std::vector<damage_missile> *ZObject::damage_missile_list = NULL;
 
 ZObject::ZObject(ZTime *ztime_, ZSettings *zsettings_)
 {
@@ -445,12 +445,12 @@ void ZObject::PlayAcknowledgeAnim(ZPortrait &portrait, bool no_way)
 	}
 }
 
-vector<waypoint> &ZObject::GetWayPointList()
+std::vector<waypoint> &ZObject::GetWayPointList()
 {
 	return waypoint_list;
 }
 
-vector<waypoint> &ZObject::GetWayPointDevList()
+std::vector<waypoint> &ZObject::GetWayPointDevList()
 {
 	return waypoint_dev_list;
 }
@@ -501,7 +501,7 @@ ZSDL_Surface &ZObject::GetHoverNameImgStatic(unsigned char ot, unsigned char oid
 
 	if(!static_hover_name_img[ot][oid].GetBaseSurface())
 	{
-		string render_str;
+		std::string render_str;
 
 		render_str = GetHoverName(ot, oid);
 		if(render_str.length())
@@ -511,7 +511,7 @@ ZSDL_Surface &ZObject::GetHoverNameImgStatic(unsigned char ot, unsigned char oid
 	return static_hover_name_img[ot][oid];
 }
 
-string ZObject::GetHoverName(unsigned char ot, unsigned char oid)
+std::string ZObject::GetHoverName(unsigned char ot, unsigned char oid)
 {
 	switch(ot)
 	{
@@ -698,7 +698,7 @@ void ZObject::RenderHealth(ZMap &zmap, SDL_Surface *dest)
 	}
 }
 
-void ZObject::RenderAttackRadius(ZMap &zmap, SDL_Surface *dest, vector<ZObject*> &avoid_list)
+void ZObject::RenderAttackRadius(ZMap &zmap, SDL_Surface *dest, std::vector<ZObject*> &avoid_list)
 {
 	int &x = loc.x;
 	int &y = loc.y;
@@ -873,9 +873,9 @@ bool ZObject::WithinAttackRadius(int ox, int oy)
 	return points_within_distance(x, y, ox, oy, attack_radius);
 }
 
-bool ZObject::WithinAttackRadiusOf(vector<ZObject*> &avoid_list, int ox, int oy)
+bool ZObject::WithinAttackRadiusOf(std::vector<ZObject*> &avoid_list, int ox, int oy)
 {
-	vector<ZObject*>::iterator i;
+	std::vector<ZObject*>::iterator i;
 
 	for(i=avoid_list.begin();i!=avoid_list.end();i++)
 		if(*i != this && (*i)->WithinAttackRadius(ox, oy))
@@ -956,7 +956,7 @@ bool ZObject::CannonNotPlacable(int &map_left, int &map_right, int &map_top, int
 	return WithinSelection(map_left, map_right, map_top, map_bottom);
 }
 
-string ZObject::GetObjectName()
+std::string ZObject::GetObjectName()
 {
 	return object_name;
 }
@@ -1069,7 +1069,7 @@ int ZObject::ProcessObject()
 void ZObject::ShowWaypoints()
 {
 	double &the_time = ztime->ztime;
-	vector<waypoint>::iterator i;
+	std::vector<waypoint>::iterator i;
 
 	render_death_time = the_time + 3.0;
 	show_waypoints = true;
@@ -1111,13 +1111,13 @@ void ZObject::ShowWaypoints()
 		waypoint_cursor.SetCursor(PLACED_C);
 }
 
-void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, vector<ZObject*> &object_list, bool is_rally_points, int shift_x, int shift_y)
+void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZObject*> &object_list, bool is_rally_points, int shift_x, int shift_y)
 {
 	int x, y;
 	int nx, ny;
 	const int glvl = 170;
 	SDL_Rect the_box;
-	vector<waypoint>::iterator i;
+	std::vector<waypoint>::iterator i;
 	//Uint32 mappedrgb = SDL_MapRGB(dest->format, glvl, glvl, glvl);
 	double tx,ty;
 	double txp, typ;
@@ -1129,7 +1129,7 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, vector<ZObject
 	int mshift_x, mshift_y;
 	int view_h, view_w;
 	ZObject *target_object;
-	vector<waypoint> *render_waypoint_list;
+	std::vector<waypoint> *render_waypoint_list;
 
 	if(!is_rally_points && !show_waypoints) return;
 
@@ -1439,7 +1439,7 @@ int ZObject::ProcessServer(ZMap &tmap, ZOLists &ols)
 {
 	double &the_time = ztime->ztime;
 	double time_dif;
-	vector<waypoint>::iterator wp;
+	std::vector<waypoint>::iterator wp;
 	bool is_new_waypoint;
 	bool attack_player_given = false;
 
@@ -1630,12 +1630,12 @@ void ZObject::CheckPassiveEngage(double &the_time, ZOLists &ols)
 		return;
 	}
 
-	vector<ZObject*>::iterator obj;
+	std::vector<ZObject*>::iterator obj;
 
-	vector<ZObject*> agro_choices;
-	vector<ZObject*> enter_vehicle_choices;
-	vector<ZObject*> grab_flag_choices;
-	vector<ZObject*> grab_grenades_choices;
+	std::vector<ZObject*> agro_choices;
+	std::vector<ZObject*> enter_vehicle_choices;
+	std::vector<ZObject*> grab_flag_choices;
+	std::vector<ZObject*> grab_grenades_choices;
 
 	//lets see if there are any enemies to attack..
 	if(CanAttack())
@@ -1760,7 +1760,7 @@ void ZObject::CheckPassiveEngage(double &the_time, ZOLists &ols)
 	}
 	else
 	{
-		vector<ZObject*> *obj_choices = NULL;
+		std::vector<ZObject*> *obj_choices = NULL;
 		int waypoint_mode = MOVE_WP;
 		bool do_auto_enter = false;
 		bool do_auto_grab_flag = false;
@@ -2231,7 +2231,7 @@ void ZObject::ProcessKillObject()
 	if(ProducesUnits()) StopBuildingProduction();
 }
 
-void ZObject::ProcessAgroWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
+void ZObject::ProcessAgroWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	int ox, oy;
 	ZObject *target_object;
@@ -2324,7 +2324,7 @@ void ZObject::ProcessAgroWP(vector<waypoint>::iterator &wp, double time_dif, boo
 	}
 }
 
-void ZObject::ProcessAttackWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
+void ZObject::ProcessAttackWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	int &x = loc.x;
 	int &y = loc.y;
@@ -2473,7 +2473,7 @@ void ZObject::ProcessAttackWP(vector<waypoint>::iterator &wp, double time_dif, b
 	}
 }
 
-void ZObject::ProcessPickupWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
+void ZObject::ProcessPickupWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	int &x = loc.x;
 	int &y = loc.y;
@@ -2573,7 +2573,7 @@ void ZObject::ProcessPickupWP(vector<waypoint>::iterator &wp, double time_dif, b
 		KillWP(wp);
 }
 
-void ZObject::ProcessEnterWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
+void ZObject::ProcessEnterWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	int &x = loc.x;
 	int &y = loc.y;
@@ -2655,7 +2655,7 @@ void ZObject::ProcessEnterWP(vector<waypoint>::iterator &wp, double time_dif, bo
 		KillWP(wp);
 }
 
-void ZObject::ProcessDodgeWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
+void ZObject::ProcessDodgeWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	if(is_new)
 	{
@@ -2676,7 +2676,7 @@ void ZObject::ProcessDodgeWP(vector<waypoint>::iterator &wp, double time_dif, bo
 	KillWP(wp);
 }
 
-void ZObject::ProcessMoveWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap, bool stoppable)
+void ZObject::ProcessMoveWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap, bool stoppable)
 {
 	int &x = loc.x;
 	int &y = loc.y;
@@ -2718,7 +2718,7 @@ void ZObject::ProcessMoveWP(vector<waypoint>::iterator &wp, double time_dif, boo
 
 		//run if we are going for a flag
 		{
-			for(vector<ZObject*>::iterator obj=ols.flag_olist.begin()++;obj!=ols.flag_olist.end();obj++)
+			for(std::vector<ZObject*>::iterator obj=ols.flag_olist.begin()++;obj!=ols.flag_olist.end();obj++)
 				if((*obj)->DistanceFromCoords(wp->x, wp->y) <= 32)
 				{
 					AttemptStartRun(wp->x, wp->y);
@@ -2751,7 +2751,7 @@ void ZObject::ProcessMoveWP(vector<waypoint>::iterator &wp, double time_dif, boo
 		KillWP(wp);
 }
 
-void ZObject::ProcessEnterFortWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
+void ZObject::ProcessEnterFortWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	int &x = loc.x;
 	int &y = loc.y;
@@ -2890,7 +2890,7 @@ void ZObject::ProcessEnterFortWP(vector<waypoint>::iterator &wp, double time_dif
 	}
 }
 
-void ZObject::ProcessCraneRepairWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
+void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	int &x = loc.x;
 	int &y = loc.y;
@@ -3065,7 +3065,7 @@ void ZObject::ProcessCraneRepairWP(vector<waypoint>::iterator &wp, double time_d
 	}
 }
 
-void ZObject::ProcessUnitRepairWP(vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
+void ZObject::ProcessUnitRepairWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	int &x = loc.x;
 	int &y = loc.y;
@@ -3254,15 +3254,15 @@ void ZObject::ProcessUnitRepairWP(vector<waypoint>::iterator &wp, double time_di
 	}
 }
 
-bool ZObject::CheckAttackTo(vector<waypoint>::iterator &wp, ZOLists &ols)
+bool ZObject::CheckAttackTo(std::vector<waypoint>::iterator &wp, ZOLists &ols)
 {
 	if(wp->attack_to)
 	{
 		if(!CanOverwriteWP()) return false;
 
 		//look for attack choices
-		vector<ZObject*> agro_choices;
-		for(vector<ZObject*>::iterator obj=ols.passive_engagable_olist.begin();obj!=ols.passive_engagable_olist.end();obj++)
+		std::vector<ZObject*> agro_choices;
+		for(std::vector<ZObject*>::iterator obj=ols.passive_engagable_olist.begin();obj!=ols.passive_engagable_olist.end();obj++)
 		{
 			int ox, oy;
 			unsigned char ot, oid;
@@ -3310,7 +3310,7 @@ bool ZObject::CheckAttackTo(vector<waypoint>::iterator &wp, ZOLists &ols)
 	return false;
 }
 
-void ZObject::KillWP(vector<waypoint>::iterator &wp)
+void ZObject::KillWP(std::vector<waypoint>::iterator &wp)
 {
 	sflags.updated_waypoints = true;
 	waypoint_list.erase(wp);
@@ -3325,7 +3325,7 @@ void ZObject::KillWP(vector<waypoint>::iterator &wp)
 
 bool ZObject::CanOverwriteWP()
 {
-	vector<waypoint>::iterator wp;
+	std::vector<waypoint>::iterator wp;
 
 	//check current wp
 	if(waypoint_list.size())
@@ -3437,7 +3437,7 @@ bool ZObject::ReachedTarget()
 	//return true;
 }
 
-bool ZObject::ProcessMoveOrKillWP(double time_dif, ZMap &tmap, vector<waypoint>::iterator &wp, ZOLists &ols, bool stoppable)
+bool ZObject::ProcessMoveOrKillWP(double time_dif, ZMap &tmap, std::vector<waypoint>::iterator &wp, ZOLists &ols, bool stoppable)
 {
 	int stop_x, stop_y;
 	if(!ProcessMove(time_dif, tmap, stop_x, stop_y, stoppable))
@@ -3536,7 +3536,7 @@ void ZObject::SetVelocity(ZObject *target_object)
 {
 	float &dx = loc.dx;
 	float &dy = loc.dy;
-	vector<waypoint>::iterator wp;
+	std::vector<waypoint>::iterator wp;
 	float mag;
 	float old_dx = loc.dx;
 	float old_dy = loc.dy;
@@ -3685,7 +3685,7 @@ bool ZObject::DoAttackImpassableAtCoords(ZOLists &ols, int x, int y)
 	//all impasses require explosives to destroy
 	if(!HasExplosives()) return false;
 
-	for(vector<ZObject*>::iterator o=ols.object_list->begin(); o!=ols.object_list->end();++o)
+	for(std::vector<ZObject*>::iterator o=ols.object_list->begin(); o!=ols.object_list->end();++o)
 	{
 		if(!(*o)->IsDestroyableImpass()) continue;
 		if(!(*o)->CausesImpassAtCoord(x, y)) continue;
@@ -3825,7 +3825,7 @@ int ZObject::DirectionFromLoc(float dx, float dy)
 	return dir;
 }
 
-ZObject* ZObject::GetObjectFromID_BS(int ref_id_, vector<ZObject*> &the_list)
+ZObject* ZObject::GetObjectFromID_BS(int ref_id_, std::vector<ZObject*> &the_list)
 {
 	int low, high, midpoint;
 
@@ -3858,9 +3858,9 @@ ZObject* ZObject::GetObjectFromID_BS(int ref_id_, vector<ZObject*> &the_list)
 	return NULL;
 }
 
-ZObject* ZObject::GetObjectFromID(int ref_id_, vector<ZObject*> &the_list)
+ZObject* ZObject::GetObjectFromID(int ref_id_, std::vector<ZObject*> &the_list)
 {
-	vector<ZObject*>::iterator obj;
+	std::vector<ZObject*>::iterator obj;
 
 	return GetObjectFromID_BS(ref_id_, the_list);
 
@@ -3881,7 +3881,7 @@ ZObject* ZObject::GetAttackObject()
 	return attack_object;
 }
 
-ZObject* ZObject::NearestObjectFromList(vector<ZObject*> &the_list)
+ZObject* ZObject::NearestObjectFromList(std::vector<ZObject*> &the_list)
 {
 	ZObject *obj_choice;
 	double least_distance;
@@ -3890,7 +3890,7 @@ ZObject* ZObject::NearestObjectFromList(vector<ZObject*> &the_list)
 
 	obj_choice = the_list[0];
 	least_distance = DistanceFromObject(*obj_choice);
-	for(vector<ZObject*>::iterator obj=the_list.begin()++;obj!=the_list.end();obj++)
+	for(std::vector<ZObject*>::iterator obj=the_list.begin()++;obj!=the_list.end();obj++)
 	{
 		double this_distance = DistanceFromObject(**obj);
 
@@ -3904,9 +3904,9 @@ ZObject* ZObject::NearestObjectFromList(vector<ZObject*> &the_list)
 	return obj_choice;
 }
 
-void ZObject::RemoveObjectFromList(ZObject* the_object, vector<ZObject*> &the_list)
+void ZObject::RemoveObjectFromList(ZObject* the_object, std::vector<ZObject*> &the_list)
 {
-	vector<ZObject*>::iterator i;
+	std::vector<ZObject*>::iterator i;
 
 	for(i=the_list.begin();i!=the_list.end();)
 	{
@@ -3917,7 +3917,7 @@ void ZObject::RemoveObjectFromList(ZObject* the_object, vector<ZObject*> &the_li
 	}
 }
 
-ZObject* ZObject::NearestObjectToCoords(vector<ZObject*> &the_list, int x, int y)
+ZObject* ZObject::NearestObjectToCoords(std::vector<ZObject*> &the_list, int x, int y)
 {
 	ZObject *obj_choice;
 	double least_distance;
@@ -3926,7 +3926,7 @@ ZObject* ZObject::NearestObjectToCoords(vector<ZObject*> &the_list, int x, int y
 
 	obj_choice = the_list[0];
 	least_distance = obj_choice->DistanceFromCoords(x,y);
-	for(vector<ZObject*>::iterator i=the_list.begin();i!=the_list.end();i++)
+	for(std::vector<ZObject*>::iterator i=the_list.begin();i!=the_list.end();i++)
 	{
 		double this_distance;
 
@@ -3941,21 +3941,21 @@ ZObject* ZObject::NearestObjectToCoords(vector<ZObject*> &the_list, int x, int y
 	return obj_choice;
 }
 
-void ZObject::ClearAndDeleteList(vector<ZObject*> &the_list)
+void ZObject::ClearAndDeleteList(std::vector<ZObject*> &the_list)
 {
-	for(vector<ZObject*>::iterator obj=the_list.begin(); obj!=the_list.end(); ++obj)
+	for(std::vector<ZObject*>::iterator obj=the_list.begin(); obj!=the_list.end(); ++obj)
 		if(*obj) delete *obj;
 
 	the_list.clear();
 }
 
-void ZObject::ProcessList(vector<ZObject*> &the_list)
+void ZObject::ProcessList(std::vector<ZObject*> &the_list)
 {
-	for(vector<ZObject*>::iterator obj=the_list.begin(); obj!=the_list.end(); ++obj)
+	for(std::vector<ZObject*>::iterator obj=the_list.begin(); obj!=the_list.end(); ++obj)
 		if(*obj) (*obj)->Process();
 }
 
-ZObject* ZObject::NearestSelectableObject(vector<ZObject*> &the_list, int unit_type, int only_team, int x, int y)
+ZObject* ZObject::NearestSelectableObject(std::vector<ZObject*> &the_list, int unit_type, int only_team, int x, int y)
 {
 	ZObject *obj_choice;
 	double least_distance;
@@ -3965,7 +3965,7 @@ ZObject* ZObject::NearestSelectableObject(vector<ZObject*> &the_list, int unit_t
 	obj_choice = NULL;
 	//obj_choice = the_list[0];
 	//least_distance = obj_choice->DistanceFromCoords(x,y);
-	for(vector<ZObject*>::iterator i=the_list.begin();i!=the_list.end();i++)
+	for(std::vector<ZObject*>::iterator i=the_list.begin();i!=the_list.end();i++)
 	{
 		unsigned char ot, oid;
 		double this_distance;
@@ -3996,9 +3996,9 @@ ZObject* ZObject::NearestSelectableObject(vector<ZObject*> &the_list, int unit_t
 	return obj_choice;
 }
 
-ZObject* ZObject::NextSelectableObjectAboveID(vector<ZObject*> &the_list, int unit_type, int only_team, int min_ref_id)
+ZObject* ZObject::NextSelectableObjectAboveID(std::vector<ZObject*> &the_list, int unit_type, int only_team, int min_ref_id)
 {
-	for(vector<ZObject*>::iterator i=the_list.begin();i!=the_list.end();i++)
+	for(std::vector<ZObject*>::iterator i=the_list.begin();i!=the_list.end();i++)
 	{
 		unsigned char ot, oid;
 
@@ -4027,7 +4027,7 @@ void ZObject::RemoveObject(ZObject *obj)
 	}
 
 	//this is kind of crude but it needs to be done
-	for(vector<ZObject*>::iterator i=minion_list.begin();i!=minion_list.end();i++)
+	for(std::vector<ZObject*>::iterator i=minion_list.begin();i!=minion_list.end();i++)
 		if(*i == obj) *i = NULL;
 
 	//crude
@@ -4044,9 +4044,9 @@ void ZObject::RemoveObject(ZObject *obj)
 //	return false;
 //}
 
-vector<fire_missile_info> ZObject::ServerFireTurrentMissile(int &damage, int &radius)
+std::vector<fire_missile_info> ZObject::ServerFireTurrentMissile(int &damage, int &radius)
 {
-	vector<fire_missile_info> ret;
+	std::vector<fire_missile_info> ret;
 
 	damage = 0;
 	radius = 0;
@@ -4148,7 +4148,7 @@ int ZObject::CannonsInZone(ZOLists &ols)
 {
 	int cannons_found = 0;
 
-	for(vector<ZObject*>::iterator i=ols.object_list->begin();i!=ols.object_list->end();i++)
+	for(std::vector<ZObject*>::iterator i=ols.object_list->begin();i!=ols.object_list->end();i++)
 		if(this != *i && connected_zone == (*i)->GetConnectedZone())
 		{
 			unsigned char ot, oid;
@@ -4163,9 +4163,9 @@ int ZObject::CannonsInZone(ZOLists &ols)
 	return cannons_found;
 }
 
-vector<unsigned char> &ZObject::GetBuiltCannonList()
+std::vector<unsigned char> &ZObject::GetBuiltCannonList()
 {
-	static vector<unsigned char> arg;
+	static std::vector<unsigned char> arg;
 
 	return arg;
 }
@@ -4194,7 +4194,7 @@ bool ZObject::HasDestroyedFortInZone(ZOLists &ols)
 {
 	if(!connected_zone) return false;
 
-	for(vector<ZObject*>::iterator i=ols.building_olist.begin(); i!=ols.building_olist.end(); ++i)
+	for(std::vector<ZObject*>::iterator i=ols.building_olist.begin(); i!=ols.building_olist.end(); ++i)
 	{
 		unsigned char ot, oid;
 
@@ -4273,7 +4273,7 @@ void ZObject::AddGroupMinion(ZObject *obj)
 
 void ZObject::RemoveGroupMinion(ZObject *obj)
 {
-	for(vector<ZObject*>::iterator i=minion_list.begin();i!=minion_list.end();)
+	for(std::vector<ZObject*>::iterator i=minion_list.begin();i!=minion_list.end();)
 	{
 		if(!*i || *i == obj)
 			i = minion_list.erase(i);
@@ -4282,7 +4282,7 @@ void ZObject::RemoveGroupMinion(ZObject *obj)
 	}
 }
 
-vector<ZObject*> &ZObject::GetMinionList()
+std::vector<ZObject*> &ZObject::GetMinionList()
 {
 	return minion_list;
 }
@@ -4320,7 +4320,7 @@ bool ZObject::IsApartOfAGroup()
 
 void ZObject::CloneMinionWayPoints()
 {
-	for(vector<ZObject*>::iterator i=minion_list.begin();i!=minion_list.end();i++)
+	for(std::vector<ZObject*>::iterator i=minion_list.begin();i!=minion_list.end();i++)
 	{
 		if(!*i) continue;
 
@@ -4384,14 +4384,14 @@ void ZObject::CreateTeamData(char *&data, int &size)
 	memcpy(data, &packet_header, sizeof(object_team_packet));
 
 	int shift_amt = sizeof(object_team_packet);
-	for(vector<driver_info_s>::iterator i=driver_info.begin();i!=driver_info.end();i++)
+	for(std::vector<driver_info_s>::iterator i=driver_info.begin();i!=driver_info.end();i++)
 	{
 		memcpy(data + shift_amt, &(*i), sizeof(driver_info_s));
 		shift_amt += sizeof(driver_info_s);
 	}
 }
 
-void ZObject::ProcessGroupInfoData(char *data, int size, vector<ZObject*> &object_list)
+void ZObject::ProcessGroupInfoData(char *data, int size, std::vector<ZObject*> &object_list)
 {
 	int ref_id_;
 	int leader_ref_id;
@@ -4530,7 +4530,7 @@ void ZObject::AddDriver(driver_info_s new_driver)
 	ResetDamageInfo();
 }
 
-vector<driver_info_s> &ZObject::GetDrivers()
+std::vector<driver_info_s> &ZObject::GetDrivers()
 {
 	return driver_info;
 }
@@ -4647,7 +4647,7 @@ void ZObject::DoRepairBuildingAnim(bool on_, double remaining_time_)
 
 }
 
-bool ZObject::RepairUnit(double &the_time, unsigned char &ot, unsigned char &oid, int &driver_type_, vector<driver_info_s> &driver_info_, vector<waypoint> &rwaypoint_list)
+bool ZObject::RepairUnit(double &the_time, unsigned char &ot, unsigned char &oid, int &driver_type_, std::vector<driver_info_s> &driver_info_, std::vector<waypoint> &rwaypoint_list)
 {
 	return false;
 }

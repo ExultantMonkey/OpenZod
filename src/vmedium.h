@@ -18,7 +18,7 @@ class VMedium : public ZVehicle
 		void DoDeathEffect(bool do_fire_death, bool do_missile_death);
 		void FireTurrentMissile(int x_, int y_, double offset_time);
 		//bool ServerFireTurrentMissile(int &x_, int &y_, int &damage, int &radius, double &offset_time);
-		vector<fire_missile_info> ServerFireTurrentMissile(int &damage, int &radius);
+		std::vector<fire_missile_info> ServerFireTurrentMissile(int &damage, int &radius);
 	private:
 		static ZSDL_Surface base[MAX_TEAM_TYPES][MAX_ANGLE_TYPES][3];
 		static ZSDL_Surface base_damaged[MAX_TEAM_TYPES][MAX_ANGLE_TYPES][3];

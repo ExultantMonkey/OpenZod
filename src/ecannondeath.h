@@ -29,7 +29,7 @@ class ECannonDeath : ZEffect
 		static ZSDL_Surface missile_wasted;
 
 		ZSDL_Surface wasted_img;
-		vector<EStandard*> extra_effects;
+		std::vector<EStandard*> extra_effects;
 
 		int x, y;
 		int ex, ey;

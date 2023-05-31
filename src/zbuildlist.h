@@ -7,8 +7,6 @@
 
 #include <vector>
 
-using namespace std;
-
 class buildlist_object
 {
 public:
@@ -31,14 +29,14 @@ public:
 
 	void LoadDefaults();
 	void SetZSettings(ZSettings *zsettings_);
-	vector<buildlist_object> &GetBuildList(int building_type, int level);
+	std::vector<buildlist_object> &GetBuildList(int building_type, int level);
 	bool UnitInBuildList(int building_type, int level, unsigned char ot, unsigned char oid);
 	bool GetFirstUnitInBuildList(int building_type, int level, unsigned char &ot, unsigned char &oid);
 
 	int UnitBuildTime(unsigned char ot, unsigned char oid);
 private:
 	void ClearData();
-	vector<buildlist_object> buildlist_data[MAX_BUILDING_TYPES][MAX_BUILDING_LEVELS];
+	std::vector<buildlist_object> buildlist_data[MAX_BUILDING_TYPES][MAX_BUILDING_LEVELS];
 
 	ZSettings *zsettings;
 };

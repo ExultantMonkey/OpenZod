@@ -14,10 +14,10 @@ class ZServer : public ZCore
 		ZServer();
 		~ZServer();
 		
-		void SetMapName(string map_name_);
-		void SetMapList(string map_list_name_);
-		void SetSettingsFilename(string settings_filename_);
-		void SetPerpetualSettingsFilename(string p_settings_filename_);
+		void SetMapName(std::string map_name_);
+		void SetMapList(std::string map_list_name_);
+		void SetSettingsFilename(std::string settings_filename_);
+		void SetPerpetualSettingsFilename(std::string p_settings_filename_);
 		void InitBot(int bot_team, bool do_init = true);
 		void Setup();
 		void Run();
@@ -46,14 +46,14 @@ class ZServer : public ZCore
 		void DeleteObject(ZObject *obj);
 		bool ReadMapList();
 		bool ReadSelectableMapList();
-		bool ReadSelectableMapListFromFolder(string foldername = "");
+		bool ReadSelectableMapListFromFolder(std::string foldername = "");
 		int NextInMapList();
 		void ProcessEndGame();
 		void CheckEndGame();
 		void CheckResetGame();
-		void DoResetGame(string map_name = "");
+		void DoResetGame(std::string map_name = "");
 		bool EndGameRequirementsMet();
-		void LoadNextMap(string map_name = "");
+		void LoadNextMap(std::string map_name = "");
 		void ResetGame();
 		void ProcessMissiles();
 		void ProcessMissileDamage(damage_missile &the_missile);
@@ -64,10 +64,10 @@ class ZServer : public ZCore
 		void RelayBuildingState(ZObject *obj, int player = -1);
 		void RelayBuildingBuiltCannons(ZObject *obj);
 		ZObject *BuildingCreateUnit(ZObject *obj, unsigned char ot, unsigned char oid);
-		ZObject *BuildingRepairUnit(ZObject *obj, unsigned char ot, unsigned char oid, int driver_type, vector<driver_info_s> &driver_info, vector<waypoint> &rwaypoint_list);
+		ZObject *BuildingRepairUnit(ZObject *obj, unsigned char ot, unsigned char oid, int driver_type, std::vector<driver_info_s> &driver_info, std::vector<waypoint> &rwaypoint_list);
 		void BuildingCreateCannon(ZObject *obj, unsigned char oid);
-		ZObject *CreateObject(unsigned char ot, unsigned char oid, int x, int y, int owner, vector<ZObject*> *obj_list = NULL, int blevel = 0, unsigned short extra_links = 0, int health_percent = 100);
-		ZObject *CreateRobotGroup(unsigned char oid, int x, int y, int owner, vector<ZObject*> *obj_list = NULL, int robot_amount = -1, int health_percent = 100);
+		ZObject *CreateObject(unsigned char ot, unsigned char oid, int x, int y, int owner, std::vector<ZObject*> *obj_list = NULL, int blevel = 0, unsigned short extra_links = 0, int health_percent = 100);
+		ZObject *CreateRobotGroup(unsigned char oid, int x, int y, int owner, std::vector<ZObject*> *obj_list = NULL, int robot_amount = -1, int health_percent = 100);
 		void RelayNewObject(ZObject *obj, int player = -1);
 		void ProcessChangeObjectAmount();
 		void ScuffleUnits();
@@ -83,7 +83,7 @@ class ZServer : public ZCore
 		void RobotEnterObject(ZObject *robot_obj, ZObject *dest_obj);
 		void UnitEnterRepairBuilding(ZObject *unit_obj, ZObject *rep_building_obj);
 		bool CheckMapObject(map_object &m_obj);
-		void ProcessPlayerCommand(int player, string command);
+		void ProcessPlayerCommand(int player, std::string command);
 		bool LoginPlayer(int player, ZMysqlUser &user);
 		bool LogoutPlayer(int player, bool connection_exists = true);
 		void LogoutOthers(int db_id);
@@ -102,7 +102,7 @@ class ZServer : public ZCore
 		void CheckUpdateOnlineHistory();
 		void CheckOnlineHistoryPlayerCount();
 		void CheckOnlineHistoryTrayPlayerCount();
-		void AwardAffiliateCreation(string ip);
+		void AwardAffiliateCreation(std::string ip);
 		void PauseGame();
 		void ResumeGame();
 		void RelayGamePaused(int player = -1);
@@ -123,8 +123,8 @@ class ZServer : public ZCore
 		void GivePlayerSelectableMapList(int player);
 		bool TeamHasBot(int team, bool active_only = false);
 		void SetTeamsBotsIgnored(int team, bool ignored);
-		void AttemptPlayerLogin(int player, string loginname, string password);
-		void AttemptCreateUser(int player, string username, string loginname, string password, string email);
+		void AttemptPlayerLogin(int player, std::string loginname, std::string password);
+		void AttemptCreateUser(int player, std::string username, std::string loginname, std::string password, std::string email);
 		void SendPlayerLoginRequired(int player);
 		void MakeAllFortTurretsUnEjectable();
 		void RelayObjectGrenadeAmount(ZObject *obj, int player = -1);
@@ -139,11 +139,11 @@ class ZServer : public ZCore
 		void RelayObjectGroupInfo(ZObject *obj, int player = -1);
 		void RelayVersion(int player = -1);
 		
-		string map_name;
-		string map_list_name;
-		string settings_filename;
-		string p_settings_filename;
-		vector<string> map_list;
+		std::string map_name;
+		std::string map_list_name;
+		std::string settings_filename;
+		std::string p_settings_filename;
+		std::vector<std::string> map_list;
 		bool load_maps_randomly;
 		int current_map_i;
 
@@ -172,9 +172,9 @@ class ZServer : public ZCore
 
 		ZPath_Finding_Engine path_finder;
 		
-		vector<damage_missile> damage_missile_list;
-		vector<damage_missile> new_damage_missile_list;
-		vector<ZObject*> new_object_list;
+		std::vector<damage_missile> damage_missile_list;
+		std::vector<damage_missile> new_damage_missile_list;
+		std::vector<ZObject*> new_object_list;
 
 		//bots
 		bool init_bot[MAX_TEAM_TYPES];
@@ -184,26 +184,26 @@ class ZServer : public ZCore
 		int next_ref_id;
 
 		//player commands
-		void PlayerCommand_NotFound(int player, string contents);
-		void PlayerCommand_Help(int player, string contents);
-		void PlayerCommand_ListCommands(int player, string contents);
-		void PlayerCommand_Login(int player, string contents);
-		void PlayerCommand_Logout(int player, string contents);
-		void PlayerCommand_CreateUser(int player, string contents);
-		void PlayerCommand_PauseGame(int player, string contents);
-		void PlayerCommand_ResumeGame(int player, string contents);
-		void PlayerCommand_ListMaps(int player, string contents);
-		void PlayerCommand_ChangeMap(int player, string contents);
-		void PlayerCommand_StartBot(int player, string contents);
-		void PlayerCommand_StopBot(int player, string contents);
-		void PlayerCommand_PlayerInfo(int player, string contents);
-		void PlayerCommand_CurrentMap(int player, string contents);
-		void PlayerCommand_ResetGame(int player, string contents);
-		void PlayerCommand_ChangeTeam(int player, string contents);
-		void PlayerCommand_ReshuffleTeams(int player, string contents);
-		void PlayerCommand_BuyRegistration(int player, string contents);
-		void PlayerCommand_ChangeSpeed(int player, string contents);
-		void PlayerCommand_Version(int player, string contents);
+		void PlayerCommand_NotFound(int player, std::string contents);
+		void PlayerCommand_Help(int player, std::string contents);
+		void PlayerCommand_ListCommands(int player, std::string contents);
+		void PlayerCommand_Login(int player, std::string contents);
+		void PlayerCommand_Logout(int player, std::string contents);
+		void PlayerCommand_CreateUser(int player, std::string contents);
+		void PlayerCommand_PauseGame(int player, std::string contents);
+		void PlayerCommand_ResumeGame(int player, std::string contents);
+		void PlayerCommand_ListMaps(int player, std::string contents);
+		void PlayerCommand_ChangeMap(int player, std::string contents);
+		void PlayerCommand_StartBot(int player, std::string contents);
+		void PlayerCommand_StopBot(int player, std::string contents);
+		void PlayerCommand_PlayerInfo(int player, std::string contents);
+		void PlayerCommand_CurrentMap(int player, std::string contents);
+		void PlayerCommand_ResetGame(int player, std::string contents);
+		void PlayerCommand_ChangeTeam(int player, std::string contents);
+		void PlayerCommand_ReshuffleTeams(int player, std::string contents);
+		void PlayerCommand_BuyRegistration(int player, std::string contents);
+		void PlayerCommand_ChangeSpeed(int player, std::string contents);
+		void PlayerCommand_Version(int player, std::string contents);
 
 		//events
 		static void test_event(ZServer *p, char *data, int size, int player);

@@ -10,8 +10,8 @@ class ORock : public ZObject
 		
 		static void Init();
 		
-		static void SetupRockRenders(ZMap &the_map, vector<ZObject*> object_list);
-		static void EditRockRender(ZMap &the_map, vector<ZObject*> object_list, ZObject *robj, bool do_add);
+		static void SetupRockRenders(ZMap &the_map, std::vector<ZObject*> object_list);
+		static void EditRockRender(ZMap &the_map, std::vector<ZObject*> object_list, ZObject *robj, bool do_add);
 		void SetupRockRender(bool **rock_list, int map_w, int map_h);
 
 		void DoPreRender(ZMap &the_map, SDL_Surface *dest, int shift_x = 0, int shift_y = 0);

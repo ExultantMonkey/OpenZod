@@ -53,9 +53,9 @@ void OGrenades::FireTurrentMissile(int x_, int y_, double offset_time)
 	if(effect_list) effect_list->push_back((ZEffect*)(new ETurrentMissile(ztime, loc.x + 2, loc.y + 2, x_, y_, offset_time, ETURRENTMISSILE_GRENADE)));	
 }
 
-vector<fire_missile_info> OGrenades::ServerFireTurrentMissile(int &damage, int &radius)
+std::vector<fire_missile_info> OGrenades::ServerFireTurrentMissile(int &damage, int &radius)
 {
-	vector<fire_missile_info> ret;
+	std::vector<fire_missile_info> ret;
 	fire_missile_info a_missile;
 	const int max_horz = 130;
 	const int max_vert = 130;

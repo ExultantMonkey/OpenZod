@@ -7,8 +7,6 @@
 #include "zmap.h"
 #include "constants.h"
 
-using namespace std;
-
 #pragma pack(1)
 
 class ZUnit_Settings
@@ -43,8 +41,8 @@ public:
 	int build_time;
 	double max_run_time;
 
-	void SaveLine(FILE *fp, string obj_name);
-	void ReadEntry(string variable, string value);
+	void SaveLine(FILE *fp, std::string obj_name);
+	void ReadEntry(std::string variable, std::string value);
 	void CensorNonMissileUnit();
 	void CensorMissileUnit();
 	void CensorNonWeaponUnit();
@@ -56,8 +54,8 @@ class ZSettings
 public:
 	ZSettings();
 	void SetDefaults();
-	bool LoadSettings(string filename);
-	bool SaveSettings(string filename);
+	bool LoadSettings(std::string filename);
+	bool SaveSettings(std::string filename);
 	ZUnit_Settings &GetUnitSettings(unsigned char ot, unsigned char oid);
 
 	ZUnit_Settings robot_settings[MAX_ROBOT_TYPES];

@@ -34,7 +34,7 @@ class OHut : public ZObject
 
 		int palette;
 
-		vector<AHutAnimal*> hut_animals;
+		std::vector<AHutAnimal*> hut_animals;
 		double next_hut_animal_time;
 		double next_max_hut_animal_time;
 		int max_hut_animals;

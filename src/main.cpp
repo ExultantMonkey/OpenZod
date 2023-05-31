@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 int run_server_thread(void *nothing)
 {
 	int i;
-	vector<SDL_Thread*> bot_thread;
+	std::vector<SDL_Thread*> bot_thread;
 	ZServer zserver;
 
 	for(i=0;i<MAX_TEAM_TYPES;i++)
@@ -393,7 +393,7 @@ int input_options::getoptions(int argc, char **argv)
 				
 				temp_int = resolution.find('x');
 				
-				if(temp_int != string::npos)
+				if(temp_int != std::string::npos)
 				{
 					resolution_width = atoi(resolution.substr(0, temp_int).c_str());
 					resolution_height = atoi(resolution.substr(temp_int+1, 10).c_str());

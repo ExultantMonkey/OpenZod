@@ -17,7 +17,7 @@ class OMapObject : public ZObject
 		void SetMapImpassables(ZMap &tmap);
 		void UnSetMapImpassables(ZMap &tmap);
 		//bool ServerFireTurrentMissile(int &x_, int &y_, int &damage, int &radius, double &offset_time);
-		vector<fire_missile_info> ServerFireTurrentMissile(int &damage, int &radius);
+		std::vector<fire_missile_info> ServerFireTurrentMissile(int &damage, int &radius);
 		void DoDeathEffect(bool do_fire_death, bool do_missile_death);
 		void FireTurrentMissile(int x_, int y_, double offset_time);
 

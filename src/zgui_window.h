@@ -62,10 +62,10 @@ public:
 	bool open_createuser;
 	bool do_createuser;
 	bool open_login;
-	string login_name;
-	string login_password;
-	string user_name;
-	string email;
+	std::string login_name;
+	std::string login_password;
+	std::string user_name;
+	std::string email;
 };
 
 enum gui_button_state
@@ -102,7 +102,7 @@ class ZGuiButton
 	protected:
 		static bool finished_init;
 
-		static void LoadButtonImages(ZSDL_Surface *the_button, string foldername, string buttonname);
+		static void LoadButtonImages(ZSDL_Surface *the_button, std::string foldername, std::string buttonname);
 		static ZSDL_Surface button_img[MAX_GUI_BUTTON_TYPES][MAX_GUI_BUTTON_STATES];
 
 		int x_offset;
@@ -158,7 +158,7 @@ public:
 	void DoRender(ZMap &the_map, SDL_Surface *dest, int shift_x, int shift_y);
 	bool Click(int x, int y);
 	void KeyPress(int c);
-	string &GetText();
+	std::string &GetText();
 	void SetActive(bool active_);
 	bool IsActive();
 	void SetSelected(bool selected_);
@@ -173,7 +173,7 @@ protected:
 
 	ZSDL_Surface render_img;
 
-	string text;
+	std::string text;
 	int max_text;
 	bool passworded;
 	bool good_chars_only;

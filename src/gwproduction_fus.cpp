@@ -177,7 +177,7 @@ void GWPFullUnitSelector::DoRender(ZMap &the_map, SDL_Surface *dest, int shift_x
 	}
 
 	//render buttons
-	for(vector<GWPFullUnitSelectorButton>::iterator i=button_list.begin(); i!=button_list.end(); ++i)
+	for(std::vector<GWPFullUnitSelectorButton>::iterator i=button_list.begin(); i!=button_list.end(); ++i)
 		i->object_button.DoRender(the_map, dest, tx, ty);
 
 	//render lists
@@ -193,9 +193,9 @@ void GWPFullUnitSelector::DoRender(ZMap &the_map, SDL_Surface *dest, int shift_x
 	}
 }
 
-void GWPFullUnitSelector::DoRenderList(ZMap &the_map, SDL_Surface *dest, int lx, int ly, vector<ZObject*> &the_list)
+void GWPFullUnitSelector::DoRenderList(ZMap &the_map, SDL_Surface *dest, int lx, int ly, std::vector<ZObject*> &the_list)
 {
-	for(vector<ZObject*>::iterator o=the_list.begin(); o!=the_list.end(); ++o)
+	for(std::vector<ZObject*>::iterator o=the_list.begin(); o!=the_list.end(); ++o)
 	{
 		int ow, oh;
 		ZObject *draw_obj = *o;
@@ -253,9 +253,9 @@ void GWPFullUnitSelector::LoadButtonList()
 	if(cannon_list.size()) { AppendButtonList(lx, ly, cannon_list); ly += GWPFUS_OBJH + GWPFUS_MARGIN; }
 }
 
-void GWPFullUnitSelector::AppendButtonList(int lx, int ly, vector<ZObject*> &the_list)
+void GWPFullUnitSelector::AppendButtonList(int lx, int ly, std::vector<ZObject*> &the_list)
 {
-	for(vector<ZObject*>::iterator o=the_list.begin(); o!=the_list.end(); ++o)
+	for(std::vector<ZObject*>::iterator o=the_list.begin(); o!=the_list.end(); ++o)
 	{
 		GWPFullUnitSelectorButton new_button;
 
@@ -306,7 +306,7 @@ void GWPFullUnitSelector::LoadLists()
 	//clear the list
 	ClearLists();
 
-	vector<buildlist_object> &blist = buildlist->GetBuildList(building_type, building_level);
+	std::vector<buildlist_object> &blist = buildlist->GetBuildList(building_type, building_level);
 
 	//this building have things to build?
 	if(!blist.size()) return;
@@ -314,7 +314,7 @@ void GWPFullUnitSelector::LoadLists()
 	lists_building_type = building_type;
 	lists_building_level = building_level;
 
-	for(vector<buildlist_object>::iterator i=blist.begin(); i!=blist.end(); ++i)
+	for(std::vector<buildlist_object>::iterator i=blist.begin(); i!=blist.end(); ++i)
 		LoadUnitToLists(i->ot, i->oid);
 
 	LoadButtonList();
@@ -323,7 +323,7 @@ void GWPFullUnitSelector::LoadLists()
 
 void GWPFullUnitSelector::LoadUnitToLists(unsigned char ot, unsigned char oid)
 {
-	vector<ZObject*> *the_list = NULL;
+	std::vector<ZObject*> *the_list = NULL;
 	ZObject* new_obj = NULL;
 
 	if(!ztime) return;
@@ -432,7 +432,7 @@ bool GWPFullUnitSelector::Click(int x_, int y_)
 	local_x = x_ - x;
 	local_y = y_ - y;
 
-	for(vector<GWPFullUnitSelectorButton>::iterator i=button_list.begin(); i!=button_list.end(); ++i)
+	for(std::vector<GWPFullUnitSelectorButton>::iterator i=button_list.begin(); i!=button_list.end(); ++i)
 		i->object_button.Click(local_x, local_y);
 
 	if(x_ < x) return false;
@@ -452,7 +452,7 @@ bool GWPFullUnitSelector::UnClick(int x_, int y_)
 	local_x = x_ - x;
 	local_y = y_ - y;
 
-	for(vector<GWPFullUnitSelectorButton>::iterator i=button_list.begin(); i!=button_list.end(); ++i)
+	for(std::vector<GWPFullUnitSelectorButton>::iterator i=button_list.begin(); i!=button_list.end(); ++i)
 		if(i->object_button.UnClick(local_x, local_y))
 		{
 			object_selected = true;

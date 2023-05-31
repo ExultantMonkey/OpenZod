@@ -63,7 +63,7 @@ void hut_animal_graphics::LoadGraphics(int ha_num)
 
 bool AHutAnimal::finished_init = false;
 hut_animal_graphics AHutAnimal::ha_graphics[MAX_HUT_ANIMAL_TYPES];
-vector<int> AHutAnimal::animals_in_palette[MAX_PLANET_TYPES];
+std::vector<int> AHutAnimal::animals_in_palette[MAX_PLANET_TYPES];
 
 AHutAnimal::AHutAnimal(ZTime *ztime_, ZSettings *zsettings_, int palette_) : ZObject(ztime_, zsettings_)
 {
@@ -207,8 +207,8 @@ void AHutAnimal::GotoRandomTile()
 	}
 	else
 	{
-		vector<xy_struct> possible_list;
-		vector<xy_struct> preferred_list;
+		std::vector<xy_struct> possible_list;
+		std::vector<xy_struct> preferred_list;
 		int itx, ity;
 		int rand_choice;
 

@@ -11,7 +11,7 @@ enum gmm_main_menu_button
 	MAX_GMMMM_BUTTONS
 };
 
-const string gmm_main_menu_button_string[MAX_GMMMM_BUTTONS] = 
+const std::string gmm_main_menu_button_string[MAX_GMMMM_BUTTONS] = 
 {
 	"Change Teams", "Manage Bots", "Player List", 
 	"Select Map", /*"Multiplayer",*/ "Options", "Quit Game"

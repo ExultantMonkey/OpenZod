@@ -20,8 +20,6 @@
 #include <arpa/inet.h>
 #endif
 
-using namespace std;
-
 class ZServer;
 
 class ServerSocket
@@ -29,7 +27,7 @@ class ServerSocket
 	public:
 		ServerSocket();
 		int Start(int port = 8000);
-		void SetEventList(list<Event*> *event_list_);
+		void SetEventList(std::list<Event*> *event_list_);
 		void SetEventHandler(EventHandler<ZServer> *ehandler_) { ehandler = ehandler_; }
 		int Process();
 		
@@ -52,8 +50,8 @@ class ServerSocket
 		int started;
 		
 		int listen_socket;
-		vector<SocketHandler*> client_socket;
-		list<Event*> *event_list;
+		std::vector<SocketHandler*> client_socket;
+		std::list<Event*> *event_list;
 		EventHandler<ZServer> *ehandler;
 };
 

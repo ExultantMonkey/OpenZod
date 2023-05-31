@@ -203,7 +203,7 @@ void ZBuildList::LoadDefaults()
 	buildlist_data[VEHICLE_FACTORY][level].push_back(buildlist_object(CANNON_OBJECT, MISSILE_CANNON));
 }
 
-vector<buildlist_object> &ZBuildList::GetBuildList(int building_type, int level)
+std::vector<buildlist_object> &ZBuildList::GetBuildList(int building_type, int level)
 {
 	if(building_type >= MAX_BUILDING_TYPES || building_type < 0)
 	{
@@ -225,7 +225,7 @@ vector<buildlist_object> &ZBuildList::GetBuildList(int building_type, int level)
 
 bool ZBuildList::GetFirstUnitInBuildList(int building_type, int level, unsigned char &ot, unsigned char &oid)
 {
-	vector<buildlist_object> &the_list = GetBuildList(building_type, level);
+	std::vector<buildlist_object> &the_list = GetBuildList(building_type, level);
 
 	if(!the_list.size()) return false;
 
@@ -237,8 +237,8 @@ bool ZBuildList::GetFirstUnitInBuildList(int building_type, int level, unsigned 
 
 bool ZBuildList::UnitInBuildList(int building_type, int level, unsigned char ot_, unsigned char oid_)
 {
-	vector<buildlist_object> &the_list = GetBuildList(building_type, level);
-	vector<buildlist_object>::iterator i;
+	std::vector<buildlist_object> &the_list = GetBuildList(building_type, level);
+	std::vector<buildlist_object>::iterator i;
 
 	for(i=the_list.begin();i!=the_list.end();i++)
 		if(i->ot == ot_ && i->oid == oid_)

@@ -26,7 +26,7 @@ bool selection_info::AverageCoordsOfSelected(int &x, int &y)
 	x=0;
 	y=0;
 
-	for(vector<ZObject*>::iterator i=selected_list.begin(); i!=selected_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=selected_list.begin(); i!=selected_list.end(); i++)
 	{
 		int cx, cy;
 
@@ -56,7 +56,7 @@ bool selection_info::GroupIsSelected(int group)
 
 void selection_info::LoadGroup(int group)
 {
-	vector<ZObject*>::iterator i;
+	std::vector<ZObject*>::iterator i;
 
 	selected_list = quick_group[group];
 
@@ -69,7 +69,7 @@ void selection_info::LoadGroup(int group)
 
 void selection_info::SetGroup(int group)
 {
-	vector<ZObject*>::iterator i, e;
+	std::vector<ZObject*>::iterator i, e;
 
 	//clear out the list as it stands
 	i=quick_group[group].begin();
@@ -90,7 +90,7 @@ void selection_info::SetGroup(int group)
 
 bool selection_info::UpdateGroupMember(ZObject *obj)
 {
-	vector<ZObject*>::iterator i, e;
+	std::vector<ZObject*>::iterator i, e;
 
 	i=selected_list.begin();
 	e=selected_list.end();
@@ -106,7 +106,7 @@ bool selection_info::UpdateGroupMember(ZObject *obj)
 
 void selection_info::SetupGroupDetails(bool show_waypoints)
 {
-	vector<ZObject*>::iterator i, e;
+	std::vector<ZObject*>::iterator i, e;
 
 	have_explosives = false;
 	can_pickup_grenades = false;
@@ -140,7 +140,7 @@ bool selection_info::ObjectIsSelected(ZObject *obj)
 {
 	if(!obj) return false;
 
-	for(vector<ZObject*>::iterator i=selected_list.begin(); i!=selected_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=selected_list.begin(); i!=selected_list.end(); i++)
 		if(*i == obj)
 			return true;
 
@@ -233,7 +233,7 @@ void ZPlayer::ProcessResetGame()
 
 	//effect list
 	{
-		for(vector<ZEffect*>::iterator e=effect_list.begin(); e!=effect_list.begin(); e++)
+		for(std::vector<ZEffect*>::iterator e=effect_list.begin(); e!=effect_list.begin(); e++)
 			delete *e;
 
 		effect_list.clear();
@@ -262,12 +262,12 @@ void ZPlayer::SetUseOpenGL(bool use_opengl_)
 	use_opengl = use_opengl_;
 }
 
-void ZPlayer::SetLoginName(string login_name_)
+void ZPlayer::SetLoginName(std::string login_name_)
 {
 	login_name = login_name_;
 }
 
-void ZPlayer::SetLoginPassword(string login_password_)
+void ZPlayer::SetLoginPassword(std::string login_password_)
 {
 	login_password = login_password_;
 }
@@ -590,7 +590,7 @@ void ZPlayer::ProcessDisconnect()
 	AddNewsEntry("Disconnected from the game server, please restart the client.");
 }
 
-void ZPlayer::AddNewsEntry(string message, int r, int g, int b)
+void ZPlayer::AddNewsEntry(std::string message, int r, int g, int b)
 {
 	const double lasting_time = 17.0;
 	news_entry *new_entry;
@@ -636,8 +636,8 @@ void ZPlayer::AddNewsEntry(string message, int r, int g, int b)
 
 void ZPlayer::DisplayPlayerList()
 {
-	string team_players[MAX_TEAM_TYPES];
-	string spectators;
+	std::string team_players[MAX_TEAM_TYPES];
+	std::string spectators;
 	bool bot_player[MAX_TEAM_TYPES];
 	bool bot_player_ignored[MAX_TEAM_TYPES];
 	int tray_players;
@@ -659,7 +659,7 @@ void ZPlayer::DisplayPlayerList()
 		bot_player_ignored[i] = false;
 	}
 
-	for(vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
 	{
 		//char message[500];
 
@@ -747,13 +747,13 @@ void ZPlayer::DisplayPlayerList()
 
 void ZPlayer::DisplayFactoryProductionList()
 {
-	vector<ZObject*> fort_list;
-	vector<ZObject*> robot_list;
-	vector<ZObject*> vehicle_list;
+	std::vector<ZObject*> fort_list;
+	std::vector<ZObject*> robot_list;
+	std::vector<ZObject*> vehicle_list;
 
 	AddNewsEntry("------ Factories ------");
 
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 	{
 		if((*i)->GetOwner() != our_team) continue;
 
@@ -774,13 +774,13 @@ void ZPlayer::DisplayFactoryProductionList()
 		}
 	}
 
-	for(vector<ZObject*>::iterator i=fort_list.begin(); i!=fort_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=fort_list.begin(); i!=fort_list.end(); i++)
 		DisplayFactoryProductionListUnit(*i);
 
-	for(vector<ZObject*>::iterator i=robot_list.begin(); i!=robot_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=robot_list.begin(); i!=robot_list.end(); i++)
 		DisplayFactoryProductionListUnit(*i);
 
-	for(vector<ZObject*>::iterator i=vehicle_list.begin(); i!=vehicle_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=vehicle_list.begin(); i!=vehicle_list.end(); i++)
 		DisplayFactoryProductionListUnit(*i);
 
 	AddNewsEntry("--------------------");
@@ -788,8 +788,8 @@ void ZPlayer::DisplayFactoryProductionList()
 
 void ZPlayer::DisplayFactoryProductionListUnit(ZObject *obj)
 {
-	string display_msg;
-	string build_unit;
+	std::string display_msg;
+	std::string build_unit;
 	char num_c[50];
 	unsigned char ot, oid;
 	unsigned char fot, foid;
@@ -985,14 +985,14 @@ void ZPlayer::ProcessGame()
 	//sort objects
 	sort (ols.prender_olist.begin(), ols.prender_olist.end(), sort_objects_func);
 
- 	for(vector<ZObject*>::iterator i=ols.prender_olist.begin(); i!=ols.prender_olist.end(); i++)
+ 	for(std::vector<ZObject*>::iterator i=ols.prender_olist.begin(); i!=ols.prender_olist.end(); i++)
 	{
 		(*i)->ProcessObject();
  		(*i)->Process();
 	}
 
 	//kill effects
-	for(vector<ZEffect*>::iterator i=effect_list.begin(); i!=effect_list.end();)
+	for(std::vector<ZEffect*>::iterator i=effect_list.begin(); i!=effect_list.end();)
 	{
 		if((*i)->KillMe())
 		{
@@ -1004,7 +1004,7 @@ void ZPlayer::ProcessGame()
 	}
 
 	//process effects
-	for(vector<ZEffect*>::iterator i=effect_list.begin(); i!=effect_list.end();i++)
+	for(std::vector<ZEffect*>::iterator i=effect_list.begin(); i!=effect_list.end();i++)
 	{
 		(*i)->Process();
 
@@ -1013,12 +1013,12 @@ void ZPlayer::ProcessGame()
 	}
 
 	//the zeffects push new effects into this queue, so we need to move it to the real one
-	for(vector<ZEffect*>::iterator i=new_effect_list.begin(); i!=new_effect_list.end(); i++)
+	for(std::vector<ZEffect*>::iterator i=new_effect_list.begin(); i!=new_effect_list.end(); i++)
 		effect_list.push_back(*i);
 	new_effect_list.clear();
 
 	//animals
-	for(vector<ZObject*>::iterator i=bird_list.begin(); i!=bird_list.end();i++)
+	for(std::vector<ZObject*>::iterator i=bird_list.begin(); i!=bird_list.end();i++)
 		(*i)->Process();
 
 	//gui
@@ -1034,7 +1034,7 @@ void ZPlayer::ProcessGame()
 
 	//main menus
 	{
-		for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin();i!=gui_menu_list.end();)
+		for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin();i!=gui_menu_list.end();)
 		{
 			if((*i)->KillMe())
 			{
@@ -1045,7 +1045,7 @@ void ZPlayer::ProcessGame()
 				++i;
 		}
 
-		for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin();i!=gui_menu_list.end();++i)
+		for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin();i!=gui_menu_list.end();++i)
 			(*i)->Process();
 	}
 
@@ -1136,7 +1136,7 @@ void ZPlayer::PlayBuildingSounds()
 	bool do_play_radar = false;
 	bool do_play_robot = false;
 
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 	{
 		unsigned char ot, oid;
 		int x, y, w, h;
@@ -1186,7 +1186,7 @@ void ZPlayer::MissileObjectParticles(int x_, int y_, int radius, int particles)
 {
 	radius *= 0.8;
 
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 	{
 		unsigned char ot, oid;
 		int ox, oy;
@@ -1450,7 +1450,7 @@ void ZPlayer::RenderMouse()
 
 void ZPlayer::ReSetupButtons()
 {
-	vector<ZObject*>::iterator i;
+	std::vector<ZObject*>::iterator i;
 	bool robot_available = false;
 	bool vehicle_available = false;
 	bool gun_available = false;
@@ -1686,8 +1686,8 @@ void ZPlayer::OrderlySelectUnitType(int type)
 
 void ZPlayer::RandomlySelectUnitType(int type)
 {
-	vector<ZObject*>::iterator i;
-	vector<ZObject*> temp_choice_list;
+	std::vector<ZObject*>::iterator i;
+	std::vector<ZObject*> temp_choice_list;
 	ZObject* the_choice = NULL;
 
 	if(our_team == NULL_TEAM) return;
@@ -1729,7 +1729,7 @@ void ZPlayer::FocusCameraToFort()
 	if(our_team == NULL_TEAM) return;
 
 	//find our fort
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 	{
 		unsigned char ot, oid;
 
@@ -2079,7 +2079,7 @@ void ZPlayer::RenderNews()
 		news_list.pop_back();
 	}
 
-	for(vector<news_entry*>::iterator i=news_list.begin(); i!=news_list.end();)
+	for(std::vector<news_entry*>::iterator i=news_list.begin(); i!=news_list.end();)
 	{
 		news_entry *cur_entry;
 
@@ -2126,11 +2126,11 @@ void ZPlayer::RenderNews()
 void ZPlayer::RenderObjects()
 {
 	//draw effects pre stuff
-	for(vector<ZEffect*>::iterator i=effect_list.begin(); i!=effect_list.end(); i++)
+	for(std::vector<ZEffect*>::iterator i=effect_list.begin(); i!=effect_list.end(); i++)
 		(*i)->DoPreRender(zmap, screen);
 
 	//draw objects pre stuff
-	for(vector<ZObject*>::iterator i=ols.prender_olist.begin(); i!=ols.prender_olist.end(); i++)
+	for(std::vector<ZObject*>::iterator i=ols.prender_olist.begin(); i!=ols.prender_olist.end(); i++)
 		(*i)->DoPreRender(zmap, screen);
 
 	//draw rallypoints of "selected" building
@@ -2138,27 +2138,27 @@ void ZPlayer::RenderObjects()
 		gui_window->GetBuildingObj()->DoRenderWaypoints(zmap, screen, object_list, true);
 	
 	//draw object's waypoints
-	for(vector<ZObject*>::iterator i=ols.non_mapitem_olist.begin(); i!=ols.non_mapitem_olist.end(); i++)
+	for(std::vector<ZObject*>::iterator i=ols.non_mapitem_olist.begin(); i!=ols.non_mapitem_olist.end(); i++)
 		(*i)->DoRenderWaypoints(zmap, screen, object_list);
 	
 	//draw objects
-	for(vector<ZObject*>::iterator i=ols.prender_olist.begin(); i!=ols.prender_olist.end(); i++)
+	for(std::vector<ZObject*>::iterator i=ols.prender_olist.begin(); i!=ols.prender_olist.end(); i++)
 		(*i)->DoRender(zmap, screen);
 	
 	//draw after effects
-	for(vector<ZObject*>::iterator i=ols.prender_olist.begin(); i!=ols.prender_olist.end(); i++)
+	for(std::vector<ZObject*>::iterator i=ols.prender_olist.begin(); i!=ols.prender_olist.end(); i++)
 		(*i)->DoAfterEffects(zmap, screen);
 	
 	//effects
-	for(vector<ZEffect*>::iterator i=effect_list.begin(); i!=effect_list.end(); i++)
+	for(std::vector<ZEffect*>::iterator i=effect_list.begin(); i!=effect_list.end(); i++)
 		(*i)->DoRender(zmap, screen);
 
 	//animals
-	for(vector<ZObject*>::iterator i=bird_list.begin(); i!=bird_list.end();i++)
+	for(std::vector<ZObject*>::iterator i=bird_list.begin(); i!=bird_list.end();i++)
 		(*i)->DoRender(zmap, screen);
 	
 	//draw selection stuff
-	for(vector<ZObject*>::iterator i=select_info.selected_list.begin(); i!=select_info.selected_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=select_info.selected_list.begin(); i!=select_info.selected_list.end(); i++)
 	{
 		(*i)->RenderSelection(zmap, screen);
 		(*i)->RenderAttackRadius(zmap, screen, select_info.selected_list);
@@ -2507,7 +2507,7 @@ void ZPlayer::SelectAllOfType(int type)
 
 	select_info.Clear();
 
-	for(vector<ZObject*>::iterator i=ols.passive_engagable_olist.begin(); i!=ols.passive_engagable_olist.end(); ++i)
+	for(std::vector<ZObject*>::iterator i=ols.passive_engagable_olist.begin(); i!=ols.passive_engagable_olist.end(); ++i)
 	{
 		unsigned char ot, oid;
 
@@ -2573,9 +2573,9 @@ void ZPlayer::CollectSelectables()
 	//are we only selecting one unit?
 	if(abs(lbutton.map_x - mouse_x_map) <= 1 && abs(lbutton.map_y - mouse_y_map) <= 1)
 	{
-		vector<ZObject*> choice_list;
+		std::vector<ZObject*> choice_list;
 
-		for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+		for(std::vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 		{
 			ZObject *pot_obj;
 
@@ -2591,7 +2591,7 @@ void ZPlayer::CollectSelectables()
 			if(!pot_obj->Selectable()) continue;
 
 			//it already in the list?
-			for(vector<ZObject*>::iterator j=choice_list.begin(); j!=choice_list.end(); j++)
+			for(std::vector<ZObject*>::iterator j=choice_list.begin(); j!=choice_list.end(); j++)
 				if(*j == pot_obj) 
 				{
 					pot_obj = NULL;
@@ -2609,7 +2609,7 @@ void ZPlayer::CollectSelectables()
 	else //selecting all possible units
 	{
 		//so who have we selected
-		for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+		for(std::vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 		{
 			if(!(*i)->Selectable()) continue;
 			if((*i)->GetOwner() != our_team) continue;
@@ -2663,7 +2663,7 @@ bool ZPlayer::CouldCollectSelectables()
 		would_be_single_unit = false;
 
 	//so who have we selected
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 	{
 		ZObject *obj;
 
@@ -2685,7 +2685,7 @@ bool ZPlayer::CouldCollectSelectables()
 
 void ZPlayer::ClearDevWayPointsOfSelected()
 {
-	for(vector<ZObject*>::iterator i=select_info.selected_list.begin(); i!=select_info.selected_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=select_info.selected_list.begin(); i!=select_info.selected_list.end(); i++)
 		(*i)->GetWayPointDevList().clear();
 }
 
@@ -2720,7 +2720,7 @@ bool ZPlayer::UnitNearHostiles(ZObject *obj)
 {
 	if(!obj) return false;
 
-	for(vector<ZObject*>::iterator i=ols.passive_engagable_olist.begin(); i!=ols.passive_engagable_olist.end(); ++i)
+	for(std::vector<ZObject*>::iterator i=ols.passive_engagable_olist.begin(); i!=ols.passive_engagable_olist.end(); ++i)
 	{
 		ZObject *eobj = *i;
 
@@ -2753,7 +2753,7 @@ void ZPlayer::AddDevWayPointToSelected()
 	//new_waypoint.mode = MOVE_WP;
 	new_waypoint.player_given = true;
 
-	for(vector<ZObject*>::iterator i=select_info.selected_list.begin(); i!=select_info.selected_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=select_info.selected_list.begin(); i!=select_info.selected_list.end(); i++)
 	{
 		unsigned char ot, oid;
 		unsigned char hot, hoid;
@@ -2934,8 +2934,8 @@ void ZPlayer::SendDevWayPointsOfObj(ZObject *obj)
 
 void ZPlayer::SendDevWayPointsOfSelected()
 {
-	vector<ZObject*>::iterator i;
-	vector<waypoint>::iterator j;
+	std::vector<ZObject*>::iterator i;
+	std::vector<waypoint>::iterator j;
 	bool no_way = false;
 	ZObject *remove_obj_from_selected = NULL;
 
@@ -3038,7 +3038,7 @@ void ZPlayer::DeleteObjectCleanUp(ZObject *obj)
 
 	zhud.DeleteObject(obj);
 
-	vector<ZObject*>::iterator i;
+	std::vector<ZObject*>::iterator i;
 	for(i=object_list.begin();i!=object_list.end();i++)
 		(*i)->RemoveObject(obj);
 
@@ -3107,13 +3107,13 @@ bool ZPlayer::IsOverHUD(int x, int y, int w, int h)
 
 void ZPlayer::MainMenuMove(double px, double py)
 {
-	for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
+	for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
 		(*i)->Move(px, py);
 }
 
 bool ZPlayer::MainMenuMotion()
 {
-	for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
+	for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
 	{
 		int px, py;
 
@@ -3138,7 +3138,7 @@ bool ZPlayer::MainMenuMotion()
 
 bool ZPlayer::MainMenuWheelUp()
 {
-	for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
+	for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
 		if((*i)->WheelUpButton())
 			return true;
 
@@ -3147,7 +3147,7 @@ bool ZPlayer::MainMenuWheelUp()
 
 bool ZPlayer::MainMenuWheelDown()
 {
-	for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
+	for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
 		if((*i)->WheelDownButton())
 			return true;
 
@@ -3156,7 +3156,7 @@ bool ZPlayer::MainMenuWheelDown()
 
 bool ZPlayer::MainMenuKeyPress(int c)
 {
-	for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
+	for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
 		if((*i)->KeyPress(c))
 			return true;
 
@@ -3165,7 +3165,7 @@ bool ZPlayer::MainMenuKeyPress(int c)
 
 bool ZPlayer::MainMenuAbsorbLClick()
 {
-	for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
+	for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
 		if((*i)->Click(mouse_x, mouse_y))
 		{
 			gmm_flag &the_flags = (*i)->GetGMMFlags();
@@ -3198,7 +3198,7 @@ bool ZPlayer::MainMenuAbsorbLClick()
 
 bool ZPlayer::MainMenuAbsorbLUnClick()
 {
-	for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
+	for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
 		if((*i)->UnClick(mouse_x, mouse_y))
 		{
 			gmm_flag &the_flags = (*i)->GetGMMFlags();
@@ -3762,7 +3762,7 @@ void ZPlayer::SendLogin()
 	//send a login if we have it
 	if(login_name.length() && login_password.length())
 	{
-		string send_str;
+		std::string send_str;
 
 		send_str = login_name + "," + login_password;
 
@@ -3770,9 +3770,9 @@ void ZPlayer::SendLogin()
 	}
 }
 
-void ZPlayer::SendCreateUser(string username, string lname, string lpass, string email)
+void ZPlayer::SendCreateUser(std::string username, std::string lname, std::string lpass, std::string email)
 {
-	string send_str;
+	std::string send_str;
 
 	send_str = username + "," + lname + "," + lpass + "," + email;
 
@@ -3801,7 +3801,7 @@ void ZPlayer::LoadMainMenu(int menu_type, bool kill_if_open, gmm_warning_flag wa
 	ZGuiMainMenuBase *new_menu = NULL;
 
 	//already loaded?
-	for(vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
+	for(std::vector<ZGuiMainMenuBase*>::iterator i=gui_menu_list.begin(); i!=gui_menu_list.end(); ++i)
 		if((*i)->GetMenuType() == menu_type)
 		{
 			if(kill_if_open)
@@ -3857,7 +3857,7 @@ void ZPlayer::RefindOurFortRefID()
 {
 	fort_ref_id = -1;
 
-	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
+	for(std::vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
 	{
 		if((*i)->GetOwner() != our_team) continue;
 
@@ -3918,7 +3918,7 @@ void ZPlayer::SetSoundSetting(int sound_setting_)
 void ZPlayer::AddSpaceBarEvent(SpaceBarEvent new_event)
 {
 	//delete duplicates
-	for(vector<SpaceBarEvent>::iterator i=space_event_list.begin(); i!=space_event_list.end();)
+	for(std::vector<SpaceBarEvent>::iterator i=space_event_list.begin(); i!=space_event_list.end();)
 	{
 		if(new_event == *i)
 			i = space_event_list.erase(i);

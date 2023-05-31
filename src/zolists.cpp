@@ -11,7 +11,7 @@ ZOLists::ZOLists()
 
 void ZOLists::DeleteAllObjects()
 {
-	for(vector<ZObject*>::iterator o=object_list->begin(); o!=object_list->end(); o++)
+	for(std::vector<ZObject*>::iterator o=object_list->begin(); o!=object_list->end(); o++)
 		delete *o;
 
 	//clear the lists
@@ -51,7 +51,7 @@ void ZOLists::DeleteObject(ZObject *obj)
 void ZOLists::AddObject(ZObject *obj)
 {
 	//already exist?
-	for(vector<ZObject*>::iterator o=object_list->begin(); o!=object_list->end(); o++)
+	for(std::vector<ZObject*>::iterator o=object_list->begin(); o!=object_list->end(); o++)
 		if(*o == obj)
 			return;
 
@@ -73,16 +73,16 @@ void ZOLists::AddObject(ZObject *obj)
 	if(ot == MAP_ITEM_OBJECT && oid == GRENADES_ITEM) grenades_olist.push_back(obj);
 }
 
-void ZOLists::DeleteObjectFromList(ZObject *obj, vector<ZObject*> *olist)
+void ZOLists::DeleteObjectFromList(ZObject *obj, std::vector<ZObject*> *olist)
 {
 	delete obj;
 
 	RemoveObjectFromList(obj, olist);
 }
 
-void ZOLists::RemoveObjectFromList(ZObject *obj, vector<ZObject*> *olist)
+void ZOLists::RemoveObjectFromList(ZObject *obj, std::vector<ZObject*> *olist)
 {
-	for(vector<ZObject*>::iterator o=olist->begin(); o!=olist->end();)
+	for(std::vector<ZObject*>::iterator o=olist->begin(); o!=olist->end();)
 	{
 		if(*o == obj)
 			o = olist->erase(o);
@@ -95,7 +95,7 @@ void ZOLists::SetupFlagList()
 {
 	flag_olist.clear();
 
-	for(vector<ZObject*>::iterator i=object_list->begin(); i!=object_list->end(); i++)
+	for(std::vector<ZObject*>::iterator i=object_list->begin(); i!=object_list->end(); i++)
 	{
 		unsigned char ot, oid;
 		(*i)->GetObjectID(ot, oid);

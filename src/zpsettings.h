@@ -3,16 +3,14 @@
 
 #include <string>
 
-using namespace std;
-
 class ZPSettings
 {
 public:
 	ZPSettings();
 
 	void LoadDefaults();
-	bool LoadSettings(string filename);
-	bool SaveSettings(string filename);
+	bool LoadSettings(std::string filename);
+	bool SaveSettings(std::string filename);
 
 	bool loaded_from_file;
 
@@ -23,13 +21,13 @@ public:
 	bool start_map_paused;
 	bool bots_start_ignored;
 	bool allow_game_speed_change;
-	string selectable_map_list;
+	std::string selectable_map_list;
 
-	string mysql_root_password;
-	string mysql_user_name;
-	string mysql_user_password;
-	string mysql_hostname;
-	string mysql_dbname;
+	std::string mysql_root_password;
+	std::string mysql_user_name;
+	std::string mysql_user_password;
+	std::string mysql_hostname;
+	std::string mysql_dbname;
 };
 
 #endif

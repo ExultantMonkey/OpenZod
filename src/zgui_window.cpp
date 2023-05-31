@@ -234,10 +234,10 @@ void ZGuiTextBox::CreateRenderIfNeeded()
 
 void ZGuiTextBox::CreateRender()
 {
-	string render_str;
+	std::string render_str;
 
 	if(passworded)
-		render_str = string(text.length(), '*');
+		render_str = std::string(text.length(), '*');
 	else
 		render_str = text;
 
@@ -249,7 +249,7 @@ void ZGuiTextBox::CreateRender()
 	//render_img.LoadBaseImage(ZFontEngine::GetFont(SMALL_WHITE_FONT).Render(text.c_str()));
 }
 
-string &ZGuiTextBox::GetText()
+std::string &ZGuiTextBox::GetText()
 {
 	return text;
 }
@@ -291,12 +291,12 @@ ZGuiButton::ZGuiButton()
 
 void ZGuiButton::Init()
 {
-	string filename;
-	string buttonname;
+	std::string filename;
+	std::string buttonname;
 
-	string gwprod_folder = "assets/other/production_gui/";
-	string menu_folder = "assets/other/menus/";
-	string gwfact_folder = "assets/other/factory_gui/";
+	std::string gwprod_folder = "assets/other/production_gui/";
+	std::string menu_folder = "assets/other/menus/";
+	std::string gwfact_folder = "assets/other/factory_gui/";
 
 	LoadButtonImages(button_img[PLACE_GUI_BUTTON], gwprod_folder, "place");
 	LoadButtonImages(button_img[OK_GUI_BUTTON], gwprod_folder, "ok");
@@ -320,9 +320,9 @@ void ZGuiButton::Init()
 	finished_init = true;
 }
 
-void ZGuiButton::LoadButtonImages(ZSDL_Surface *the_button, string foldername, string buttonname)
+void ZGuiButton::LoadButtonImages(ZSDL_Surface *the_button, std::string foldername, std::string buttonname)
 {
-	string filename;
+	std::string filename;
 
 	filename = foldername + buttonname + "_button.png";
 	the_button[GUI_BUTTON_NORMAL].LoadBaseImage(filename);// = IMG_Load_Error(filename);

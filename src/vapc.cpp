@@ -129,7 +129,7 @@ int VAPC::Process()
 		sx = 0;
 		sy = 0;
 
-		for(vector<driver_info_s>::iterator i=driver_info.begin(); i!=driver_info.end() ;i++)
+		for(std::vector<driver_info_s>::iterator i=driver_info.begin(); i!=driver_info.end() ;i++)
 		{
 			if(the_time < i->next_attack_time) continue;
 

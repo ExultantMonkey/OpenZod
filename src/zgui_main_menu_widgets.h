@@ -33,7 +33,7 @@ enum mmwidget_type
 	MAX_MMWIDGETS
 };
 
-const string mmwidget_type_string[MAX_MMWIDGETS] =
+const std::string mmwidget_type_string[MAX_MMWIDGETS] =
 {
 	"unknown", "button", "label", "list", "radio", 
 	"team_color", "text_box"
@@ -82,7 +82,7 @@ enum mmbutton_type
 	MMGENERIC_BUTTON, MMCLOSE_BUTTON, MAX_MMBUTTON_TYPES
 };
 
-const string mmbutton_type_string[MAX_MMBUTTON_TYPES] = 
+const std::string mmbutton_type_string[MAX_MMBUTTON_TYPES] = 
 {
 	"", "close"
 };
@@ -106,7 +106,7 @@ public:
 	bool Click(int x_, int y_);
 	bool UnClick(int x_, int y_);
 
-	void SetText(string text_) { text = text_; rerender_text = true; }
+	void SetText(std::string text_) { text = text_; rerender_text = true; }
 	void SetType(int type_) { type = type_; DetermineDimensions(); }
 	void SetGreen(bool is_green_) { is_green = is_green_; }
 private:
@@ -128,7 +128,7 @@ private:
 	void MakeTextImage();
 	void DetermineDimensions();
 
-	string text;
+	std::string text;
 	ZSDL_Surface text_img;
 	bool rerender_text;
 
@@ -152,16 +152,16 @@ public:
 
 	void DoRender(ZMap &the_map, SDL_Surface *dest, int tx, int ty);
 
-	void SetText(string text_);
+	void SetText(std::string text_);
 	void SetJustification(int justify_) { justify = justify_; }
 	void SetFont(int font_) { font=font_; }
 private:
 	void MakeTextImage();
 
 	int justify;
-	string text;
+	std::string text;
 	ZSDL_Surface text_img;
-	string rendered_text;
+	std::string rendered_text;
 	bool rerender_text;
 	int font;
 };
@@ -184,7 +184,7 @@ class mmlist_entry
 {
 public:
 	mmlist_entry() { clear(); }
-	mmlist_entry(string text_, int ref_id_, int sort_number_) 
+	mmlist_entry(std::string text_, int ref_id_, int sort_number_) 
 	{ 
 		text = text_; 
 		ref_id = ref_id_; 
@@ -200,7 +200,7 @@ public:
 		state = MMLIST_NORMAL;
 	}
 
-	string text;
+	std::string text;
 	int ref_id;
 	int sort_number;
 	int state;
@@ -226,7 +226,7 @@ public:
 	bool WheelDownButton() { return MoveDown(); }
 
 	void SetVisibleEntries(int visible_entries_);
-	vector<mmlist_entry> &GetEntryList() { return entry_list; }
+	std::vector<mmlist_entry> &GetEntryList() { return entry_list; }
 	void CheckViewI();
 	void UnSelectAll(int except_entry = -1);
 	int GetFirstSelected();
@@ -273,7 +273,7 @@ private:
 
 	double button_down_time;
 
-	vector<mmlist_entry> entry_list;
+	std::vector<mmlist_entry> entry_list;
 };
 
 #define MMRADIO_HEIGHT 9
@@ -348,7 +348,7 @@ public:
 	bool Click(int x_, int y_);
 	bool KeyPress(int c);
 
-	void SetText(string text_) { text=text_; do_rerender = true; }
+	void SetText(std::string text_) { text=text_; do_rerender = true; }
 	void SetSelected(bool selected_) { selected=selected_; do_rerender = true; }
 	void SetMaxText(int max_text_) { max_text=max_text_; }
 	void SetGoodCharsOnly(bool good_chars_only_) { good_chars_only=good_chars_only_; do_rerender = true; }
@@ -364,7 +364,7 @@ private:
 	void MakeTextImage();
 
 	bool selected;
-	string text;
+	std::string text;
 	int max_text;
 	bool good_chars_only;
 	bool passworded;
