@@ -2,6 +2,8 @@
 #include "elightinitfire.h"
 #include "etoughmushroom.h"
 
+#include "Util/Random.h"
+
 bool ELightRocket::finished_init = false;
 ZSDL_Surface ELightRocket::the_bullet;
 
@@ -119,7 +121,7 @@ void ELightRocket::Process()
 		//place crater
 		if(zmap) 
 		{
-			double chance = frand();
+			double chance = OpenZod::Util::Random::Double(0, 1);
 
 			if(xx_large && chance <= 0.35)
 				zmap->CreateCrater(ex, ey, true, 0.75);

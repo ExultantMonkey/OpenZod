@@ -3,6 +3,8 @@
 #include "zmap.h"
 #include "common.h"
 
+#include "Util/Random.h"
+
 ZSDL_Surface ZMap::planet_template[MAX_PLANET_TYPES];
 palette_tile_info ZMap::planet_tile_info[MAX_PLANET_TYPES][MAX_PLANET_TILES];
 std::vector<unsigned int> ZMap::map_water_plist[MAX_PLANET_TYPES];
@@ -1888,7 +1890,10 @@ void ZMap::CreateCrater(int x, int y, bool is_big, double chance)
 	int tile_crater_type;
 
 	//even pass chance?
-	if(frand() > chance) return;
+	if(OpenZod::Util::Random::Double(0, 1) > chance)
+	{
+		return;
+	}
 
 	//basic coord check / manipulation
 	{

@@ -51,8 +51,6 @@ namespace COMMON
 		a = b;
 		b = c;
 	}
-
-	inline double frand() { return (rand()%10001) / 10000.0; }
 	
 	inline int xy_to_i(int x, int y, int height) { return x * height + y; }
 };
