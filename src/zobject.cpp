@@ -2,21 +2,28 @@
 #include "common.h"
 #include "zfont_engine.h"
 
+#include "Util/Random.h"
+
+#include <spdlog/spdlog.h>
+
 using namespace COMMON;
 
 ZSettings ZObject::default_zsettings;
 
 ZSDL_Surface ZObject::group_tag[10];
 
-//vector<ZEffect*> *ZObject::effect_list = NULL;
 std::vector<damage_missile> *ZObject::damage_missile_list = NULL;
 
 ZObject::ZObject(ZTime *ztime_, ZSettings *zsettings_)
 {
 	if(!zsettings_)
+	{
 		zsettings = &default_zsettings;
+	}
 	else
+	{
 		zsettings = zsettings_;
+	}
 
 	ztime = ztime_;
 
@@ -53,8 +60,6 @@ ZObject::ZObject(ZTime *ztime_, ZSettings *zsettings_)
 	last_loc_set_time = last_process_time;
 	waypoint_cursor.SetTeam(NULL_TEAM);
 	group_num = -1;
-	//hover_name_img = NULL;
-	//hover_name_star_img = NULL;
 	attack_radius = 0;
 	radius_i = 0;
 	max_health = 1;
@@ -112,11 +117,10 @@ ZObject::ZObject(ZTime *ztime_, ZSettings *zsettings_)
 ZObject::~ZObject()
 {
 	//kill any pathfinding threads
-	if(zmap) cur_wp_info.clear_and_kill(*zmap);
-
-	//alittle mem mangement
-	//if(hover_name_img) SDL_FreeSurface(hover_name_img);
-	//if(hover_name_star_img) SDL_FreeSurface(hover_name_star_img);
+	if(zmap)
+	{
+		cur_wp_info.clear_and_kill(*zmap);
+	}
 }
 
 void ZObject::InitTypeId(unsigned char ot, unsigned char oid)
@@ -126,7 +130,7 @@ void ZObject::InitTypeId(unsigned char ot, unsigned char oid)
 
 	if(!zsettings)
 	{
-		printf("ZObject::InitTypeId:zsettings not set\n");
+		spdlog::error("ZObject::InitTypeId - ZSettings not set");
 		return;
 	}
 
@@ -175,7 +179,9 @@ void ZObject::InitTypeId(unsigned char ot, unsigned char oid)
 		}
 
 		if(oid >= MAP0_ITEM && oid < MAP0_ITEM + MAP_ITEMS_AMOUNT)
+		{
 			max_health = zsettings->map_item_health * MAX_UNIT_HEALTH;
+		}
 	}
 	else
 	{
@@ -200,43 +206,22 @@ void ZObject::InitTypeId(unsigned char ot, unsigned char oid)
 
 void ZObject::Init(TTF_Font *ttf_font)
 {
-	int i;
 	char filename_c[500];
 	SDL_Color textcolor;
 
-	for(i=0;i<10;i++)
+	for(int i=0;i<10;i++)
 	{
 		textcolor.r = 200;
 		textcolor.g = 200;
 		textcolor.b = 200;
 
 		sprintf(filename_c, "%d", i);
-		//group_tag[i] = TTF_RenderText_Solid(ttf_font, filename_c, textcolor);
 		group_tag[i].LoadBaseImage(TTF_RenderText_Solid(ttf_font, filename_c, textcolor));
 	}
-
-	//for(i=0;i<6;i++)
-	//{
-	//	sprintf(filename_c, "assets/sounds/selected_%02d.wav", i);
-	//	selected_wav[i] = MIX_Load_Error(filename_c);
-	//}
-
-	//for(i=0;i<MAX_ROBOT_TYPES;i++)
-	//{
-	//	sprintf(filename_c, "assets/sounds/selected_%s.wav", robot_type_string[i].c_str());
-	//	selected_robot_wav[i] = MIX_Load_Error(filename_c);
-	//}
-
-	//for(i=0;i<12;i++)
-	//{
-	//	sprintf(filename_c, "assets/sounds/acknowledge_%02d.wav", i);
-	//	acknowledge_wav[i] = MIX_Load_Error(filename_c);
-	//}
 }
 
 void ZObject::InitRealMoveSpeed(ZMap &tmap)
 {
-	//real_move_speed = move_speed * tmap.GetTileWalkSpeed(x + (width_pix >> 1), y + (height_pix >> 1));
 	real_move_speed = move_speed * tmap.GetTileWalkSpeed(center_x, center_y);
 }
 
@@ -274,7 +259,10 @@ void ZObject::DoKillMe(double killtime)
 {
 	//they were already set to die
 	//make sure they die at their original time
-	if(killme) return;
+	if(killme)
+	{
+		return;
+	}
 
 	killme = true;
 	killme_time = killtime;
@@ -297,8 +285,14 @@ int ZObject::GetMaxHealth()
 
 void ZObject::SetHealthPercent(int health_percent, ZMap &tmap)
 {
-	if(health_percent > 100) health_percent = 100;
-	if(health_percent < 0) health_percent = 0;
+	if(health_percent > 100)
+	{
+		health_percent = 100;
+	}
+	if(health_percent < 0)
+	{
+		health_percent = 0;
+	}
 
 	//for the map editor
 	initial_health_percent = health_percent;
@@ -308,15 +302,17 @@ void ZObject::SetHealthPercent(int health_percent, ZMap &tmap)
 
 void ZObject::SetHealth(int new_health, ZMap &tmap)
 {
-	bool was_destroyed;
-
-	was_destroyed = IsDestroyed();
-
 	health = new_health;
+	if(health < 0)
+	{
+		health = 0;
+	}
+	if(health > max_health)
+	{
+		health = max_health;
+	}
 
-	if(health < 0) health = 0;
-	if(health > max_health) health = max_health;
-
+	bool was_destroyed = IsDestroyed();
 	if(was_destroyed && !IsDestroyed())
 	{
 		DoReviveEffect();
@@ -327,17 +323,21 @@ void ZObject::SetHealth(int new_health, ZMap &tmap)
 		SetDestroyMapImpassables(tmap);
 		ProcessKillObject();
 	}
-
-	//if(!health) DoDeathEffect();
 }
 
 int ZObject::DamageDriverHealth(int damage_amount)
 {
-	if(!driver_info.size()) return 0;
+	if(!driver_info.size())
+	{
+		return 0;
+	}
 
 	driver_info_s &the_driver = *driver_info.begin();
 
-	if(the_driver.driver_health <= 0) return 0;
+	if(the_driver.driver_health <= 0)
+	{
+		return 0;
+	}
 
 	the_driver.driver_health -= damage_amount;
 
@@ -361,18 +361,12 @@ int ZObject::DamageDriverHealth(int damage_amount)
 int ZObject::DamageHealth(int damage_amount, ZMap &tmap)
 {
 	//already dead foo
-	if(health <= 0) return health;
+	if(health <= 0)
+	{
+		return health;
+	}
 
 	SetHealth(health - damage_amount, tmap);
-
-	//health -= damage_amount;
-
-	//if(health <= 0)
-	//{
-	//	health = 0;
-	//	ProcessKillObject(current_time());
-	//}
-	//if(health > max_health) health = max_health;
 
 	//got to recalc the build time if this is a building
 	RecalcBuildTime();
@@ -387,60 +381,90 @@ void ZObject::SetGroup(int group_num_)
 
 void ZObject::PlaySelectedWav()
 {
-	//int ch;
 
-	//ch = rand() % 6;
-
-	//ZMix_PlayChannel(-1, selected_wav[ch], 0);
 }
 
 void ZObject::PlaySelectedAnim(ZPortrait &portrait)
 {
-	switch(rand() % 4)
+	switch(OpenZod::Util::Random::Int(0, 3))
 	{
-	case 0: portrait.StartAnim(YES_SIR_ANIM); break;
-	case 1: portrait.StartAnim(YES_SIR3_ANIM); break;
-	case 2: portrait.StartAnim(UNIT_REPORTING1_ANIM); break;
-	case 3: portrait.StartAnim(UNIT_REPORTING2_ANIM); break;
+	case 0: 
+		portrait.StartAnim(YES_SIR_ANIM); 
+		break;
+	case 1: 
+		portrait.StartAnim(YES_SIR3_ANIM); 
+		break;
+	case 2: 
+		portrait.StartAnim(UNIT_REPORTING1_ANIM); 
+		break;
+	case 3: 
+		portrait.StartAnim(UNIT_REPORTING2_ANIM); 
+		break;
 	}
 }
 
 void ZObject::PlayAcknowledgeWav()
 {
-	//int ch;
 
-	//ch = rand() % 12;
-
-	//ZMix_PlayChannel(-1, acknowledge_wav[ch], 0);
 }
 
 void ZObject::PlayAcknowledgeAnim(ZPortrait &portrait, bool no_way)
 {
 	if(no_way)
 	{
-		switch(rand() % 3)
+		switch(OpenZod::Util::Random::Int(0, 2))
 		{
-		case 0: portrait.StartAnim(FORGET_IT_ANIM); break;
-		case 1: portrait.StartAnim(GET_OUTTA_HERE_ANIM); break;
-		case 2: portrait.StartAnim(NO_WAY_ANIM); break;
+		case 0:
+			portrait.StartAnim(FORGET_IT_ANIM);
+			break;
+		case 1:
+			portrait.StartAnim(GET_OUTTA_HERE_ANIM);
+			break;
+		case 2:
+			portrait.StartAnim(NO_WAY_ANIM);
+			break;
 		}
 	}
 	else
 	{
-		switch(rand() % 12)
+		switch(OpenZod::Util::Random::Int(0, 11))
 		{
-		case 0: portrait.StartAnim(WERE_ON_OUR_WAY_ANIM); break;
-		case 1: portrait.StartAnim(HERE_WE_GO_ANIM); break;
-		case 2: portrait.StartAnim(YOUVE_GOT_IT_ANIM); break;
-		case 3: portrait.StartAnim(MOVING_IN_ANIM); break;
-		case 4: portrait.StartAnim(OKAY_ANIM); break;
-		case 5: portrait.StartAnim(ALRIGHT_ANIM); break;
-		case 6: portrait.StartAnim(NO_PROBLEM_ANIM); break;
-		case 7: portrait.StartAnim(OVER_N_OUT_ANIM); break;
-		case 8: portrait.StartAnim(AFFIRMATIVE_ANIM); break;
-		case 9: portrait.StartAnim(GOING_IN_ANIM); break;
-		case 10: portrait.StartAnim(LETS_DO_IT_ANIM); break;
-		case 11: portrait.StartAnim(LETS_GET_EM_ANIM); break;
+		case 0: 
+			portrait.StartAnim(WERE_ON_OUR_WAY_ANIM);
+			break;
+		case 1:
+			portrait.StartAnim(HERE_WE_GO_ANIM);
+			break;
+		case 2:
+			portrait.StartAnim(YOUVE_GOT_IT_ANIM);
+			break;
+		case 3:
+			portrait.StartAnim(MOVING_IN_ANIM);
+			break;
+		case 4:
+			portrait.StartAnim(OKAY_ANIM);
+			break;
+		case 5:
+			portrait.StartAnim(ALRIGHT_ANIM);
+			break;
+		case 6:
+			portrait.StartAnim(NO_PROBLEM_ANIM);
+			break;
+		case 7:
+			portrait.StartAnim(OVER_N_OUT_ANIM);
+			break;
+		case 8:
+			portrait.StartAnim(AFFIRMATIVE_ANIM);
+			break;
+		case 9:
+			portrait.StartAnim(GOING_IN_ANIM);
+			break;
+		case 10:
+			portrait.StartAnim(LETS_DO_IT_ANIM);
+			break;
+		case 11:
+			portrait.StartAnim(LETS_GET_EM_ANIM);
+			break;
 		}
 	}
 }
@@ -467,7 +491,10 @@ int ZObject::GetRefID()
 
 ZSDL_Surface &ZObject::GetHoverNameImg()
 {
-	if(hover_name_img.GetBaseSurface()) return hover_name_img;
+	if(hover_name_img.GetBaseSurface())
+	{
+		return hover_name_img;
+	}
 
 	//make it?
 	if(hover_name.size())
@@ -479,10 +506,14 @@ ZSDL_Surface &ZObject::GetHoverNameImg()
 		hover_name_star_img.LoadBaseImage(ZFontEngine::GetFont(SMALL_WHITE_FONT).Render((hover_name + " *").c_str()));
 
 		if(hover_name_img.GetBaseSurface())
+		{
 			hover_name_x_shift = (width_pix - hover_name_img.GetBaseSurface()->w) >> 1;
+		}
 
 		if(hover_name_star_img.GetBaseSurface())
+		{
 			hover_name_star_x_shift = (width_pix - hover_name_star_img.GetBaseSurface()->w) >> 1;
+		}
 	}
 
 	return hover_name_img;
@@ -494,18 +525,22 @@ ZSDL_Surface &ZObject::GetHoverNameImgStatic(unsigned char ot, unsigned char oid
 	static ZSDL_Surface static_hover_name_img[MAX_MAP_OBJECT_TYPES][max_units_in_type];
 	static ZSDL_Surface null_return;
 
-	if(ot < 0) return null_return;
-	if(ot >= MAX_MAP_OBJECT_TYPES) return null_return;
-	if(oid < 0) return null_return;
-	if(oid >= max_units_in_type) return null_return;
+	if((ot < 0) || ot >= MAX_MAP_OBJECT_TYPES)
+	{
+		return null_return;
+	}
+	if((oid < 0) || (oid >= max_units_in_type))
+	{
+		return null_return;
+	}
 
 	if(!static_hover_name_img[ot][oid].GetBaseSurface())
 	{
-		std::string render_str;
-
-		render_str = GetHoverName(ot, oid);
+		std::string render_str = GetHoverName(ot, oid);
 		if(render_str.length())
+		{
 			static_hover_name_img[ot][oid].LoadBaseImage(ZFontEngine::GetFont(SMALL_WHITE_FONT).Render(render_str.c_str()));
+		}
 	}
 
 	return static_hover_name_img[ot][oid];
@@ -515,38 +550,72 @@ std::string ZObject::GetHoverName(unsigned char ot, unsigned char oid)
 {
 	switch(ot)
 	{
-		case CANNON_OBJECT:
-			switch(oid)
-			{
-				case GATLING: return "Gatling"; break;
-				case GUN: return "Gun"; break;
-				case HOWITZER: return "Howitzer"; break;
-				case MISSILE_CANNON: return "Missile"; break;
-			}
+	case CANNON_OBJECT:
+		switch(oid)
+		{
+		case GATLING:
+			return "Gatling";
 			break;
-		case VEHICLE_OBJECT:
-			switch(oid)
-			{
-				case JEEP: return "Jeep"; break;
-				case LIGHT: return "Light"; break;
-				case MEDIUM: return "Medium"; break;
-				case HEAVY: return "Heavy"; break;
-				case APC: return "APC"; break;
-				case MISSILE_LAUNCHER: return "M Missile"; break;
-				case CRANE: return "Crane"; break;
-			}
+		case GUN:
+			return "Gun";
 			break;
-		case ROBOT_OBJECT:
-			switch(oid)
-			{
-				case GRUNT: return "Grunt"; break;
-				case PSYCHO: return "Psychos"; break;
-				case SNIPER: return "Sniper"; break;
-				case TOUGH: return "Tough"; break;
-				case PYRO: return "Pyros"; break;
-				case LASER: return "Laser"; break;
-			}
+		case HOWITZER:
+			return "Howitzer";
 			break;
+		case MISSILE_CANNON:
+			return "Missile";
+			break;
+		}
+		break;
+	case VEHICLE_OBJECT:
+		switch(oid)
+		{
+		case JEEP:
+			return "Jeep";
+			break;
+		case LIGHT:
+			return "Light";
+			break;
+		case MEDIUM:
+			return "Medium";
+			break;
+		case HEAVY:
+			return "Heavy";
+			break;
+		case APC:
+			return "APC";
+			break;
+		case MISSILE_LAUNCHER:
+			return "M Missile";
+			break;
+		case CRANE:
+			return "Crane";
+			break;
+		}
+		break;
+	case ROBOT_OBJECT:
+		switch(oid)
+		{
+		case GRUNT:
+			return "Grunt";
+			break;
+		case PSYCHO:
+			return "Psychos";
+			break;
+		case SNIPER:
+			return "Sniper";
+			break;
+		case TOUGH:
+			return "Tough";
+			break;
+		case PYRO:
+			return "Pyros";
+			break;
+		case LASER:
+			return "Laser";
+			break;
+		}
+		break;
 	}
 
 	return "";
@@ -563,14 +632,10 @@ void ZObject::RenderHover(ZMap &zmap, SDL_Surface *dest, team_type viewers_team)
 		if(viewers_team == owner && viewers_team != NULL_TEAM)
 		{
 			zmap.RenderZSurface(&hover_name_star_img, x + hover_name_star_x_shift, y + hover_name_y_shift);
-			//if(zmap.GetBlitInfo(hover_name_star_img, x + hover_name_star_x_shift, y + hover_name_y_shift, from_rect, to_rect))
-			//	SDL_BlitSurface( hover_name_star_img, &from_rect, dest, &to_rect);
 		}
 		else
 		{
 			zmap.RenderZSurface(&hover_name_star_img, x + hover_name_x_shift, y + hover_name_y_shift);
-			//if(zmap.GetBlitInfo(hover_name_img, x + hover_name_x_shift, y + hover_name_y_shift, from_rect, to_rect))
-			//	SDL_BlitSurface( hover_name_img, &from_rect, dest, &to_rect);
 		}
 	}
 	else if(hover_name.size())
@@ -582,24 +647,28 @@ void ZObject::RenderHover(ZMap &zmap, SDL_Surface *dest, team_type viewers_team)
 		hover_name_star_img.LoadBaseImage( ZFontEngine::GetFont(SMALL_WHITE_FONT).Render((hover_name + " *").c_str()));
 
 		if(hover_name_img.GetBaseSurface())
+		{
 			hover_name_x_shift = (width_pix - hover_name_img.GetBaseSurface()->w) >> 1;
+		}
 
 		if(hover_name_star_img.GetBaseSurface())
+		{
 			hover_name_star_x_shift = (width_pix - hover_name_star_img.GetBaseSurface()->w) >> 1;
+		}
 
 		if(viewers_team == owner && viewers_team != NULL_TEAM)
 		{
 			if(hover_name_star_img.GetBaseSurface())
+			{
 				zmap.RenderZSurface(&hover_name_star_img, x + hover_name_star_x_shift, y + hover_name_y_shift);
-			//if(zmap.GetBlitInfo(hover_name_star_img, x + hover_name_star_x_shift, y + hover_name_y_shift, from_rect, to_rect))
-			//	SDL_BlitSurface( hover_name_star_img, &from_rect, dest, &to_rect);
+			}
 		}
 		else
 		{
 			if(hover_name_img.GetBaseSurface())
+			{
 				zmap.RenderZSurface(&hover_name_img, x + hover_name_x_shift, y + hover_name_y_shift);
-			//if(zmap.GetBlitInfo(hover_name_img, x + hover_name_x_shift, y + hover_name_y_shift, from_rect, to_rect))
-			//	SDL_BlitSurface( hover_name_img, &from_rect, dest, &to_rect);
+			}
 		}
 	}
 
@@ -613,38 +682,31 @@ void ZObject::RenderHealth(ZMap &zmap, SDL_Surface *dest)
 	int &y = loc.y;
 	SDL_Rect the_box;
 	SDL_Rect from_rect, to_rect;
-	//int shift_x, shift_y, view_w, view_h;
 	const char g_r = 82, g_g = 190, g_b = 33;
 	const char y_r = 247, y_g = 203, y_b = 107;
 	const char b_r = 0, b_g = 0, b_b = 0;
-	//int green_map = SDL_MapRGB(dest->format, 82, 190, 33);
-	//int yellow_map = SDL_MapRGB(dest->format, 247, 203, 107);
-	//int black_map = SDL_MapRGB(dest->format, 0, 0, 0);
 	const int bar_x_shift = -3;
 	const int bar_y_shift = -8;
 	const int max_dist = 30 + 6;
-	int green_dist, yellow_dist, total_dist;
 
-
-	if(!hover_name.size()) return;
+	if(!hover_name.size())
+	{
+		return;
+	}
 
 	//calculate
-	green_dist = max_dist * (1.0 * health / MAX_UNIT_HEALTH);
-	yellow_dist = max_dist * (1.0 * max_health / MAX_UNIT_HEALTH);
+	int green_dist = max_dist * (1.0 * health / MAX_UNIT_HEALTH);
+	int yellow_dist = max_dist * (1.0 * max_health / MAX_UNIT_HEALTH);
 
-	if(green_dist <= 0) green_dist = 1;
-	if(yellow_dist <= 0) yellow_dist = 1;
-	total_dist = yellow_dist + 2;
-
-	//zmap.GetViewShiftFull(shift_x, shift_y, view_w, view_h);
-
-	//draw black
-	//the_box.x = (x - shift_x) + bar_x_shift;
-	//the_box.y = (y - shift_y) + bar_y_shift;
-	//the_box.w = total_dist;
-	//the_box.h = 4;
-
-	//SDL_FillRect(dest, &the_box, black_map);
+	if(green_dist <= 0)
+	{
+		green_dist = 1;
+	}
+	if(yellow_dist <= 0)
+	{
+		yellow_dist = 1;
+	}
+	int total_dist = yellow_dist + 2;
 
 	if(zmap.GetBlitInfo(x + bar_x_shift, y + bar_y_shift, total_dist, 4, from_rect, to_rect))
 	{
@@ -653,17 +715,8 @@ void ZObject::RenderHealth(ZMap &zmap, SDL_Surface *dest)
 		the_box.w = from_rect.w;
 		the_box.h = from_rect.h;
 
-		//SDL_FillRect(dest, &the_box, black_map);
 		ZSDL_FillRect(&the_box, b_r, b_g, b_b);
 	}
-
-	//draw green
-	//the_box.x = (x - shift_x) + bar_x_shift + 1;
-	//the_box.y = (y - shift_y) + bar_y_shift + 1;
-	//the_box.w = green_dist;
-	//the_box.h = 2;
-
-	//SDL_FillRect(dest, &the_box, green_map);
 
 	if(zmap.GetBlitInfo(x + bar_x_shift + 1, y + bar_y_shift + 1, green_dist, 2, from_rect, to_rect))
 	{
@@ -672,29 +725,20 @@ void ZObject::RenderHealth(ZMap &zmap, SDL_Surface *dest)
 		the_box.w = from_rect.w;
 		the_box.h = from_rect.h;
 
-		//SDL_FillRect(dest, &the_box, green_map);
 		ZSDL_FillRect(&the_box, g_r, g_g, g_b);
 	}
 
-	//draw yellow
-	//the_box.x = (x - shift_x) + bar_x_shift + 1 + green_dist;
-	//the_box.y = (y - shift_y) + bar_y_shift + 1;
-	//the_box.w = yellow_dist - green_dist;
-	//the_box.h = 2;
-
-	//if(the_box.w)
-	//	SDL_FillRect(dest, &the_box, yellow_map);
-
 	if(yellow_dist - green_dist)
-	if(zmap.GetBlitInfo(x + bar_x_shift + 1 + green_dist, y + bar_y_shift + 1, yellow_dist - green_dist, 2, from_rect, to_rect))
 	{
-		the_box.x = to_rect.x;
-		the_box.y = to_rect.y;
-		the_box.w = from_rect.w;
-		the_box.h = from_rect.h;
+		if(zmap.GetBlitInfo(x + bar_x_shift + 1 + green_dist, y + bar_y_shift + 1, yellow_dist - green_dist, 2, from_rect, to_rect))
+		{
+			the_box.x = to_rect.x;
+			the_box.y = to_rect.y;
+			the_box.w = from_rect.w;
+			the_box.h = from_rect.h;
 
-		//SDL_FillRect(dest, &the_box, yellow_map);
-		ZSDL_FillRect(&the_box, y_r, y_g, y_b);
+			ZSDL_FillRect(&the_box, y_r, y_g, y_b);
+		}
 	}
 }
 
@@ -702,38 +746,47 @@ void ZObject::RenderAttackRadius(ZMap &zmap, SDL_Surface *dest, std::vector<ZObj
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	int cx, cy;
 	int mx, my;
 	int shift_x, shift_y, view_w, view_h;
-	SDL_Rect to_rect;
-	//int rgb_map;
-	int i;
 	const int dots = 10;
 	const double PI_shift = (PI / 2) / dots;
-	double deg;
 
-	if(!attack_radius) return;
+	if(!attack_radius)
+	{
+		return;
+	}
 
 	zmap.GetViewShiftFull(shift_x, shift_y, view_w, view_h);
 
 	//find the center
-	cx = (x - shift_x) + (width_pix >> 1);
-	cy = (y - shift_y) + (height_pix >> 1);
+	int cx = (x - shift_x) + (width_pix >> 1);
+	int cy = (y - shift_y) + (height_pix >> 1);
 
 	//is any of this even on the map?
-	if(cx + attack_radius < 0) return;
-	if(cy + attack_radius < 0) return;
-	if(cx - attack_radius > view_w) return;
-	if(cy - attack_radius > view_h) return;
+	if(cx + attack_radius < 0)
+	{
+		return;
+	}
+	if(cy + attack_radius < 0)
+	{
+		return;
+	}
+	if(cx - attack_radius > view_w)
+	{
+		return;
+	}
+	if(cy - attack_radius > view_h)
+	{
+		return;
+	}
 
 	//init stuff
-	//team_type &t = owner;
-	//rgb_map = SDL_MapRGB(dest->format, team_color[t].r, team_color[t].g, team_color[t].b); 
+	SDL_Rect to_rect;
 	to_rect.w = 3;
 	to_rect.h = 3;
 
-	deg = radius_i;
-	for(i=0;i<dots && deg <= PI / 2;i++,deg+=PI_shift)
+	double deg = radius_i;
+	for(int i=0;i<dots && deg <= PI / 2;i++,deg+=PI_shift)
 	{
 		mx = (attack_radius + 3) * sin(deg);
 		my = (attack_radius + 3) * cos(deg);
@@ -743,36 +796,48 @@ void ZObject::RenderAttackRadius(ZMap &zmap, SDL_Surface *dest, std::vector<ZObj
 		to_rect.w = 2;
 		to_rect.h = 2;
 		if((to_rect.x >= 0 && to_rect.x + 2 < view_w) && (to_rect.y >= 0 && to_rect.y + 2 < view_h))
+		{
 			if(!WithinAttackRadiusOf(avoid_list, to_rect.x + shift_x, to_rect.y + shift_y))
+			{
 				ZSDL_FillRect(&to_rect, team_color[owner].r, team_color[owner].g, team_color[owner].b);
-				//SDL_FillRect(dest, &to_rect, rgb_map);
+			}
+		}
 
 		to_rect.x = -mx + cx;
 		to_rect.y = -my + cy;
 		to_rect.w = 2;
 		to_rect.h = 2;
 		if((to_rect.x >= 0 && to_rect.x + 2 < view_w) && (to_rect.y >= 0 && to_rect.y + 2 < view_h))
+		{
 			if(!WithinAttackRadiusOf(avoid_list, to_rect.x + shift_x, to_rect.y + shift_y))
+			{
 				ZSDL_FillRect(&to_rect, team_color[owner].r, team_color[owner].g, team_color[owner].b);
-				//SDL_FillRect(dest, &to_rect, rgb_map);
+			}
+		}
 
 		to_rect.x = -mx + cx;
 		to_rect.y = my + cy;
 		to_rect.w = 2;
 		to_rect.h = 2;
 		if((to_rect.x >= 0 && to_rect.x + 2 < view_w) && (to_rect.y >= 0 && to_rect.y + 2 < view_h))
+		{
 			if(!WithinAttackRadiusOf(avoid_list, to_rect.x + shift_x, to_rect.y + shift_y))
+			{
 				ZSDL_FillRect(&to_rect, team_color[owner].r, team_color[owner].g, team_color[owner].b);
-				//SDL_FillRect(dest, &to_rect, rgb_map);
+			}
+		}
 
 		to_rect.x = mx + cx;
 		to_rect.y = -my + cy;
 		to_rect.w = 2;
 		to_rect.h = 2;
 		if((to_rect.x >= 0 && to_rect.x + 2 < view_w) && (to_rect.y >= 0 && to_rect.y + 2 < view_h))
+		{
 			if(!WithinAttackRadiusOf(avoid_list, to_rect.x + shift_x, to_rect.y + shift_y))
+			{
 				ZSDL_FillRect(&to_rect, team_color[owner].r, team_color[owner].g, team_color[owner].b);
-				//SDL_FillRect(dest, &to_rect, rgb_map);
+			}
+		}
 	}
 }
 
@@ -780,11 +845,11 @@ void ZObject::RenderSelection(ZMap &zmap, SDL_Surface *dest)
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	int shift_x, shift_y, view_w, view_h;
-	SDL_Rect dim;
 
+	int shift_x, shift_y, view_w, view_h;
 	zmap.GetViewShiftFull(shift_x, shift_y, view_w, view_h);
 
+	SDL_Rect dim;
 	dim.x = x - shift_x;
 	dim.y = y - shift_y;
 	dim.w = width_pix;
@@ -796,10 +861,6 @@ void ZObject::RenderSelection(ZMap &zmap, SDL_Surface *dest)
 	if(group_num != -1)
 	{
 		zmap.RenderZSurface(&group_tag[group_num], x-2, y-3);
-		//dim.x -= 2;
-		//dim.y -= 3;
-
-		//SDL_BlitSurface(group_tag[group_num], NULL, dest, &dim);
 	}
 
 	//render health too
@@ -826,16 +887,25 @@ bool ZObject::WithinAutoGrabFlagRadius(int ox, int oy)
 
 bool ZObject::WithinAgroRadius(ZObject *obj)
 {
-	if(!obj) return false;
+	if(!obj)
+	{
+		return false;
+	}
 
 	int &x = center_x;
 	int &y = center_y;
 	int &ox = obj->center_x;
 	int &oy = obj->center_y;
 
-	if(!WithinAgroRadius(ox, oy)) return false;
+	if(!WithinAgroRadius(ox, oy))
+	{
+		return false;
+	}
 
-	if(!obj->IsDestroyableImpass() && zmap && zmap->EngageBarrierBetweenCoords(x,y,ox,oy)) return false;
+	if(!obj->IsDestroyableImpass() && zmap && zmap->EngageBarrierBetweenCoords(x,y,ox,oy))
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -851,16 +921,25 @@ bool ZObject::WithinAgroRadius(int ox, int oy)
 
 bool ZObject::WithinAttackRadius(ZObject *obj)
 {
-	if(!obj) return false;
+	if(!obj)
+	{
+		return false;
+	}
 
 	int &x = center_x;
 	int &y = center_y;
 	int &ox = obj->center_x;
 	int &oy = obj->center_y;
 
-	if(!WithinAttackRadius(ox, oy)) return false;
+	if(!WithinAttackRadius(ox, oy))
+	{
+		return false;
+	}
 
-	if(!obj->IsDestroyableImpass() && zmap && zmap->EngageBarrierBetweenCoords(x,y,ox,oy)) return false;
+	if(!obj->IsDestroyableImpass() && zmap && zmap->EngageBarrierBetweenCoords(x,y,ox,oy))
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -875,11 +954,13 @@ bool ZObject::WithinAttackRadius(int ox, int oy)
 
 bool ZObject::WithinAttackRadiusOf(std::vector<ZObject*> &avoid_list, int ox, int oy)
 {
-	std::vector<ZObject*>::iterator i;
-
-	for(i=avoid_list.begin();i!=avoid_list.end();i++)
-		if(*i != this && (*i)->WithinAttackRadius(ox, oy))
+	for(ZObject* i : avoid_list)
+	{
+		if(i != this && i->WithinAttackRadius(ox, oy))
+		{
 			return true;
+		}
+	}
 
 	return false;
 }
@@ -887,7 +968,10 @@ bool ZObject::WithinAttackRadiusOf(std::vector<ZObject*> &avoid_list, int ox, in
 bool ZObject::Selectable()
 {
 	//minions are not selectable
-	if(leader_obj) return false;
+	if(leader_obj)
+	{
+		return false;
+	}
 
 	return selectable;
 }
@@ -896,32 +980,38 @@ bool ZObject::UnderCursor(int &map_x, int &map_y)
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	if(map_x < x) return false;
-	if(map_y < y) return false;
-	if(map_x > x + width_pix) return false;
-	if(map_y > y + height_pix) return false;
+	if(map_x < x)
+	{
+		return false;
+	}
+	if(map_y < y)
+	{
+		return false;
+	}
+	if(map_x > x + width_pix)
+	{
+		return false;
+	}
+	if(map_y > y + height_pix)
+	{
+		return false;
+	}
 
 	return true;
 }
 
 double ZObject::DistanceFromCoords(int x, int y)
 {
-	int dx, dy;
-
-	dx = loc.x - x;
-	dy = loc.y - y;
+	int dx = loc.x - x;
+	int dy = loc.y - y;
 
 	return sqrt((double)((dx * dx) + (dy * dy)));
 }
 
 double ZObject::DistanceFromObject(ZObject &obj)
 {
-	int dx, dy;
-
-	//dx = loc.x - obj.loc.x;
-	//dy = loc.y - obj.loc.y;
-	dx = center_x - obj.center_x;
-	dy = center_y - obj.center_y;
+	int dx = center_x - obj.center_x;
+	int dy = center_y - obj.center_y;
 	
 	return sqrt((double)((dx * dx) + (dy * dy)));
 }
@@ -930,10 +1020,22 @@ bool ZObject::IntersectsObject(ZObject &obj)
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	if(obj.loc.x >= x + width_pix) return false;
-	if(obj.loc.x + obj.width_pix <= x) return false;
-	if(obj.loc.y >= y + height_pix) return false;
-	if(obj.loc.y + obj.height_pix <= y) return false;
+	if(obj.loc.x >= x + width_pix)
+	{
+		return false;
+	}
+	if(obj.loc.x + obj.width_pix <= x)
+	{
+		return false;
+	}
+	if(obj.loc.y >= y + height_pix)
+	{
+		return false;
+	}
+	if(obj.loc.y + obj.height_pix <= y)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -943,10 +1045,22 @@ bool ZObject::WithinSelection(int &map_left, int &map_right, int &map_top, int &
 	int &x = loc.x;
 	int &y = loc.y;
 
-	if(map_left >= x + width_pix) return false;
-	if(map_right <= x) return false;
-	if(map_top >= y + height_pix) return false;
-	if(map_bottom <= y) return false;
+	if(map_left >= x + width_pix)
+	{
+		return false;
+	}
+	if(map_right <= x)
+	{
+		return false;
+	}
+	if(map_top >= y + height_pix)
+	{
+		return false;
+	}
+	if(map_bottom <= y)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -978,77 +1092,45 @@ void ZObject::SetCords(int x_, int y_)
 	center_y = y + (height_pix >> 1);
 }
 
-//void ZObject::GetCords(int &x_, int &y_)
-//{
-//	x_ = loc.x;
-//	y_ = loc.y;
-//}
-
-//void ZObject::GetCenterCords(int &x_, int &y_)
-//{
-//	//int &x = loc.x;
-//	//int &y = loc.y;
-//	//x_ = x + (width_pix >> 1);
-//	//y_ = y + (height_pix >> 1);
-//	x_ = center_x;
-//	y_ = center_y;
-//}
-
 void ZObject::SetOwner(team_type owner_)
 {
 	owner = owner_;
 }
 
-// SDL_Surface *ZObject::GetRender()
-// {
-// 	return NULL;
-// }
-
-//void ZObject::GetDimensionsPixel(int &w_pix, int &h_pix)
-//{
-//	w_pix = width_pix;
-//	h_pix = height_pix;
-//}
-
-//void ZObject::GetDimensions(int &w, int &h)
-//{
-//	w = width;
-//	h = height;
-//}
-
 int ZObject::Process()
 {
-	printf("ZObject::Process:%s\n", object_name.c_str());
 	return 0;
 }
 
 int ZObject::ProcessObject()
 {
 	double &the_time = ztime->ztime;
-	double time_dif;
 
 	//smooth the walk because of lag
 	SmoothMove(the_time);
 
 	//attack radius
+	const int dots = 10;
+	const double PI_shift = (PI / 2) / dots;
+
+	double time_dif = the_time - last_radius_time;
+	last_radius_time = the_time;
+
+	radius_i += PI_shift * time_dif;
+
+	//pull it back down
+	while(radius_i > PI_shift)
 	{
-		const int dots = 10;
-		const double PI_shift = (PI / 2) / dots;
-
-		time_dif = the_time - last_radius_time;
-		last_radius_time = the_time;
-
-		radius_i += (PI_shift) * time_dif;
-
-		//pull it back down
-		while(radius_i > PI_shift)
-			radius_i -= PI_shift;
+		radius_i -= PI_shift;
 	}
 
 	if(the_time >= next_waypoint_time)
 	{
 		waypoint_i++;
-		if(waypoint_i >= 4) waypoint_i = 0;
+		if(waypoint_i >= 4)
+		{
+			waypoint_i = 0;
+		}
 
 		next_waypoint_time = the_time + 0.1;
 	}
@@ -1058,7 +1140,9 @@ int ZObject::ProcessObject()
 		waypoint_cursor.Process(the_time);
 
 		if(the_time >= render_death_time)
+		{
 			show_waypoints = false;
+		}
 	}
 
 	TryDropTracks();
@@ -1069,46 +1153,47 @@ int ZObject::ProcessObject()
 void ZObject::ShowWaypoints()
 {
 	double &the_time = ztime->ztime;
-	std::vector<waypoint>::iterator i;
 
 	render_death_time = the_time + 3.0;
 	show_waypoints = true;
 
 	//set cursor
-	if(waypoint_list.size())
+	if(!waypoint_list.size())
 	{
-		i=waypoint_list.end();
-		i--;
-
-		switch(i->mode)
-		{
-		case MOVE_WP:
-		case FORCE_MOVE_WP:
-		case ENTER_FORT_WP:
-		case DODGE_WP:
-			waypoint_cursor.SetCursor(PLACED_C);
-			break;
-		case PICKUP_GRENADES_WP:
-			waypoint_cursor.SetCursor(GRABBED_C);
-			break;
-		case ENTER_WP:
-			waypoint_cursor.SetCursor(ENTERED_C);
-			break;
-		case ATTACK_WP:
-		case AGRO_WP:
-			waypoint_cursor.SetCursor(ATTACKED_C);
-			break;
-		case CRANE_REPAIR_WP:
-		case UNIT_REPAIR_WP:
-			waypoint_cursor.SetCursor(REPAIRED_C);
-			break;
-		default:
-			waypoint_cursor.SetCursor(PLACED_C);
-			break;
-		}
-	}
-	else
 		waypoint_cursor.SetCursor(PLACED_C);
+		return;
+	}
+
+	std::vector<waypoint>::iterator i=waypoint_list.end();
+	i--;
+
+	switch(i->mode)
+	{
+	case MOVE_WP:
+	case FORCE_MOVE_WP:
+	case ENTER_FORT_WP:
+	case DODGE_WP:
+		waypoint_cursor.SetCursor(PLACED_C);
+		break;
+	case PICKUP_GRENADES_WP:
+		waypoint_cursor.SetCursor(GRABBED_C);
+		break;
+	case ENTER_WP:
+		waypoint_cursor.SetCursor(ENTERED_C);
+		break;
+	case ATTACK_WP:
+	case AGRO_WP:
+		waypoint_cursor.SetCursor(ATTACKED_C);
+		break;
+	case CRANE_REPAIR_WP:
+	case UNIT_REPAIR_WP:
+		waypoint_cursor.SetCursor(REPAIRED_C);
+		break;
+	default:
+		waypoint_cursor.SetCursor(PLACED_C);
+		break;
+	}
+		
 }
 
 void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZObject*> &object_list, bool is_rally_points, int shift_x, int shift_y)
@@ -1118,7 +1203,6 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 	const int glvl = 170;
 	SDL_Rect the_box;
 	std::vector<waypoint>::iterator i;
-	//Uint32 mappedrgb = SDL_MapRGB(dest->format, glvl, glvl, glvl);
 	double tx,ty;
 	double txp, typ;
 	double dx, dy;
@@ -1131,7 +1215,10 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 	ZObject *target_object;
 	std::vector<waypoint> *render_waypoint_list;
 
-	if(!is_rally_points && !show_waypoints) return;
+	if(!is_rally_points && !show_waypoints)
+	{
+		return;
+	}
 
 	if(is_rally_points)
 	{
@@ -1150,7 +1237,10 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 	}
 
 	//do we even have waypoints to render?
-	if(!render_waypoint_list->size()) return;
+	if(!render_waypoint_list->size())
+	{
+		return;
+	}
 
 	the_map.GetViewShiftFull(mshift_x, mshift_y, view_w, view_h);
 
@@ -1159,10 +1249,6 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 
 	tx = x - mshift_x;
 	ty = y - mshift_y;
-
-	//center
-	//tx += width_pix >> 1;
-	//ty += height_pix >> 1;
 
 	//draw from inside
 	if(is_rally_points && GetBuildingCreationMovePoint(nx, ny))
@@ -1181,7 +1267,10 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 		maxj = dist / 4;
 		maxj++;
 
-		if(waypoint_i) maxj--;
+		if(waypoint_i)
+		{
+			maxj--;
+		}
 
 		//draw this segments points
 		for(j=0;j<maxj;j++)
@@ -1193,7 +1282,6 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 				the_box.w = 2;
 				the_box.h = 2;
 
-				//SDL_FillRect(dest, &the_box, mappedrgb);
 				ZSDL_FillRect(&the_box, glvl, glvl, glvl);
 			}
 
@@ -1206,7 +1294,6 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 		ty = (ny - mshift_y);
 	}
 	
-	//for(i=waypoint_list.begin();i!=waypoint_list.end();i++)
 	for(i=render_waypoint_list->begin();i!=render_waypoint_list->end();i++)
 	{
 		switch(i->mode)
@@ -1219,15 +1306,9 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 		case ENTER_FORT_WP:
 		case DODGE_WP:
 		case PICKUP_GRENADES_WP:
-			//dx = (i->x - mshift_x) - tx;
-			//dy = (i->y - mshift_y) - ty;
 			nx = (i->x - mshift_x);
 			ny = (i->y - mshift_y);
 			break;
-		
-			//dx = (i->x - mshift_x) - tx;
-			//dy = (i->y - mshift_y) - ty;
-			//break;
 		case ATTACK_WP:
 		case AGRO_WP:
 			target_object = GetObjectFromID(i->ref_id, object_list);
@@ -1235,16 +1316,11 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 			if(target_object)
 			{
 				target_object->GetCenterCords(ox, oy);
-
-				//dx = (ox - mshift_x) - tx;
-				//dy = (oy - mshift_y) - ty;
 				nx = (ox - mshift_x);
 				ny = (oy - mshift_y);
 			}
 			else
 			{
-				//dx = (i->x - mshift_x) - tx;
-				//dy = (i->y - mshift_y) - ty;
 				nx = (i->x - mshift_x);
 				ny = (i->y - mshift_y);
 			}
@@ -1258,137 +1334,96 @@ void ZObject::DoRenderWaypoints(ZMap &the_map, SDL_Surface *dest, std::vector<ZO
 		//set old to new
 		tx = nx;
 		ty = ny;
-
-		/*
-		//dx = (i->x - mshift_x) - tx;
-		//dy = (i->y - mshift_y) - ty;
-		dist = sqrt((dx * dx) + (dy * dy));
-
-		txp = 4 * dx / dist;
-		typ = 4 * dy / dist;
-
-		tx += txp * (waypoint_i / 4.0);
-		ty += typ * (waypoint_i / 4.0);
-
-		maxj = dist / 4;
-		maxj++;
-
-		if(waypoint_i) maxj--;
-
-		//draw this segments points
-		for(j=0;j<maxj;j++)
-		{
-			if((int)tx < view_w && (int)ty < view_h)
-			{
-				the_box.x = (int)tx;
-				the_box.y = (int)ty;
-				the_box.w = 2;
-				the_box.h = 2;
-
-				//SDL_FillRect(dest, &the_box, mappedrgb);
-				ZSDL_FillRect(&the_box, glvl, glvl, glvl);
-			}
-
-			tx += txp;
-			ty += typ;
-		}
-
-		//setup for next round
-		tx = (i->x - mshift_x);
-		ty = (i->y - mshift_y);
-		*/
 	}
 
 	//render cursor
-	//if(waypoint_list.size())
-	if(render_waypoint_list->size())
+	if(!render_waypoint_list->size())
 	{
-		int kx, ky;
-		//i=waypoint_list.end();
-		i=render_waypoint_list->end();
-		i--;
-
-		switch(i->mode)
-		{
-		case MOVE_WP:
-		case FORCE_MOVE_WP:
-		case ENTER_FORT_WP:
-		case DODGE_WP:
-			kx = (i->x);// - mshift_x;
-			ky = (i->y);// - mshift_y;
-			waypoint_cursor.SetCursor(PLACED_C);
-			break;
-		case ENTER_WP:
-			kx = (i->x);// - mshift_x;
-			ky = (i->y);// - mshift_y;
-			waypoint_cursor.SetCursor(ENTERED_C);
-			break;
-		case PICKUP_GRENADES_WP:
-			kx = (i->x);// - mshift_x;
-			ky = (i->y);// - mshift_y;
-			waypoint_cursor.SetCursor(GRABBED_C);
-			break;
-		case CRANE_REPAIR_WP:
-		case UNIT_REPAIR_WP:
-			kx = (i->x);// - mshift_x;
-			ky = (i->y);// - mshift_y;
-			waypoint_cursor.SetCursor(REPAIRED_C);
-			break;
-		case ATTACK_WP:
-		case AGRO_WP:
-			target_object = GetObjectFromID(i->ref_id, object_list);
-
-			if(target_object)
-			{
-				target_object->GetCenterCords(ox, oy);
-
-				kx = ox;// - mshift_x;
-				ky = oy;// - mshift_y;
-
-				waypoint_cursor.SetCursor(ATTACKED_C);
-			}
-			else
-			{
-				kx = (i->x);// - mshift_x;
-				ky = (i->y);// - mshift_y;
-				waypoint_cursor.SetCursor(PLACED_C);
-			}
-			
-			break;
-		}
-
-		waypoint_cursor.Render(the_map, dest, kx, ky, true);
+		return;
 	}
+
+	int kx, ky;
+	i=render_waypoint_list->end();
+	i--;
+
+	switch(i->mode)
+	{
+	case MOVE_WP:
+	case FORCE_MOVE_WP:
+	case ENTER_FORT_WP:
+	case DODGE_WP:
+		kx = i->x;
+		ky = i->y;
+		waypoint_cursor.SetCursor(PLACED_C);
+		break;
+	case ENTER_WP:
+		kx = i->x;
+		ky = i->y;
+		waypoint_cursor.SetCursor(ENTERED_C);
+		break;
+	case PICKUP_GRENADES_WP:
+		kx = i->x;
+		ky = i->y;
+		waypoint_cursor.SetCursor(GRABBED_C);
+		break;
+	case CRANE_REPAIR_WP:
+	case UNIT_REPAIR_WP:
+		kx = i->x;
+		ky = i->y;
+		waypoint_cursor.SetCursor(REPAIRED_C);
+		break;
+	case ATTACK_WP:
+	case AGRO_WP:
+		target_object = GetObjectFromID(i->ref_id, object_list);
+
+		if(target_object)
+		{
+			target_object->GetCenterCords(ox, oy);
+
+			kx = ox;
+			ky = oy;
+
+			waypoint_cursor.SetCursor(ATTACKED_C);
+		}
+		else
+		{
+			kx = i->x;
+			ky = i->y;
+			waypoint_cursor.SetCursor(PLACED_C);
+		}
+		
+		break;
+	}
+
+	waypoint_cursor.Render(the_map, dest, kx, ky, true);
 }
 
 void ZObject::RenderWaypointLine(int sx, int sy, int ex, int ey, int view_h, int view_w)
 {
 	const int glvl = 170;
-	double tx, ty;
-	double txp, typ;
-	double dx, dy;
-	double dist;
-	int maxj;
 	SDL_Rect the_box;
 
-	tx = sx;
-	ty = sy;
+	double tx = sx;
+	double ty = sy;
 
-	dx = ex - sx;
-	dy = ey - sy;
+	double dx = ex - sx;
+	double dy = ey - sy;
 
-	dist = sqrt((dx * dx) + (dy * dy));
+	double dist = sqrt((dx * dx) + (dy * dy));
 
-	txp = 4 * dx / dist;
-	typ = 4 * dy / dist;
+	double txp = 4 * dx / dist;
+	double typ = 4 * dy / dist;
 
 	tx += txp * (waypoint_i / 4.0);
 	ty += typ * (waypoint_i / 4.0);
 
-	maxj = dist / 4;
+	int maxj = dist / 4;
 	maxj++;
 
-	if(waypoint_i) maxj--;
+	if(waypoint_i)
+	{
+		maxj--;
+	}
 
 	//draw this segments points
 	for(int j=0;j<maxj;j++)
@@ -1400,7 +1435,6 @@ void ZObject::RenderWaypointLine(int sx, int sy, int ex, int ey, int view_h, int
 			the_box.w = 2;
 			the_box.h = 2;
 
-			//SDL_FillRect(dest, &the_box, mappedrgb);
 			ZSDL_FillRect(&the_box, glvl, glvl, glvl);
 		}
 
@@ -1411,12 +1445,12 @@ void ZObject::RenderWaypointLine(int sx, int sy, int ex, int ey, int view_h, int
 
 void ZObject::DoRender(ZMap &the_map, SDL_Surface *dest, int shift_x, int shift_y)
 {
-	printf("ZObject::DoRender:%s\n", object_name.c_str());
+	
 }
 
 void ZObject::DoAfterEffects(ZMap &the_map, SDL_Surface *dest, int shift_x, int shift_y)
 {
-// 	printf("ZObject::DoAfterEffects:%s\n", object_name.c_str());
+
 }
 
 void ZObject::SetDestroyed(bool is_destroyed)
@@ -1430,20 +1464,14 @@ void ZObject::GetObjectID(unsigned char &object_type_, unsigned char &object_id_
    object_id_ = object_id;
 }
 
-//team_type ZObject::GetOwner()
-//{
-//   return owner;
-//}
-
 int ZObject::ProcessServer(ZMap &tmap, ZOLists &ols)
 {
 	double &the_time = ztime->ztime;
-	double time_dif;
 	std::vector<waypoint>::iterator wp;
 	bool is_new_waypoint;
 	bool attack_player_given = false;
 
-	time_dif = the_time - last_process_server_time;
+	double time_dif = the_time - last_process_server_time;
 	last_process_server_time = the_time;
 
 	sflags.clear();
@@ -1454,7 +1482,10 @@ int ZObject::ProcessServer(ZMap &tmap, ZOLists &ols)
 	//increase / decrease stamina
 	ProcessRunStamina(time_dif);
 
-	if(IsDestroyed()) return 0;
+	if(IsDestroyed())
+	{
+		return 0;
+	}
 
 	//was a unit created?
 	sflags.build_unit = BuildUnit(the_time, sflags.bot, sflags.boid);
@@ -1481,17 +1512,15 @@ int ZObject::ProcessServer(ZMap &tmap, ZOLists &ols)
 			//because all waypoints use cur_wp_info.x+y for movement
 			//we set it to our current location to set ourselves to
 			//an initial "stop"
-			//cur_wp_info.x = loc.x + (width_pix >> 1);
-			//cur_wp_info.y = loc.y + (height_pix >> 1);
-			//cur_wp_info.x = center_x;
-			//cur_wp_info.y = center_y;
 			SetTarget(center_x, center_y);
 
 			//stop running
 			is_running = false;
 		}
 		else
+		{
 			is_new_waypoint = false;
+		}
 
 		switch(wp->mode)
 		{
@@ -1527,15 +1556,10 @@ int ZObject::ProcessServer(ZMap &tmap, ZOLists &ols)
 			ProcessPickupWP(wp, time_dif, is_new_waypoint, ols, tmap);
 			break;
 		default:
-			printf("ZObject::ProcessServer::killing unknown waypoint:%d\n", wp->mode);
+			spdlog::warn("ZObject::ProcessServer - Killing unknown waypoint {}", wp->mode);
 			KillWP(wp);
 			break;
 		}
-	}
-	else
-	{
-		//!waypoint_list.size()
-		//StopMove();
 	}
 
 	//see if they want to attack someone nearby
@@ -1549,9 +1573,13 @@ int ZObject::ProcessServer(ZMap &tmap, ZOLists &ols)
 	if(sflags.updated_location)
 	{
 		if(the_time >= next_loc_update_time)
+		{
 			next_loc_update_time = the_time + loc_update_int;
+		}
 		else
+		{
 			sflags.updated_location = false;
+		}
 	}
 
 	return 1;
@@ -1565,33 +1593,36 @@ void ZObject::Engage(ZObject *attack_object_)
 		Disengage();
 		return;
 	}
+	if(attack_object == attack_object_)
+	{
+		return;
+	}
 
 	//attack then
-	if(attack_object != attack_object_)
-	{
-		attack_object = attack_object_;
-		sflags.updated_attack_object = true;
+	attack_object = attack_object_;
+	sflags.updated_attack_object = true;
 
-		//if we can be sniped by the target, we should open our lid!
-		if(attack_object->CanSnipe())
-			SignalLidShouldOpen();
+	//if we can be sniped by the target, we should open our lid!
+	if(attack_object->CanSnipe())
+	{
+		SignalLidShouldOpen();
 	}
 }
 
 bool ZObject::Disengage()
 {
-	if(attack_object)
+	if(!attack_object)
 	{
-		attack_object = NULL;
-		sflags.updated_attack_object = true;
-
-		//we only open our lid while we're engaged.
-		SignalLidShouldClose();
-
-		return true;
+		return false;
 	}
 
-	return false;
+	attack_object = NULL;
+	sflags.updated_attack_object = true;
+
+	//we only open our lid while we're engaged.
+	SignalLidShouldClose();
+
+	return true;
 }
 
 bool ZObject::IsMoving()
@@ -1604,28 +1635,42 @@ bool ZObject::IsMoving()
 void ZObject::CheckPassiveEngage(double &the_time, ZOLists &ols)
 {
 	//is it time, since this is a "tiny bit intensive"
-	if(the_time < next_check_passive_attack_time) return;
+	if(the_time < next_check_passive_attack_time)
+	{
+		return;
+	}
 
 	//set for next time
 	next_check_passive_attack_time = the_time + 0.5;
 
 	//can we even attack
-	if(!CanAttack()) return;
-	if(owner == NULL_TEAM) return;
-	if(!(object_type == CANNON_OBJECT || object_type == VEHICLE_OBJECT || object_type == ROBOT_OBJECT)) return;
-	if(object_type == ROBOT_OBJECT && IsMoving()) return;
+	if(!CanAttack())
+	{
+		return;
+	}
+	if(owner == NULL_TEAM)
+	{
+		return;
+	}
+	if(!(object_type == CANNON_OBJECT || object_type == VEHICLE_OBJECT || object_type == ROBOT_OBJECT))
+	{
+		return;
+	}
+	if(object_type == ROBOT_OBJECT && IsMoving())
+	{
+		return;
+	}
 
 	//are we already attacking someone?
 	if(attack_object) 
 	{
-		int ox, oy;
-
 		//is it still within range?
+		int ox, oy;
 		attack_object->GetCenterCords(ox, oy);
-
-		//if(!WithinAttackRadius(ox, oy))
 		if(!WithinAttackRadius(attack_object))
+		{
 			Disengage();
+		}
 		
 		return;
 	}
@@ -1639,50 +1684,52 @@ void ZObject::CheckPassiveEngage(double &the_time, ZOLists &ols)
 
 	//lets see if there are any enemies to attack..
 	if(CanAttack())
-	for(obj=ols.passive_engagable_olist.begin();obj!=ols.passive_engagable_olist.end();obj++)
 	{
-		int ox, oy;
-		unsigned char ot, oid;
-
-		(*obj)->GetObjectID(ot, oid);
-		(*obj)->GetCenterCords(ox, oy);
-
-		if((*obj)->GetOwner() != NULL_TEAM && (*obj)->GetOwner() != owner && CanAttackObject((*obj)))
+		for(obj=ols.passive_engagable_olist.begin();obj!=ols.passive_engagable_olist.end();obj++)
 		{
-			//do not auto attack buildings
-			if(!(ot == CANNON_OBJECT || ot == VEHICLE_OBJECT || ot == ROBOT_OBJECT)) continue;
+			int ox, oy;
+			unsigned char ot, oid;
 
-			//if(WithinAttackRadius(ox, oy))
-			if(WithinAttackRadius(*obj))
+			(*obj)->GetObjectID(ot, oid);
+			(*obj)->GetCenterCords(ox, oy);
+
+			if((*obj)->GetOwner() != NULL_TEAM && (*obj)->GetOwner() != owner && CanAttackObject((*obj)))
 			{
-				Engage(*obj);
-				//attack_object = *obj;
-				//sflags.updated_attack_object = true;
-				return;
+				//do not auto attack buildings
+				if(!(ot == CANNON_OBJECT || ot == VEHICLE_OBJECT || ot == ROBOT_OBJECT))
+				{
+					continue;
+				}
+
+				//if(WithinAttackRadius(ox, oy))
+				if(WithinAttackRadius(*obj))
+				{
+					Engage(*obj);
+					return;
+				}
+
+				//start an agro waypoint?
+				//if we have no waypoints and are "not a cannon" / "able to move"
+				if(!waypoint_list.size() && object_type != CANNON_OBJECT)
+				{
+					if(WithinAgroRadius(*obj))
+					{
+						agro_choices.push_back(*obj);
+					}
+				}
 			}
 
-			//start an agro waypoint?
-			//if we have no waypoints and are "not a cannon" / "able to move"
+			//add to the auto enter or grab lists?
 			if(!waypoint_list.size() && object_type != CANNON_OBJECT)
 			{
-				//if(WithinAgroRadius(ox, oy))
-				if(WithinAgroRadius(*obj))
-					agro_choices.push_back(*obj);
-			}
-		}
-
-		//add to the auto enter or grab lists?
-		if(!waypoint_list.size() && object_type != CANNON_OBJECT)
-		{
-			if(!IsMinion() && !agro_choices.size())
-			{
-				//auto enter vehicle (not apc though)?
-				if(object_type == ROBOT_OBJECT && (*obj)->CanBeEntered() && WithinAutoEnterRadius(ox, oy) && !(ot == VEHICLE_OBJECT && oid == APC) && !(this->just_left_cannon && ot == CANNON_OBJECT))
-					enter_vehicle_choices.push_back(*obj);
-				//else if((ot == MAP_ITEM_OBJECT && oid == FLAG_ITEM) && (*obj)->GetOwner() != owner && WithinAutoGrabFlagRadius(ox, oy))
-				//	grab_flag_choices.push_back(*obj);
-				//else if((ot == MAP_ITEM_OBJECT && oid == GRENADES_ITEM) && CanPickupGrenades() && WithinAutoEnterRadius(ox, oy))
-				//	grab_grenades_choices.push_back(*obj);
+				if(!IsMinion() && !agro_choices.size())
+				{
+					//auto enter vehicle (not apc though)?
+					if(object_type == ROBOT_OBJECT && (*obj)->CanBeEntered() && WithinAutoEnterRadius(ox, oy) && !(ot == VEHICLE_OBJECT && oid == APC) && !(this->just_left_cannon && ot == CANNON_OBJECT))
+					{
+						enter_vehicle_choices.push_back(*obj);
+					}
+				}
 			}
 		}
 	}
@@ -1691,38 +1738,62 @@ void ZObject::CheckPassiveEngage(double &the_time, ZOLists &ols)
 	{
 		//collect grabbable flags
 		if(CanMove())
-		for(obj=ols.flag_olist.begin();obj!=ols.flag_olist.end();obj++)
 		{
-			int ox, oy;
-			unsigned char ot, oid;
+			for(obj=ols.flag_olist.begin();obj!=ols.flag_olist.end();obj++)
+			{
+				int ox, oy;
+				unsigned char ot, oid;
 
-			(*obj)->GetObjectID(ot, oid);
-			(*obj)->GetCenterCords(ox, oy);
+				(*obj)->GetObjectID(ot, oid);
+				(*obj)->GetCenterCords(ox, oy);
 
-			if(ot != MAP_ITEM_OBJECT) continue;
-			if(oid != FLAG_ITEM) continue;
-			if((*obj)->GetOwner() == owner) continue;
-			if(!WithinAutoGrabFlagRadius(ox, oy)) continue;
+				if(ot != MAP_ITEM_OBJECT)
+				{
+					continue;
+				}
+				if(oid != FLAG_ITEM)
+				{
+					continue;
+				}
+				if((*obj)->GetOwner() == owner)
+				{
+					continue;
+				}
+				if(!WithinAutoGrabFlagRadius(ox, oy))
+				{
+					continue;
+				}
 
-			grab_flag_choices.push_back(*obj);
+				grab_flag_choices.push_back(*obj);
+			}
 		}
 
 		//collect grenades list
 		if(CanPickupGrenades())
-		for(obj=ols.grenades_olist.begin();obj!=ols.grenades_olist.end();obj++)
 		{
-			int ox, oy;
-			unsigned char ot, oid;
+			for(obj=ols.grenades_olist.begin();obj!=ols.grenades_olist.end();obj++)
+			{
+				int ox, oy;
+				unsigned char ot, oid;
 
-			(*obj)->GetObjectID(ot, oid);
-			(*obj)->GetCenterCords(ox, oy);
+				(*obj)->GetObjectID(ot, oid);
+				(*obj)->GetCenterCords(ox, oy);
 
-			//if((ot == MAP_ITEM_OBJECT && oid == GRENADES_ITEM) && CanPickupGrenades() && WithinAutoEnterRadius(ox, oy))
-			if(ot != MAP_ITEM_OBJECT) continue;
-			if(oid != GRENADES_ITEM) continue;
-			if(!WithinAutoEnterRadius(ox, oy)) continue;
+				if(ot != MAP_ITEM_OBJECT)
+				{
+					continue;
+				}
+				if(oid != GRENADES_ITEM)
+				{
+					continue;
+				}
+				if(!WithinAutoEnterRadius(ox, oy))
+				{
+					continue;
+				}
 
-			grab_grenades_choices.push_back(*obj);
+				grab_grenades_choices.push_back(*obj);
+			}
 		}
 	}
 
@@ -1768,34 +1839,64 @@ void ZObject::CheckPassiveEngage(double &the_time, ZOLists &ols)
 
 		if(enter_vehicle_choices.size() && grab_flag_choices.size() && grab_grenades_choices.size())
 		{
-			switch(rand() % 3)
+			switch(OpenZod::Util::Random::Int(0, 2))
 			{
-				case 0: do_auto_enter = true; break;
-				case 1: do_auto_grab_flag = true; break;
-				case 2: do_auto_grab_grenades = true; break;
+			case 0:
+				do_auto_enter = true;
+				break;
+			case 1:
+				do_auto_grab_flag = true;
+				break;
+			case 2:
+				do_auto_grab_grenades = true;
+				break;
 			}
 		}
 		else if(enter_vehicle_choices.size() && grab_flag_choices.size())
 		{
-			if(rand() % 2) do_auto_enter = true;
-			else do_auto_grab_flag = true;
+			if(OpenZod::Util::Random::Bool())
+			{
+				do_auto_enter = true;
+			}
+			else
+			{
+				do_auto_grab_flag = true;
+			}
 		}
 		else if(enter_vehicle_choices.size() && grab_grenades_choices.size())
 		{
-			if(rand() % 2) do_auto_enter = true;
-			else do_auto_grab_grenades = true;
+			if(OpenZod::Util::Random::Bool())
+			{
+				do_auto_enter = true;
+			}
+			else
+			{
+				do_auto_grab_grenades = true;
+			}
 		}
 		else if(grab_flag_choices.size() && grab_grenades_choices.size())
 		{
-			if(rand() % 2) do_auto_grab_flag = true;
-			else do_auto_grab_grenades = true;
+			if(OpenZod::Util::Random::Bool())
+			{
+				do_auto_grab_flag = true;
+			}
+			else
+			{
+				do_auto_grab_grenades = true;
+			}
 		}
 		else if(enter_vehicle_choices.size())
+		{
 			do_auto_enter = true;
+		}
 		else if(grab_flag_choices.size())
+		{
 			do_auto_grab_flag = true;
+		}
 		else if(grab_grenades_choices.size())
+		{
 			do_auto_grab_grenades = true;
+		}
 
 		if(do_auto_enter)
 		{
@@ -1815,7 +1916,6 @@ void ZObject::CheckPassiveEngage(double &the_time, ZOLists &ols)
 
 		if(obj_choices && obj_choices->size())
 		{
-			//vector<ZObject*> &obj_choices = enter_vehicle_choices;
 			ZObject *obj_choice;
 			int ox, oy;
 			double least_distance;
@@ -1856,69 +1956,62 @@ void ZObject::CheckPassiveEngage(double &the_time, ZOLists &ols)
 bool ZObject::EstimateMissileTarget(ZObject *target, int &tx, int &ty)
 {
 	//some checks
-	if(missile_speed <= 0) return false;
+	if(missile_speed <= 0)
+	{
+		return false;
+	}
 
 	//don't need to estimate if
 	//the target isn't moving
-	if(isz(target->loc.dx) && isz(target->loc.dy)) return false;
+	if(isz(target->loc.dx) && isz(target->loc.dy))
+	{
+		return false;
+	}
 
-	double dx, dy;
 	double dx2, dy2;
 	int ixo, iyo;
-	double xo, yo;
-	double x2o, y2o;
-	double Cu, Cd;
 
-	dx = target->loc.dx;
-	dy = target->loc.dy;
+	double dx = target->loc.dx;
+	double dy = target->loc.dy;
 	target->GetCenterCords(ixo, iyo);
-	xo = ixo;
-	yo = iyo;
+	double xo = ixo;
+	double yo = iyo;
 
-	x2o = center_x;
-	y2o = center_y;
+	double x2o = center_x;
+	double y2o = center_y;
 
-	Cu = yo - y2o;
-	Cd = xo - x2o;
+	double Cu = yo - y2o;
+	double Cd = xo - x2o;
 
-	double a, b, c, d;
-
-	a = (Cu * Cu) + (Cd * Cd);
-	b = (2 * Cu * Cd * dy) - (2 * Cu * Cu * dx);
-	c = (Cd * Cd * dy * dy) - (2 * Cu * Cd * dx) + (Cu * Cu * dx * dx) - (Cd * Cd * missile_speed * missile_speed);
-	d = (b * b) - (4 * a * c);
+	double a = (Cu * Cu) + (Cd * Cd);
+	double b = (2 * Cu * Cd * dy) - (2 * Cu * Cu * dx);
+	double c = (Cd * Cd * dy * dy) - (2 * Cu * Cd * dx) + (Cu * Cu * dx * dx) - (Cd * Cd * missile_speed * missile_speed);
+	double d = (b * b) - (4 * a * c);
 
 	if(d <= 0.00001) 
 	{
-		printf("EstimateMissileTarget::not solvable\n");
+		spdlog::error("ZObject::EstimateMissileTarget - Not solvable");
 		return false;
 	}
 	if(isz(a))
 	{
-		printf("EstimateMissileTarget::a is zero?\n");
+		spdlog::error("ZObject::EstimateMissileTarget - a is zero");
 		return false;
 	}
 
 	dx2 = (-1 * b - sqrt(d)) / (2 * a);
 
-	double dy2_guts;
-
-	dy2_guts = (double)(missile_speed * missile_speed) - (dx2 * dx2);
-
-	//printf("dy2_guts:m:%d dx2_1:%lf\n", missile_speed, (-1 * b - sqrt(d)) / (2 * a));
-	//printf("dy2_guts:m:%d dx2_2:%lf\n", missile_speed, (-1 * b + sqrt(d)) / (2 * a));
+	double dy2_guts = (double)(missile_speed * missile_speed) - (dx2 * dx2);
 
 	if(dy2_guts <= 0.00001) 
 	{
-		//printf("EstimateMissileTarget::trying other dx2\n");
-
 		dx2 = (-1 * b + sqrt(d)) / (2 * a);
 
 		dy2_guts = (missile_speed * missile_speed) - (dx2 * dx2);
 
 		if(dy2_guts <= 0.00001) 
 		{
-			printf("EstimateMissileTarget::bad dy2_guts value\n");
+			spdlog::error("ZObject:EstimateMissileTarget - Bad dy2_guts value {}", dy2_guts);
 			return false;
 		}
 	}
@@ -1930,30 +2023,28 @@ bool ZObject::EstimateMissileTarget(ZObject *target, int &tx, int &ty)
 
 	//dd = dx - dx2;
 	if(!isz(dd = dx - dx2))
+	{
 		t = -1 * Cd / dd;
+	}
 	else if(!isz(dd = dy - dy2))
+	{
 		t = -1 * Cu / dd;
+	}
 	else
 	{
-		printf("EstimateMissileTarget::bad dd value\n");
+		spdlog::error("ZObject::EstimateMissileTarget - Bad dd value {}", dd);
 		return false;
 	}
 
-	//printf("t:%lf\n", t);
-
 	if(t < 0)
 	{
-		//printf("EstimateMissileTarget::2nd\n");
-
 		dx2 = (-1 * b + sqrt(d)) / (2 * a);
 
-		double dy2_guts;
-
-		dy2_guts = (double)(missile_speed * missile_speed) - (dx2 * dx2);
+		double dy2_guts = (double)(missile_speed * missile_speed) - (dx2 * dx2);
 
 		if(dy2_guts <= 0.00001) 
 		{
-			printf("EstimateMissileTarget::bad dy2_guts value 2nd\n");
+			spdlog::error("ZObject::EstimateMissileTarget - Bad dy2_guts value {}", dy2_guts);
 			return false;
 		}
 
@@ -1961,18 +2052,22 @@ bool ZObject::EstimateMissileTarget(ZObject *target, int &tx, int &ty)
 
 		//dd = dx - dx2;
 		if(!isz(dd = dx - dx2))
+		{
 			t = -1 * Cd / dd;
+		}
 		else if(!isz(dd = dy - dy2))
+		{
 			t = -1 * Cu / dd;
+		}
 		else
 		{
-			printf("EstimateMissileTarget::bad dd value\n");
+			spdlog::error("ZObject::EstimateMissileTarget - Bad dd value {}", dd);
 			return false;
 		}
 
 		if(t < 0)
 		{
-			printf("EstimateMissileTarget::bad t value\n");
+			spdlog::error("ZObject::EstimateMissileTarget - Bad t value {}", t);
 			return false;
 		}
 	}
@@ -1989,34 +2084,47 @@ bool ZObject::NearestAttackLoc(int sx, int sy, int &ex, int &ey, int aa_radius, 
 	int &y = loc.y;
 	int &cx = center_x;
 	int &cy = center_y;
-
-	//line test
 	
 
 	//normal checks
 	{
 		//center ok?
 		ex = cx; ey = cy;
-		if(tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot)) return true;
+		if(tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot))
+		{
+			return true;
+		}
 
 		//+8 ok?
 		ex = x+8; ey = y+8;
-		if((ex != cx && ey != cy) && tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot)) return true;
+		if((ex != cx && ey != cy) && tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot))
+		{
+			return true;
+		}
 	}
 
 	//quick cannon fort checks
 	{
 		//up 2 tiles ok?
 		ex = x+8; ey = (y+8)-32;
-		if((ex != cx && ey != cy) && tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot)) return true;
+		if((ex != cx && ey != cy) && tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot))
+		{
+			return true;
+		}
 
 		//right 3 tiles ok?
 		ex = x+8+48; ey = y+8;
-		if((ex != cx && ey != cy) && tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot)) return true;
+		if((ex != cx && ey != cy) && tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot))
+		{
+			return true;
+		}
 
 		//left 3 tiles ok?
 		ex = (x+8)-48; ey = y+8;
-		if((ex != cx && ey != cy) && tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot)) return true;
+		if((ex != cx && ey != cy) && tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot))
+		{
+			return true;
+		}
 	}
 
 	//full direct line check
@@ -2031,9 +2139,15 @@ bool ZObject::NearestAttackLoc(int sx, int sy, int &ex, int &ey, int aa_radius, 
 			ex = (lx<<4)+8;
 			ey = (ly<<4)+8;
 
-			if(!points_within_distance(cx, cy, ex, ey, aa_radius)) break;
+			if(!points_within_distance(cx, cy, ex, ey, aa_radius))
+			{
+				break;
+			}
 
-			if(tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot)) return true;
+			if(tmap.GetPathFinder().ShouldBeAbleToMoveTo(sx, sy, ex, ey, is_robot))
+			{
+				return true;
+			}
 		}
 	}
 
@@ -2042,8 +2156,14 @@ bool ZObject::NearestAttackLoc(int sx, int sy, int &ex, int &ey, int aa_radius, 
 
 double ZObject::DamagedSpeed()
 {
-	if(ShowPartiallyDamaged()) return zsettings->partially_damaged_unit_speed;
-	if(ShowDamaged()) return zsettings->damaged_unit_speed;
+	if(ShowPartiallyDamaged())
+	{
+		return zsettings->partially_damaged_unit_speed;
+	}
+	if(ShowDamaged())
+	{
+		return zsettings->damaged_unit_speed;
+	}
 
 	return 1.0;
 }
@@ -2051,17 +2171,19 @@ double ZObject::DamagedSpeed()
 double ZObject::RunSpeed() 
 {
 	if(leader_obj)
+	{
 		return leader_obj->is_running && !ShowDamaged() ? zsettings->run_unit_speed : 1.0; 
+	}
 	else
+	{
 		return is_running && !ShowDamaged() ? zsettings->run_unit_speed : 1.0; 
+	}
 }
 
 bool ZObject::CanReachTargetRunning(int x, int y)
 {
-	double distance_runnable;
-
 	//an estimate because the real speed can change with terrain
-	distance_runnable = move_speed * stamina;
+	double distance_runnable = move_speed * stamina;
 
 	return points_within_distance(center_x, center_y, x, y, distance_runnable);
 }
@@ -2082,7 +2204,10 @@ void ZObject::ProcessRunStamina(double time_dif)
 	{
 		stamina += time_dif * zsettings->run_recharge_rate;
 
-		if(stamina > max_stamina) stamina = max_stamina;
+		if(stamina > max_stamina)
+		{
+			stamina = max_stamina;
+		}
 	}
 }
 
@@ -2090,12 +2215,21 @@ void ZObject::AttemptStartRun()
 {
 	const double min_stamina = 0.3;
 
-	if(is_running) return;
+	if(is_running)
+	{
+		return;
+	}
 
 	//one in five we don't run
-	if(!(rand() % 5)) return;
+	if(OpenZod::Util::Random::OneInX(5))
+	{
+		return;
+	}
 
-	if(stamina < min_stamina) return;
+	if(stamina < min_stamina)
+	{
+		return;
+	}
 
 	is_running = true;
 }
@@ -2103,8 +2237,14 @@ void ZObject::AttemptStartRun()
 void ZObject::ProcessAttackDamage(ZMap &tmap, bool attack_player_given)
 {
 	double &the_time = ztime->ztime;
-	if(!attack_object || !damage) return;
-	if(the_time < next_damage_time) return;
+	if(!attack_object || !damage)
+	{
+		return;
+	}
+	if(the_time < next_damage_time)
+	{
+		return;
+	}
 
 	next_damage_time = the_time + damage_int_time;
 
@@ -2114,18 +2254,17 @@ void ZObject::ProcessAttackDamage(ZMap &tmap, bool attack_player_given)
 		return;
 	}
 
-	bool can_attack_with_grenades;
-
-	can_attack_with_grenades = (GetGrenadeAmount() || (GetGroupLeader() && GetGroupLeader()->GetGrenadeAmount()));
+	bool can_attack_with_grenades = (GetGrenadeAmount() || (GetGroupLeader() && GetGroupLeader()->GetGrenadeAmount()));
 
 	if(damage_is_missile || can_attack_with_grenades)
 	{
 		int tx, ty;
-		//int w, h;
 		damage_missile new_missile;
 
 		if(!EstimateMissileTarget(attack_object, tx, ty))
+		{
 			attack_object->GetCenterCords(tx, ty);
+		}
 
 		if(can_attack_with_grenades)
 		{
@@ -2170,7 +2309,6 @@ void ZObject::ProcessAttackDamage(ZMap &tmap, bool attack_player_given)
 			new_missile.attacker_ref_id = ref_id;
 			new_missile.attack_player_given = attack_player_given;
 			new_missile.target_ref_id = attack_object->GetRefID();
-			//new_missile.CalcExplodeTimeTo(loc.x + (width_pix >> 1), loc.y + (height_pix >> 1), missile_speed);
 			new_missile.CalcExplodeTimeTo(center_x, center_y, missile_speed, the_time);
 		}
 
@@ -2185,10 +2323,13 @@ void ZObject::ProcessAttackDamage(ZMap &tmap, bool attack_player_given)
 	}
 	else
 	{
-		if((rand() % 10000) / 10000.0 > damage_chance) return;
+		if(OpenZod::Util::Random::Float(0, 1) > damage_chance)
+		{
+			return;
+		}
 
 		//attack vehicle or driver?
-		if(can_snipe && attack_object->CanBeSniped() && ((rand() % 10000) / 10000.0 <= snipe_chance))
+		if(can_snipe && attack_object->CanBeSniped() && (OpenZod::Util::Random::Float(0, 1) <= snipe_chance))
 		{
 			attack_object->DamageDriverHealth(damage);
 			sflags.updated_attack_object_driver_health = true;
@@ -2202,7 +2343,9 @@ void ZObject::ProcessAttackDamage(ZMap &tmap, bool attack_player_given)
 		//are we a pyro? have to set victom's last hurt by fire time 
 		//(so that we can do the melt death effect)
 		if(object_type == ROBOT_OBJECT && object_id == PYRO)
+		{
 			attack_object->SetDamagedByFireTime(the_time);
+		}
 
 		//if destroyed give a target destroyed
 		if(attack_object->IsDestroyed() && attack_player_given)
@@ -2220,45 +2363,41 @@ void ZObject::ProcessKillObject()
 	if(object_type == BUILDING_OBJECT && (object_id != FORT_FRONT && object_id != FORT_BACK))
 	{
 		do_auto_repair = true;
-		//next_auto_repair_time = the_time + BUILDING_AUTO_REPAIR_TIME + (rand() % 61);
 		next_auto_repair_time = the_time + zsettings->building_auto_repair_time;
 
 		if(zsettings->building_auto_repair_random_additional_time > 0)
-			next_auto_repair_time += (rand() % (zsettings->building_auto_repair_random_additional_time + 1));
+		{
+			next_auto_repair_time += OpenZod::Util::Random::Int(0, zsettings->building_auto_repair_random_additional_time);
+		}
 	}
 
 	//stop production?
-	if(ProducesUnits()) StopBuildingProduction();
+	if(ProducesUnits())
+	{
+		StopBuildingProduction();
+	}
 }
 
 void ZObject::ProcessAgroWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
-	int ox, oy;
-	ZObject *target_object;
-
 	if(is_new)
 	{
 		//set the agro center
-		//cur_wp_info.agro_center_x = x + (width_pix >> 1);
-		//cur_wp_info.agro_center_y = y + (height_pix >> 1);
 		cur_wp_info.agro_center_x = center_x;
 		cur_wp_info.agro_center_y = center_y;
 		cur_wp_info.stage = ATTACK_AWS;
 	}
 
-	target_object = GetObjectFromID(wp->ref_id, *ols.object_list);
+	ZObject* target_object = GetObjectFromID(wp->ref_id, *ols.object_list);
 
 	//we still attacking this target?
-	//if(!target_object || 
-	//	target_object->IsDestroyed() || 
-	//	owner == target_object->GetOwner() ||
-	//	(!HasExplosives() && target_object->AttackedOnlyByExplosives()))
 	if(!CanAttackObject(target_object))
 	{
 		KillWP(wp);
 		return;
 	}
 
+	int ox, oy;
 	target_object->GetCenterCords(ox, oy);
 
 	if(!points_within_distance(ox, oy, cur_wp_info.agro_center_x, cur_wp_info.agro_center_y, attack_radius + zsettings->agro_distance))
@@ -2268,8 +2407,6 @@ void ZObject::ProcessAgroWP(std::vector<waypoint>::iterator &wp, double time_dif
 		if(cur_wp_info.stage != RETURN_URWS)
 		{
 			cur_wp_info.stage = RETURN_URWS;
-			//cur_wp_info.x = cur_wp_info.agro_center_x;
-			//cur_wp_info.y = cur_wp_info.agro_center_y;
 			SetTarget(cur_wp_info.agro_center_x, cur_wp_info.agro_center_y);
 			SetVelocity();
 		}
@@ -2281,8 +2418,6 @@ void ZObject::ProcessAgroWP(std::vector<waypoint>::iterator &wp, double time_dif
 		if(cur_wp_info.stage != ATTACK_AWS)
 		{
 			cur_wp_info.stage = ATTACK_AWS;
-			//cur_wp_info.x = ox;
-			//cur_wp_info.y = oy;
 			SetTarget(ox, oy);
 			SetVelocity();
 		}
@@ -2290,12 +2425,10 @@ void ZObject::ProcessAgroWP(std::vector<waypoint>::iterator &wp, double time_dif
 
 	if(cur_wp_info.stage == ATTACK_AWS)
 	{
-	//we're there
-		//if(WithinAttackRadius(ox, oy))
+		//we're there
 		if(WithinAttackRadius(target_object))
 		{
 			StopMove();
-
 			//attack!
 			Engage(target_object);
 		}
@@ -2304,20 +2437,27 @@ void ZObject::ProcessAgroWP(std::vector<waypoint>::iterator &wp, double time_dif
 			//hunt down the bastard
 
 			//move there
-			//cur_wp_info.x = ox;
-			//cur_wp_info.y = oy;
 			SetTarget(ox, oy);
 			SetVelocity();
 
 			//did we halt movement?
-			if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols)) return;
+			if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols))
+			{
+				return;
+			}
 		}
 	}
-	else //if(cur_wp_info.stage == RETURN_URWS)
+	else
 	{
-		if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols)) return;
+		if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols))
+		{
+			return;
+		}
 
-		if(!ReachedTarget()) return;
+		if(!ReachedTarget())
+		{
+			return;
+		}
 
 		KillWP(wp);
 		return;
@@ -2328,26 +2468,20 @@ void ZObject::ProcessAttackWP(std::vector<waypoint>::iterator &wp, double time_d
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	int ox, oy;
-	ZObject *target_object;
 
-	target_object = GetObjectFromID(wp->ref_id, *ols.object_list);
+	ZObject* target_object = GetObjectFromID(wp->ref_id, *ols.object_list);
 
 	//we still attacking this target?
-	//if(!target_object || 
-	//	target_object->IsDestroyed() || 
-	//	owner == target_object->GetOwner() ||
-	//	(!HasExplosives() && target_object->AttackedOnlyByExplosives()))
 	if(!CanAttackObject(target_object))
 	{
 		KillWP(wp);
 		return;
 	}
 
+	int ox, oy;
 	target_object->GetCenterCords(ox, oy);
 
 	//we're there
-	//if(WithinAttackRadius(ox, oy))
 	if(WithinAttackRadius(target_object))
 	{
 		StopMove();
@@ -2361,7 +2495,9 @@ void ZObject::ProcessAttackWP(std::vector<waypoint>::iterator &wp, double time_d
 
 		//are we waiting for a path finding response?
 		if(cur_wp_info.path_finding_id)
+		{
 			return;
+		}
 		else if(!cur_wp_info.got_pf_response)
 		{
 			//we are not waiting for waypoints
@@ -2369,24 +2505,24 @@ void ZObject::ProcessAttackWP(std::vector<waypoint>::iterator &wp, double time_d
 			if(!target_object->NearestAttackLoc(x, y, cur_wp_info.x, cur_wp_info.y, attack_radius, (object_type == ROBOT_OBJECT), tmap))
 			{
 				target_object->GetCords(ox, oy);
-				//cur_wp_info.x = ox + 8;
-				//cur_wp_info.y = oy + 8;
 				SetTarget(ox+8, oy+8);
 			}
 			else
+			{
 				SetTarget();
+			}
 
 			//needed to check if we should recalc a path
 			cur_wp_info.init_attack_x = cur_wp_info.x;
 			cur_wp_info.init_attack_y = cur_wp_info.y;
 
-			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 			cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 			//don't wait for thread if it wasn't created
 			if(cur_wp_info.path_finding_id)
+			{
 				StopMove();
+			}
 			else
 			{
 				cur_wp_info.got_pf_response = true;
@@ -2415,11 +2551,12 @@ void ZObject::ProcessAttackWP(std::vector<waypoint>::iterator &wp, double time_d
 		}
 
 		//move there
-		//cur_wp_info.x = ox;
-		//cur_wp_info.y = oy;
 		SetVelocity();
 		//did we halt movement?
-		if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols)) return;
+		if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols))
+		{
+			return;
+		}
 
 		{
 			if(!ReachedTarget()) return;
@@ -2427,8 +2564,6 @@ void ZObject::ProcessAttackWP(std::vector<waypoint>::iterator &wp, double time_d
 			//go to the next pf_point, or kill this waypoint?
 			if(cur_wp_info.pf_point_list.size())
 			{
-				//cur_wp_info.x = cur_wp_info.pf_point_list.begin()->x;
-				//cur_wp_info.y = cur_wp_info.pf_point_list.begin()->y;
 				SetTarget(cur_wp_info.pf_point_list.begin()->x, cur_wp_info.pf_point_list.begin()->y);
 				SetVelocity();
 
@@ -2441,33 +2576,6 @@ void ZObject::ProcessAttackWP(std::vector<waypoint>::iterator &wp, double time_d
 				//reset the waypoint
 				StopMove();
 				cur_wp_info.clear();
-
-				/*
-				//find new route to target
-				if(!target_object->NearestAttackLoc(x, y, cur_wp_info.x, cur_wp_info.y, attack_radius, (object_type == ROBOT_OBJECT), tmap))
-				{
-					target_object->GetCords(ox, oy);
-					//cur_wp_info.x = ox + 8;
-					//cur_wp_info.y = oy + 8;
-					SetTarget(ox+8,oy+8);
-				}
-				else
-					SetTarget();
-
-				cur_wp_info.got_pf_response = false;
-				//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-				//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-				cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-
-				//don't wait for thread if it wasn't created
-				if(cur_wp_info.path_finding_id)
-					StopMove();
-				else
-				{
-					cur_wp_info.got_pf_response = true;
-					SetVelocity();
-				}
-				*/
 			}
 		}
 	}
@@ -2477,9 +2585,8 @@ void ZObject::ProcessPickupWP(std::vector<waypoint>::iterator &wp, double time_d
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	ZObject *target_object;
 
-	target_object = GetObjectFromID(wp->ref_id, *ols.object_list);
+	ZObject* target_object = GetObjectFromID(wp->ref_id, *ols.object_list);
 
 	//can pickup grenades?
 	if(!CanPickupGrenades())
@@ -2528,12 +2635,8 @@ void ZObject::ProcessPickupWP(std::vector<waypoint>::iterator &wp, double time_d
 	{
 		//force move waypoints are expected to always go
 		//straight to their targets
-		//cur_wp_info.x = wp->x;
-		//cur_wp_info.y = wp->y;
 		SetTarget(wp->x, wp->y);
 
-		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), wp->x, wp->y, (object_type == ROBOT_OBJECT), ref_id);
-		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 		//don't wait for thread if it wasn't created
@@ -2550,63 +2653,69 @@ void ZObject::ProcessPickupWP(std::vector<waypoint>::iterator &wp, double time_d
 	}
 
 	//attack to
-	if(CheckAttackTo(wp, ols)) return;
+	if(CheckAttackTo(wp, ols))
+	{
+		return;
+	}
 
-	if(!cur_wp_info.got_pf_response) return;
+	if(!cur_wp_info.got_pf_response)
+	{
+		return;
+	}
 
 	//did we halt movement?
-	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols)) return;
+	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols))
+	{
+		return;
+	}
 
-	if(!ReachedTarget()) return;
+	if(!ReachedTarget())
+	{
+		return;
+	}
 
 	//go to the next pf_point, or kill this waypoint?
 	if(cur_wp_info.pf_point_list.size())
 	{
-		//cur_wp_info.x = cur_wp_info.pf_point_list.begin()->x;
-		//cur_wp_info.y = cur_wp_info.pf_point_list.begin()->y;
 		SetTarget(cur_wp_info.pf_point_list.begin()->x, cur_wp_info.pf_point_list.begin()->y);
 		SetVelocity();
 
 		cur_wp_info.pf_point_list.erase(cur_wp_info.pf_point_list.begin());
 	}
 	else
+	{
 		KillWP(wp);
+	}
 }
 
 void ZObject::ProcessEnterWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	ZObject *target_object;
 
 	if(is_new)
 	{
-		//cur_wp_info.x = wp->x;
-		//cur_wp_info.y = wp->y;
 		SetTarget(wp->x, wp->y);
 
-		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), wp->x, wp->y, (object_type == ROBOT_OBJECT), ref_id);
-		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 		//don't wait for thread if it wasn't created
 		if(cur_wp_info.path_finding_id)
+		{
 			StopMove();
+		}
 		else
 		{
 			cur_wp_info.got_pf_response = true;
 			SetVelocity();
 		}
 
-		//if(object_type == ROBOT_OBJECT) Disengage();
-
 		//run to enter vehicles
 		AttemptStartRun(wp->x, wp->y);
 	}
 
-	target_object = GetObjectFromID(wp->ref_id, *ols.object_list);
-
-	if(!target_object || !target_object->CanBeEntered())//target_object->GetOwner() != NULL_TEAM || target_object->IsDestroyed())
+	ZObject* target_object = GetObjectFromID(wp->ref_id, *ols.object_list);
+	if(!target_object || !target_object->CanBeEntered())
 	{
 		KillWP(wp);
 		return;
@@ -2614,9 +2723,6 @@ void ZObject::ProcessEnterWP(std::vector<waypoint>::iterator &wp, double time_di
 
 	int &cx = center_x;
 	int &cy = center_y;
-
-	//cx = x + (width_pix >> 1);
-	//cy = y + (height_pix >> 1);
 
 	//are we at the target?
 	if(target_object->UnderCursor(cx, cy))
@@ -2631,47 +2737,61 @@ void ZObject::ProcessEnterWP(std::vector<waypoint>::iterator &wp, double time_di
 	}
 
 	//attack to
-	if(CheckAttackTo(wp, ols)) return;
+	if(CheckAttackTo(wp, ols))
+	{
+		return;
+	}
 
 	//don't actually move without the pf_waypoints
-	if(!cur_wp_info.got_pf_response) return;
+	if(!cur_wp_info.got_pf_response)
+	{
+		return;
+	}
 
 	//did we halt movement?
-	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols)) return;
+	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols))
+	{
+		return;
+	}
 
-	if(!ReachedTarget()) return;
+	if(!ReachedTarget())
+	{
+		return;
+	}
 
 	//go to the next pf_point, or kill this waypoint?
 	if(cur_wp_info.pf_point_list.size())
 	{
-		//cur_wp_info.x = cur_wp_info.pf_point_list.begin()->x;
-		//cur_wp_info.y = cur_wp_info.pf_point_list.begin()->y;
 		SetTarget(cur_wp_info.pf_point_list.begin()->x, cur_wp_info.pf_point_list.begin()->y);
 		SetVelocity();
 
 		cur_wp_info.pf_point_list.erase(cur_wp_info.pf_point_list.begin());
 	}
 	else
+	{
 		KillWP(wp);
+	}
 }
 
 void ZObject::ProcessDodgeWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	if(is_new)
 	{
-		//cur_wp_info.x = wp->x;
-		//cur_wp_info.y = wp->y;
 		SetTarget(wp->x, wp->y);
-
 		SetVelocity();
-
 		AttemptStartRun();
 	}
 
 	//did we halt movement?
-	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols)) return;
+	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols))
+	{
+		return;
+	}
 
-	if(!ReachedTarget()) return;
+	if(!ReachedTarget())
+	{
+		return;
+	}
 
 	KillWP(wp);
 }
@@ -2689,17 +2809,15 @@ void ZObject::ProcessMoveWP(std::vector<waypoint>::iterator &wp, double time_dif
 		//straight to their targets
 		if(stoppable)
 		{
-			//cur_wp_info.x = wp->x;
-			//cur_wp_info.y = wp->y;
 			SetTarget(wp->x, wp->y);
 
-			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), wp->x, wp->y, (object_type == ROBOT_OBJECT), ref_id);
-			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 			cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 			//don't wait for thread if it wasn't created
 			if(cur_wp_info.path_finding_id)
+			{
 				StopMove();
+			}
 			else
 			{
 				cur_wp_info.got_pf_response = true;
@@ -2708,57 +2826,64 @@ void ZObject::ProcessMoveWP(std::vector<waypoint>::iterator &wp, double time_dif
 		}
 		else
 		{
-			//cur_wp_info.x = wp->x;
-			//cur_wp_info.y = wp->y;
 			SetTarget(wp->x, wp->y);
 			SetVelocity();
 		}
 
-		//if(object_type == ROBOT_OBJECT) Disengage();
-
 		//run if we are going for a flag
+		for(ZObject* obj : ols.flag_olist)
 		{
-			for(std::vector<ZObject*>::iterator obj=ols.flag_olist.begin()++;obj!=ols.flag_olist.end();obj++)
-				if((*obj)->DistanceFromCoords(wp->x, wp->y) <= 32)
-				{
-					AttemptStartRun(wp->x, wp->y);
-					break;
-				}
+			if(obj->DistanceFromCoords(wp->x, wp->y) <= 32)
+			{
+				AttemptStartRun(wp->x, wp->y);
+				break;
+			}
 		}
 	}
 
 	//attack to
-	if(CheckAttackTo(wp, ols)) return;
+	if(CheckAttackTo(wp, ols))
+	{
+		return;
+	}
 
-	if(!cur_wp_info.got_pf_response && stoppable) return;
+	if(!cur_wp_info.got_pf_response && stoppable)
+	{
+		return;
+	}
 
 	//did we halt movement?
-	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols, stoppable)) return;
+	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols, stoppable))
+	{
+		return;
+	}
 
-	if(!ReachedTarget()) return;
+	if(!ReachedTarget())
+	{
+		return;
+	}
 
 	//go to the next pf_point, or kill this waypoint?
 	if(cur_wp_info.pf_point_list.size())
 	{
-		//cur_wp_info.x = cur_wp_info.pf_point_list.begin()->x;
-		//cur_wp_info.y = cur_wp_info.pf_point_list.begin()->y;
 		SetTarget(cur_wp_info.pf_point_list.begin()->x, cur_wp_info.pf_point_list.begin()->y);
 		SetVelocity();
 
 		cur_wp_info.pf_point_list.erase(cur_wp_info.pf_point_list.begin());
 	}
 	else
+	{
 		KillWP(wp);
+	}
 }
 
 void ZObject::ProcessEnterFortWP(std::vector<waypoint>::iterator &wp, double time_dif, bool is_new, ZOLists &ols, ZMap &tmap)
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	ZObject *target_object;
 	bool stoppable;
 
-	target_object = GetObjectFromID(wp->ref_id, ols.building_olist);
+	ZObject* target_object = GetObjectFromID(wp->ref_id, ols.building_olist);
 
 	//target still exist?
 	//target still need repaired?
@@ -2781,12 +2906,13 @@ void ZObject::ProcessEnterFortWP(std::vector<waypoint>::iterator &wp, double tim
 
 			SetTarget();
 
-			//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 			cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 			//don't wait for thread if it wasn't created
 			if(cur_wp_info.path_finding_id)
+			{
 				StopMove();
+			}
 			else
 			{
 				cur_wp_info.got_pf_response = true;
@@ -2812,8 +2938,6 @@ void ZObject::ProcessEnterFortWP(std::vector<waypoint>::iterator &wp, double tim
 		{
 			//if the fort gets destroyed while we are entering it
 			//then execute the exit stage of this WP
-			//cur_wp_info.x = cur_wp_info.fort_exit_x;
-			//cur_wp_info.y = cur_wp_info.fort_exit_y;
 			SetTarget(cur_wp_info.fort_exit_x, cur_wp_info.fort_exit_y);
 
 			cur_wp_info.stage = EXIT_BUILDING_EFWS;
@@ -2822,25 +2946,37 @@ void ZObject::ProcessEnterFortWP(std::vector<waypoint>::iterator &wp, double tim
 	}
 
 	//attack to
-	if(CheckAttackTo(wp, ols)) return;
+	if(CheckAttackTo(wp, ols))
+	{
+		return;
+	}
 
 	//don't move if we do not have a response
-	if(!cur_wp_info.got_pf_response) return;
+	if(!cur_wp_info.got_pf_response)
+	{
+		return;
+	}
 
 	switch(cur_wp_info.stage)
 	{
-		case GOTO_ENTRANCE_EFWS:
-			stoppable = true;
-			break;
-		case ENTER_BUILDING_EFWS:
-		case EXIT_BUILDING_EFWS:
-			stoppable = false;
-			break;
+	case GOTO_ENTRANCE_EFWS:
+		stoppable = true;
+		break;
+	case ENTER_BUILDING_EFWS:
+	case EXIT_BUILDING_EFWS:
+		stoppable = false;
+		break;
 	}
 
-	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols, stoppable)) return;
+	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols, stoppable))
+	{
+		return;
+	}
 
-	if(!ReachedTarget()) return;
+	if(!ReachedTarget())
+	{
+		return;
+	}
 
 	//so we reached our current target... now enter the next stage
 	switch(cur_wp_info.stage)
@@ -2849,8 +2985,6 @@ void ZObject::ProcessEnterFortWP(std::vector<waypoint>::iterator &wp, double tim
 		//go to the next pf_point, or next stage?
 		if(cur_wp_info.pf_point_list.size())
 		{
-			//cur_wp_info.x = cur_wp_info.pf_point_list.begin()->x;
-			//cur_wp_info.y = cur_wp_info.pf_point_list.begin()->y;
 			SetTarget(cur_wp_info.pf_point_list.begin()->x, cur_wp_info.pf_point_list.begin()->y);
 			SetVelocity();
 
@@ -2859,7 +2993,9 @@ void ZObject::ProcessEnterFortWP(std::vector<waypoint>::iterator &wp, double tim
 		else
 		{
 			if(!target_object->GetBuildingCreationPoint(cur_wp_info.x, cur_wp_info.y))
+			{
 				KillWP(wp);
+			}
 			else
 			{
 				SetTarget();
@@ -2870,8 +3006,6 @@ void ZObject::ProcessEnterFortWP(std::vector<waypoint>::iterator &wp, double tim
 		}
 		break;
 	case ENTER_BUILDING_EFWS:
-		//cur_wp_info.x = cur_wp_info.fort_exit_x;
-		//cur_wp_info.y = cur_wp_info.fort_exit_y;
 		SetTarget(cur_wp_info.fort_exit_x, cur_wp_info.fort_exit_y);
 
 		cur_wp_info.stage = EXIT_BUILDING_EFWS;
@@ -2894,10 +3028,9 @@ void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double t
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	ZObject *target_object;
 	bool stoppable;
 
-	target_object = GetObjectFromID(wp->ref_id, ols.building_olist);
+	ZObject* target_object = GetObjectFromID(wp->ref_id, ols.building_olist);
 
 	//target still exist?
 	//target still need repaired?
@@ -2919,8 +3052,6 @@ void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double t
 			if(ent_x == ent_x2 && ent_y == ent_y2)
 			{
 				//building has one entrance
-				//cur_wp_info.x = ent_x;
-				//cur_wp_info.y = ent_y;
 				SetTarget(ent_x, ent_y);
 			}
 			else
@@ -2933,14 +3064,10 @@ void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double t
 
 				if(d1 < d2)
 				{
-					//cur_wp_info.x = ent_x;
-					//cur_wp_info.y = ent_y;
 					SetTarget(ent_x, ent_y);
 				}
 				else
 				{
-					//cur_wp_info.x = ent_x2;
-					//cur_wp_info.y = ent_y2;
 					SetTarget(ent_x2, ent_y2);
 				}
 			}
@@ -2955,16 +3082,14 @@ void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double t
 		cur_wp_info.crane_exit_x = cur_wp_info.x;
 		cur_wp_info.crane_exit_y = cur_wp_info.y;
 
-		//SetVelocity();
-
 		//find our way to the entrance
-		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 		//don't wait for thread if it wasn't created
 		if(cur_wp_info.path_finding_id)
+		{
 			StopMove();
+		}
 		else
 		{
 			cur_wp_info.got_pf_response = true;
@@ -2983,8 +3108,6 @@ void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double t
 		{
 			//if the building gets repaired while we are entering it
 			//then execute the exit stage of this WP
-			//cur_wp_info.x = cur_wp_info.crane_exit_x;
-			//cur_wp_info.y = cur_wp_info.crane_exit_y;
 			SetTarget(cur_wp_info.crane_exit_x, cur_wp_info.crane_exit_y);
 
 			cur_wp_info.stage = EXIT_BUILDING_CRWS;
@@ -2993,22 +3116,31 @@ void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double t
 	}
 
 	//don't move if we do not have a response
-	if(!cur_wp_info.got_pf_response) return;
+	if(!cur_wp_info.got_pf_response)
+	{
+		return;
+	}
 
 	switch(cur_wp_info.stage)
 	{
-		case GOTO_ENTRANCE_CRWS:
-			stoppable = true;
-			break;
-		case ENTER_BUILDING_CRWS:
-		case EXIT_BUILDING_CRWS:
-			stoppable = false;
-			break;
+	case GOTO_ENTRANCE_CRWS:
+		stoppable = true;
+		break;
+	case ENTER_BUILDING_CRWS:
+	case EXIT_BUILDING_CRWS:
+		stoppable = false;
+		break;
 	}
 
-	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols, stoppable)) return;
+	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols, stoppable))
+	{
+		return;
+	}
 
-	if(!ReachedTarget()) return;
+	if(!ReachedTarget())
+	{
+		return;
+	}
 
 	//so we reached our current target... now enter the next stage
 	switch(cur_wp_info.stage)
@@ -3017,8 +3149,6 @@ void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double t
 		//go to the next pf_point, or next stage?
 		if(cur_wp_info.pf_point_list.size())
 		{
-			//cur_wp_info.x = cur_wp_info.pf_point_list.begin()->x;
-			//cur_wp_info.y = cur_wp_info.pf_point_list.begin()->y;
 			SetTarget(cur_wp_info.pf_point_list.begin()->x, cur_wp_info.pf_point_list.begin()->y);
 			SetVelocity();
 
@@ -3027,7 +3157,9 @@ void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double t
 		else
 		{
 			if(!target_object->GetCraneCenter(cur_wp_info.x, cur_wp_info.y))
+			{
 				KillWP(wp);
+			}
 			else
 			{
 				cur_wp_info.stage = ENTER_BUILDING_CRWS;
@@ -3042,8 +3174,6 @@ void ZObject::ProcessCraneRepairWP(std::vector<waypoint>::iterator &wp, double t
 		}
 		break;
 	case ENTER_BUILDING_CRWS:
-		//cur_wp_info.x = cur_wp_info.crane_exit_x;
-		//cur_wp_info.y = cur_wp_info.crane_exit_y;
 		SetTarget(cur_wp_info.crane_exit_x, cur_wp_info.crane_exit_y);
 		SetVelocity();
 
@@ -3069,11 +3199,10 @@ void ZObject::ProcessUnitRepairWP(std::vector<waypoint>::iterator &wp, double ti
 {
 	int &x = loc.x;
 	int &y = loc.y;
-	ZObject *target_object;
 	bool stoppable;
 	int ent_x, ent_y;
 
-	target_object = GetObjectFromID(wp->ref_id, ols.building_olist);
+	ZObject* target_object = GetObjectFromID(wp->ref_id, ols.building_olist);
 
 	//target still exist?
 	if(!target_object)
@@ -3099,16 +3228,14 @@ void ZObject::ProcessUnitRepairWP(std::vector<waypoint>::iterator &wp, double ti
 			return;
 		}
 
-		//SetVelocity();
-
 		//find our way to the entrance
-		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x + (width_pix >> 1), y + (height_pix >> 1), cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
-		//cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(center_x, center_y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), ref_id);
 		cur_wp_info.path_finding_id = tmap.GetPathFinder().Find_Path(x, y, cur_wp_info.x, cur_wp_info.y, (object_type == ROBOT_OBJECT), HasExplosives(), ref_id);
 
 		//don't wait for thread if it wasn't created
 		if(cur_wp_info.path_finding_id)
+		{
 			StopMove();
+		}
 		else
 		{
 			cur_wp_info.got_pf_response = true;
@@ -3145,10 +3272,16 @@ void ZObject::ProcessUnitRepairWP(std::vector<waypoint>::iterator &wp, double ti
 	}
 
 	//attack to
-	if(CheckAttackTo(wp, ols)) return;
+	if(CheckAttackTo(wp, ols))
+	{
+		return;
+	}
 
 	//don't move if we do not have a response
-	if(!cur_wp_info.got_pf_response) return;
+	if(!cur_wp_info.got_pf_response)
+	{
+		return;
+	}
 
 	//do we need to wait?
 	if(target_object->RepairingAUnit())
@@ -3158,44 +3291,48 @@ void ZObject::ProcessUnitRepairWP(std::vector<waypoint>::iterator &wp, double ti
 		//and we will leave the building if we are currently entering it
 		switch(cur_wp_info.stage)
 		{
-			case ENTER_BUILDING_URWS:
-				if(target_object->GetRepairEntrance(ent_x, ent_y))
-				{
-					//cur_wp_info.x = ent_x;
-					//cur_wp_info.y = ent_y;
-					SetTarget(ent_x, ent_y);
-				}
-				else
-				{
-					KillWP(wp);
-					return;
-				}
-				cur_wp_info.stage = EXIT_BUILDING_URWS;
-				SetVelocity();
-				break;
-			case WAIT_URWS:
+		case ENTER_BUILDING_URWS:
+			if(target_object->GetRepairEntrance(ent_x, ent_y))
+			{
+				SetTarget(ent_x, ent_y);
+			}
+			else
+			{
+				KillWP(wp);
 				return;
-				break;
+			}
+			cur_wp_info.stage = EXIT_BUILDING_URWS;
+			SetVelocity();
+			break;
+		case WAIT_URWS:
+			return;
+			break;
 		}
 	}
 
 	switch(cur_wp_info.stage)
 	{
-		case GOTO_ENTRANCE_URWS:
-			stoppable = true;
-			break;
-		case ENTER_BUILDING_URWS:
-		case EXIT_BUILDING_URWS:
-			stoppable = false;
-			break;
-		default:
-			stoppable = true;
-			break;
+	case GOTO_ENTRANCE_URWS:
+		stoppable = true;
+		break;
+	case ENTER_BUILDING_URWS:
+	case EXIT_BUILDING_URWS:
+		stoppable = false;
+		break;
+	default:
+		stoppable = true;
+		break;
 	}
 
-	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols, stoppable)) return;
+	if(!ProcessMoveOrKillWP(time_dif, tmap, wp, ols, stoppable))
+	{
+		return;
+	}
 
-	if(!ReachedTarget()) return;
+	if(!ReachedTarget())
+	{
+		return;
+	}
 
 	switch(cur_wp_info.stage)
 	{
@@ -3203,8 +3340,6 @@ void ZObject::ProcessUnitRepairWP(std::vector<waypoint>::iterator &wp, double ti
 		//go to the next pf_point, or next stage?
 		if(cur_wp_info.pf_point_list.size())
 		{
-			//cur_wp_info.x = cur_wp_info.pf_point_list.begin()->x;
-			//cur_wp_info.y = cur_wp_info.pf_point_list.begin()->y;
 			SetTarget(cur_wp_info.pf_point_list.begin()->x, cur_wp_info.pf_point_list.begin()->y);
 			SetVelocity();
 
@@ -3227,8 +3362,6 @@ void ZObject::ProcessUnitRepairWP(std::vector<waypoint>::iterator &wp, double ti
 		//because of another unit entering at the exact same interval / "time"
 		if(target_object->GetRepairEntrance(ent_x, ent_y))
 		{
-			//cur_wp_info.x = ent_x;
-			//cur_wp_info.y = ent_y;
 			SetTarget(ent_x, ent_y);
 		}
 		else
@@ -3241,7 +3374,9 @@ void ZObject::ProcessUnitRepairWP(std::vector<waypoint>::iterator &wp, double ti
 		break;
 	case WAIT_URWS:
 		if(!target_object->GetRepairCenter(cur_wp_info.x, cur_wp_info.y))
+		{
 			KillWP(wp);
+		}
 
 		cur_wp_info.stage = ENTER_BUILDING_URWS;
 
@@ -3258,26 +3393,34 @@ bool ZObject::CheckAttackTo(std::vector<waypoint>::iterator &wp, ZOLists &ols)
 {
 	if(wp->attack_to)
 	{
-		if(!CanOverwriteWP()) return false;
+		if(!CanOverwriteWP())
+		{
+			return false;
+		}
 
 		//look for attack choices
 		std::vector<ZObject*> agro_choices;
-		for(std::vector<ZObject*>::iterator obj=ols.passive_engagable_olist.begin();obj!=ols.passive_engagable_olist.end();obj++)
+		for(ZObject* obj : ols.passive_engagable_olist)
 		{
 			int ox, oy;
 			unsigned char ot, oid;
 
-			(*obj)->GetObjectID(ot, oid);
-			(*obj)->GetCenterCords(ox, oy);
+			obj->GetObjectID(ot, oid);
+			obj->GetCenterCords(ox, oy);
 
-			if((*obj)->GetOwner() != NULL_TEAM && (*obj)->GetOwner() != owner)
+			if(obj->GetOwner() != NULL_TEAM && obj->GetOwner() != owner)
 			{
 				//do not auto attack buildings
-				if(!(ot == CANNON_OBJECT || ot == VEHICLE_OBJECT || ot == ROBOT_OBJECT)) continue;
+				if(!(ot == CANNON_OBJECT || ot == VEHICLE_OBJECT || ot == ROBOT_OBJECT))
+				{
+					continue;
+				}
 
 				//push it?
-				//if(WithinAgroRadius(ox, oy)) agro_choices.push_back(*obj);
-				if(WithinAgroRadius(*obj)) agro_choices.push_back(*obj);
+				if(WithinAgroRadius(obj))
+				{
+					agro_choices.push_back(obj);
+				}
 			}
 		}
 
@@ -3288,7 +3431,7 @@ bool ZObject::CheckAttackTo(std::vector<waypoint>::iterator &wp, ZOLists &ols)
 			int ox, oy;
 
 			//find choice (closest)
-			agro_choice = agro_choices[rand() % agro_choices.size()];
+			agro_choice = agro_choices[OpenZod::Util::Random::Int(0, agro_choices.size() - 1)];
 
 			agro_choice->GetCenterCords(ox, oy);
 
@@ -3316,8 +3459,6 @@ void ZObject::KillWP(std::vector<waypoint>::iterator &wp)
 	waypoint_list.erase(wp);
 
 	StopMove();
-	//SetVelocity();
-	//sflags.updated_location = true;
 
 	//clean this
 	last_wp.clear();
@@ -3359,10 +3500,11 @@ bool ZObject::StopMove()
 {
 	float &dx = loc.dx;
 	float &dy = loc.dy;
-	//const float z = 0.00001;
 
-	//if((dx < z && dx > -z) && (dy < z && dy > -z)) return false;
-	if(!IsMoving()) return false;
+	if(!IsMoving())
+	{
+		return false;
+	}
 
 	dx = 0;
 	dy = 0;
@@ -3401,13 +3543,6 @@ bool ZObject::ReachedTarget()
 		return true;
 	}
 
-
-	//test
-	//int adx, ady;
-	//adx = abs(cx - cur_wp_info.sx);
-	//ady = abs(cy - cur_wp_info.sy);
-	//printf("adx:%d vs wp.adx:%d ... ady:%d wp.ady:%d\n", adx, cur_wp_info.adx, ady, cur_wp_info.ady);
-
 	//we over pass the target?
 	if(abs(cx - cur_wp_info.sx) >= cur_wp_info.adx && abs(cy - cur_wp_info.sy) >= cur_wp_info.ady)
 	{
@@ -3418,23 +3553,6 @@ bool ZObject::ReachedTarget()
 	}
 
 	return false;
-
-	////change dx/dy if we arrive at the end of this waypoint
-	//if(dx > 0 && cx < cur_wp_info.x) return false;
-	//if(dx < 0 && cx > cur_wp_info.x) return false;
-	//if(dy > 0 && cy < cur_wp_info.y) return false;
-	//if(dy < 0 && cy > cur_wp_info.y) return false;
-
-	////only fix at the last position if we were actually moving
-	////if(!((dx < z && dx > -z) && (dy < z && dy > -z)))
-	//if(!isz(dx) || !isz(dy))
-	//{
-	//	x = cur_wp_info.x - (width_pix >> 1);
-	//	y = cur_wp_info.y - (height_pix >> 1);
-	//	xover = yover = 0;
-	//}
-
-	//return true;
 }
 
 bool ZObject::ProcessMoveOrKillWP(double time_dif, ZMap &tmap, std::vector<waypoint>::iterator &wp, ZOLists &ols, bool stoppable)
@@ -3443,7 +3561,10 @@ bool ZObject::ProcessMoveOrKillWP(double time_dif, ZMap &tmap, std::vector<waypo
 	if(!ProcessMove(time_dif, tmap, stop_x, stop_y, stoppable))
 	{
 		//attack our way through?
-		if(DoAttackImpassableAtCoords(ols, stop_x, stop_y)) return false;
+		if(DoAttackImpassableAtCoords(ols, stop_x, stop_y))
+		{
+			return false;
+		}
 
 		//otherwise kill the move and leave
 		KillWP(wp);
@@ -3459,35 +3580,36 @@ bool ZObject::ProcessMove(double time_dif, ZMap &tmap, int &stop_x, int &stop_y,
 	int &y = loc.y;
 	float &dx = loc.dx;
 	float &dy = loc.dy;
-	double nx, ny;
-	int inx, iny;
-	//const double z = 0.00001;
 
 	//are we moving?
-	//if((dx < z && dx > -z) && (dy < z && dy > -z))
-	if(isz(dx) && isz(dy)) return true;
+	if(isz(dx) && isz(dy))
+	{
+		return true;
+	}
 
-	nx = x + (dx * time_dif) + xover;
-	ny = y + (dy * time_dif) + yover;
+	double nx = x + (dx * time_dif) + xover;
+	double ny = y + (dy * time_dif) + yover;
 
-	inx = (int)floor(nx);
-	iny = (int)floor(ny);
+	int inx = (int)floor(nx);
+	int iny = (int)floor(ny);
 
 	//minions never stoppable (for now)
-	if(IsMinion()) stoppable = false;
+	if(IsMinion())
+	{
+		stoppable = false;
+	}
 
 	//is the new x and y kosher?
-	//if(stoppable && tmap.WithinImpassable((inx + (width_pix>>1)) - 7, (iny + (height_pix>>1)) - 7, 6, 6, object_type == ROBOT_OBJECT))
 	if(stoppable && tmap.WithinImpassable(inx+1, iny+1, width_pix-2, height_pix-2, stop_x, stop_y, object_type == ROBOT_OBJECT))
 	{
-		if(ReachedTarget())
-			return true;
-		else
-			return false;
+		return ReachedTarget();
 	}
 
 	//robots don't attack while moving
-	if(object_type == ROBOT_OBJECT) Disengage();
+	if(object_type == ROBOT_OBJECT)
+	{
+		Disengage();
+	}
 
 	//capture the overflow loss from double to int conversion
 	xover = nx - inx;
@@ -3501,14 +3623,11 @@ bool ZObject::ProcessMove(double time_dif, ZMap &tmap, int &stop_x, int &stop_y,
 	center_y = y + (height_pix >> 1);
 
 	//set new real move speed
-	//if(dx > z || dx < -z || dy > z || dy < -z)
 	if(!isz(dx) || !isz(dy))
 	{
 		double previous_real_speed = real_move_speed;
 
 		real_move_speed = move_speed * tmap.GetTileWalkSpeed(center_x, center_y) * DamagedSpeed() * RunSpeed();
-		//real_move_speed = move_speed * tmap.GetTileWalkSpeed(x + (width_pix >> 1), y + (height_pix >> 1));
-		//real_move_speed = move_speed * tmap.GetTileWalkSpeed(x + 8, y + 8);
 
 		//update in speed?
 		if(real_move_speed != previous_real_speed)
@@ -3520,7 +3639,7 @@ bool ZObject::ProcessMove(double time_dif, ZMap &tmap, int &stop_x, int &stop_y,
 			}
 			else
 			{
-				printf("error:previous_real_speed(%lf) not above zero!\n", previous_real_speed);
+				spdlog::error("ZObject::ProcessMove - previous_real_speed not above zero! {}", previous_real_speed);
 			}
 			dx *= real_move_speed;
 			dy *= real_move_speed;
@@ -3541,7 +3660,6 @@ void ZObject::SetVelocity(ZObject *target_object)
 	float old_dx = loc.dx;
 	float old_dy = loc.dy;
 	
-
 	//do we have a waypoint?
 	if(waypoint_list.size())
 	{
@@ -3561,48 +3679,6 @@ void ZObject::SetVelocity(ZObject *target_object)
 			dx *= real_move_speed;
 			dy *= real_move_speed;
 		}
-
-		//wp = waypoint_list.begin();
-
-		//switch(wp->mode)
-		//{
-		//case MOVE_WP:
-		//case FORCE_MOVE_WP:
-		//case ENTER_WP:
-		//case CRANE_REPAIR_WP:
-		//case UNIT_REPAIR_WP:
-		//case ATTACK_WP:
-		//	dx = cur_wp_info.x - cx;
-		//	dy = cur_wp_info.y - cy;
-		//	if(!isz(dx) || !isz(dy))
-		//	{
-		//		mag = sqrt((dx * dx) + (dy * dy));
-		//		dx /= mag;
-		//		dy /= mag;
-		//		dx *= real_move_speed;
-		//		dy *= real_move_speed;
-		//	}
-		//	break;
-		////case ATTACK_WP:
-		////	if(target_object)
-		////	{
-		////		target_object->GetCenterCords(ox, oy);
-		////		dx = ox - cx;
-		////		dy = oy - cy;
-		////		if(!isz(dx) || !isz(dy))
-		////		{
-		////			mag = sqrt((dx * dx) + (dy * dy));
-		////			dx /= mag;
-		////			dy /= mag;
-		////			dx *= real_move_speed;
-		////			dy *= real_move_speed;
-		////		}
-		////		//garr
-		////		//yover = xover = 0;
-		////	}
-
-		//	break;
-		//}
 	}
 	else
 	{
@@ -3610,14 +3686,19 @@ void ZObject::SetVelocity(ZObject *target_object)
 		StopMove();
 	}
 
-	if(fabs(dx - old_dx) < 0.1) dx = old_dx;
-	if(fabs(dy - old_dy) < 0.1) dy = old_dy;
+	if(fabs(dx - old_dx) < 0.1)
+	{
+		dx = old_dx;
+	}
+	if(fabs(dy - old_dy) < 0.1)
+	{
+		dy = old_dy;
+	}
 
 	//update velocity?
 	if(dx != old_dx || dy != old_dy)
 	{
 		sflags.updated_velocity = true;
-		//yover = xover = 0;
 	}
 }
 
@@ -3625,37 +3706,48 @@ bool ZObject::DodgeMissile(int tx, int ty, double time_till_explode)
 {
 	int nx, ny;
 
-	//1 in 3 then don't do
-	//if(!(rand() % 3)) return false;
-	if(!CanOverwriteWP()) return false;
-	if(move_speed <= 0) return false;
-	if(real_move_speed <= 0) return false;
-	if(object_type == ROBOT_OBJECT && attack_object) return false;
-	if(owner == NULL_TEAM) return false;
+	if(!CanOverwriteWP())
+	{
+		return false;
+	}
+	if(move_speed <= 0)
+	{
+		return false;
+	}
+	if(real_move_speed <= 0)
+	{
+		return false;
+	}
+	if(object_type == ROBOT_OBJECT && attack_object)
+	{
+		return false;
+	}
+	if(owner == NULL_TEAM)
+	{
+		return false;
+	}
 
 	double dist; 
-	if(time_till_explode > stamina) dist = time_till_explode * real_move_speed;
-	else dist = time_till_explode * real_move_speed * zsettings->run_unit_speed;
+	if(time_till_explode > stamina)
+	{
+		dist = time_till_explode * real_move_speed;
+	}
+	else
+	{
+		dist = time_till_explode * real_move_speed * zsettings->run_unit_speed;
+	}
+
 	int m_move_dist = dist * 2.0 / 4.0;
 	int f_move_dist = dist * 4.0 / 4.0;
-	if(m_move_dist <= 0) m_move_dist = 1;
-	int move_dist = f_move_dist + (rand() % m_move_dist);
-	double theta = (2 * PI) * (1000.0 / (rand() % 1000));
-
-	//move_dist = dist;
+	if(m_move_dist <= 0)
+	{
+		m_move_dist = 1;
+	}
+	int move_dist = f_move_dist + OpenZod::Util::Random::Int(0, m_move_dist - 1);
+	double theta = (2 * PI) * OpenZod::Util::Random::Float(0, 1);
 
 	nx = center_x + (move_dist * cos(theta));
 	ny = center_y + (move_dist * sin(theta));
-
-	//if(rand()%2)
-	//	nx = center_x + (f_move_dist + (rand() % m_move_dist));
-	//else
-	//	nx = center_x - (f_move_dist + (rand() % m_move_dist));
-
-	//if(rand()%2)
-	//	ny = center_y + (f_move_dist + (rand() % m_move_dist));
-	//else
-	//	ny = center_y - (f_move_dist + (rand() % m_move_dist));
 
 	//modify current dodge or make new?
 	if(waypoint_list.size() && waypoint_list.begin()->mode == DODGE_WP)
@@ -3683,31 +3775,40 @@ bool ZObject::DodgeMissile(int tx, int ty, double time_till_explode)
 bool ZObject::DoAttackImpassableAtCoords(ZOLists &ols, int x, int y)
 {
 	//all impasses require explosives to destroy
-	if(!HasExplosives()) return false;
+	if(!HasExplosives())
+	{
+		return false;
+	}
 
 	for(std::vector<ZObject*>::iterator o=ols.object_list->begin(); o!=ols.object_list->end();++o)
 	{
-		if(!(*o)->IsDestroyableImpass()) continue;
-		if(!(*o)->CausesImpassAtCoord(x, y)) continue;
-		if(!CanAttackObject(*o)) continue;
+		if(!(*o)->IsDestroyableImpass())
+		{
+			continue;
+		}
+		if(!(*o)->CausesImpassAtCoord(x, y))
+		{
+			continue;
+		}
+		if(!CanAttackObject(*o))
+		{
+			continue;
+		}
 
 		//ok attack it
-		{
-			waypoint new_waypoint;
+		waypoint new_waypoint;
+		new_waypoint.mode = ATTACK_WP;
+		new_waypoint.ref_id = (*o)->GetRefID();
+		(*o)->GetCenterCords(new_waypoint.x, new_waypoint.y);
 
-			new_waypoint.mode = ATTACK_WP;
-			new_waypoint.ref_id = (*o)->GetRefID();
-			(*o)->GetCenterCords(new_waypoint.x, new_waypoint.y);
+		//push this attack waypoint to the front,
+		//and exit this current waypoint
+		waypoint_list.insert(waypoint_list.begin(), new_waypoint);
 
-			//push this attack waypoint to the front,
-			//and exit this current waypoint
-			waypoint_list.insert(waypoint_list.begin(), new_waypoint);
+		//a kind of solution for the minions
+		CloneMinionWayPoints();
 
-			//a kind of solution for the minions
-			CloneMinionWayPoints();
-
-			return true;
-		}
+		return true;
 	}
 
 	return false;
@@ -3736,9 +3837,13 @@ void ZObject::CreateAttackObjectData(char *&data, int &size)
 
 	send_data.ref_id = ref_id;
 	if(attack_object)
+	{
 		send_data.attack_object_ref_id = attack_object->ref_id;
+	}
 	else
+	{
 		send_data.attack_object_ref_id = -1;
+	}
 
 	memcpy(data, &send_data, sizeof(attack_object_packet));
 }
@@ -3755,7 +3860,9 @@ void ZObject::SetLoc(object_location new_loc)
 		RecalcDirection();
 	}
 	else
+	{
 		loc = new_loc;
+	}
 
 	//for estimating where it really is
 	last_loc = loc;
@@ -3774,8 +3881,14 @@ void ZObject::SmoothMove(double &the_time)
 	float &dy = loc.dy;
 
 	//move if it is moving
-	if(!isz(dx)) loc.x = last_loc.x + floor(dx * (the_time - last_loc_set_time));
-	if(!isz(dy)) loc.y = last_loc.y + floor(dy * (the_time - last_loc_set_time));
+	if(!isz(dx))
+	{
+		loc.x = last_loc.x + floor(dx * (the_time - last_loc_set_time));
+	}
+	if(!isz(dy))
+	{
+		loc.y = last_loc.y + floor(dy * (the_time - last_loc_set_time));
+	}
 
 	//set centers
 	center_x = x + (width_pix >> 1);
@@ -3784,75 +3897,93 @@ void ZObject::SmoothMove(double &the_time)
 
 void ZObject::RecalcDirection()
 {
-	int new_dir;
+	int new_dir = DirectionFromLoc(loc.dx, loc.dy);
 
-	new_dir = DirectionFromLoc(loc.dx, loc.dy);
-
-	printf("ZObject::RecalcDirection():%d\n", new_dir);
-
-	if(new_dir != -1) direction = new_dir;
+	if(new_dir != -1)
+	{
+		direction = new_dir;
+	}
 }
 
 int ZObject::DirectionFromLoc(float dx, float dy)
 {
-	//const float z = 0.000001;
-	float a;
-	int dir;
-
 	//are we going anywhere?
-	//if((dx > -z && dx < z) && (dy > -z && dy < z))
 	if(isz(dx) && isz(dy))
+	{
 		return -1;
+	}
 
-	a = atan2(dy,dx);
+	float a = atan2(dy,dx);
 
 	//atan2 is kind of funky
-	if(a < 0) a += PI + PI;
+	if(a < 0)
+	{
+		a += PI + PI;
+	}
 	a += PI * 1 / 8;
 
-	if(a < PI / 4) dir = 0;
-	else if(a < PI / 2) dir = 7;
-	else if(a < PI * 3 / 4) dir = 6;
-	else if(a < PI) dir = 5;
-	else if(a < 5 * PI / 4) dir = 4;
-	else if(a < 6 * PI / 4) dir = 3;
-	else if(a < 7 * PI / 4) dir = 2;
-	else if(a < 2 * PI) dir = 1;
-	else dir = 0;
-
-	//printf("DirectionFromLoc:a:%f dir:%d\n", a, dir);
-
-	return dir;
+	if(a < PI / 4)
+	{
+		return 0;
+	}
+	if(a < PI / 2)
+	{
+		return 7;
+	}
+	if(a < PI * 3 / 4)
+	{
+		return 6;
+	}
+	if(a < PI)
+	{
+		return 5;
+	}
+	if(a < 5 * PI / 4)
+	{
+		return 4;
+	}
+	if(a < 6 * PI / 4)
+	{
+		return 3;
+	}
+	if(a < 7 * PI / 4)
+	{
+		return 2;
+	}
+	if(a < 2 * PI)
+	{
+		return 1;
+	}
+	
+	return 0;
 }
 
 ZObject* ZObject::GetObjectFromID_BS(int ref_id_, std::vector<ZObject*> &the_list)
 {
-	int low, high, midpoint;
-
-	low = 0;
-	high = the_list.size() - 1;
-	midpoint = 0;
-
-	//printf("ref id list: ");
-	//for(vector<ZObject*>::iterator obj=the_list.begin(); obj!=the_list.end();obj++)
-	//	printf("%d, ", (*obj)->GetRefID());
-	//printf("\n");
+	int low = 0;
+	int high = the_list.size() - 1;
+	int midpoint = 0;
 
 	while (low <= high)
 	{
 		int tref_id;
 
-		//midpoint = low + ((high - low) / 2);
 		midpoint = low + ((high - low) >> 1);
 
 		tref_id = the_list[midpoint]->GetRefID();
 
 		if (ref_id_ == tref_id)
+		{
 			return the_list[midpoint];
+		}
 		else if (ref_id_ < tref_id)
+		{
 			high = midpoint - 1;
+		}
 		else
+		{
 			low = midpoint + 1;
+		}
 	}
 
 	return NULL;
@@ -3860,15 +3991,7 @@ ZObject* ZObject::GetObjectFromID_BS(int ref_id_, std::vector<ZObject*> &the_lis
 
 ZObject* ZObject::GetObjectFromID(int ref_id_, std::vector<ZObject*> &the_list)
 {
-	std::vector<ZObject*>::iterator obj;
-
 	return GetObjectFromID_BS(ref_id_, the_list);
-
-	//for(obj=the_list.begin(); obj!=the_list.end();obj++)
-	//	if((*obj)->ref_id == ref_id_)
-	//		return *obj;
-
-	//return NULL;
 }
 
 void ZObject::SetAttackObject(ZObject *obj)
@@ -3883,13 +4006,13 @@ ZObject* ZObject::GetAttackObject()
 
 ZObject* ZObject::NearestObjectFromList(std::vector<ZObject*> &the_list)
 {
-	ZObject *obj_choice;
-	double least_distance;
+	if(!the_list.size())
+	{
+		return NULL;
+	}
 
-	if(!the_list.size()) return NULL;
-
-	obj_choice = the_list[0];
-	least_distance = DistanceFromObject(*obj_choice);
+	ZObject* obj_choice = the_list[0];
+	double least_distance = DistanceFromObject(*obj_choice);
 	for(std::vector<ZObject*>::iterator obj=the_list.begin()++;obj!=the_list.end();obj++)
 	{
 		double this_distance = DistanceFromObject(**obj);
@@ -3906,26 +4029,29 @@ ZObject* ZObject::NearestObjectFromList(std::vector<ZObject*> &the_list)
 
 void ZObject::RemoveObjectFromList(ZObject* the_object, std::vector<ZObject*> &the_list)
 {
-	std::vector<ZObject*>::iterator i;
-
-	for(i=the_list.begin();i!=the_list.end();)
+	for(std::vector<ZObject*>::iterator i=the_list.begin();i!=the_list.end();)
 	{
 		if(*i == the_object)
+		{
 			i = the_list.erase(i);
+		}
 		else
+		{
 			i++;
+		}
 	}
 }
 
 ZObject* ZObject::NearestObjectToCoords(std::vector<ZObject*> &the_list, int x, int y)
 {
-	ZObject *obj_choice;
-	double least_distance;
 
-	if(!the_list.size()) return NULL;
+	if(!the_list.size())
+	{
+		return NULL;
+	}
 
-	obj_choice = the_list[0];
-	least_distance = obj_choice->DistanceFromCoords(x,y);
+	ZObject* obj_choice = the_list[0];
+	double least_distance = obj_choice->DistanceFromCoords(x,y);
 	for(std::vector<ZObject*>::iterator i=the_list.begin();i!=the_list.end();i++)
 	{
 		double this_distance;
@@ -3944,7 +4070,12 @@ ZObject* ZObject::NearestObjectToCoords(std::vector<ZObject*> &the_list, int x, 
 void ZObject::ClearAndDeleteList(std::vector<ZObject*> &the_list)
 {
 	for(std::vector<ZObject*>::iterator obj=the_list.begin(); obj!=the_list.end(); ++obj)
-		if(*obj) delete *obj;
+	{
+		if(*obj)
+		{
+			delete *obj;
+		}
+	}
 
 	the_list.clear();
 }
@@ -3952,29 +4083,44 @@ void ZObject::ClearAndDeleteList(std::vector<ZObject*> &the_list)
 void ZObject::ProcessList(std::vector<ZObject*> &the_list)
 {
 	for(std::vector<ZObject*>::iterator obj=the_list.begin(); obj!=the_list.end(); ++obj)
-		if(*obj) (*obj)->Process();
+	{
+		if(*obj)
+		{
+			(*obj)->Process();
+		}
+	}
 }
 
 ZObject* ZObject::NearestSelectableObject(std::vector<ZObject*> &the_list, int unit_type, int only_team, int x, int y)
 {
-	ZObject *obj_choice;
 	double least_distance;
 
-	if(!the_list.size()) return NULL;
+	if(!the_list.size())
+	{
+		return NULL;
+	}
 
-	obj_choice = NULL;
-	//obj_choice = the_list[0];
-	//least_distance = obj_choice->DistanceFromCoords(x,y);
+	ZObject* obj_choice = NULL;
+	
 	for(std::vector<ZObject*>::iterator i=the_list.begin();i!=the_list.end();i++)
 	{
 		unsigned char ot, oid;
 		double this_distance;
 
-		if((*i)->GetOwner() != only_team) continue;
-		if((*i)->IsMinion()) continue;
+		if((*i)->GetOwner() != only_team)
+		{
+			continue;
+		}
+		if((*i)->IsMinion())
+		{
+			continue;
+		}
 
 		(*i)->GetObjectID(ot, oid);
-		if(ot != unit_type) continue;
+		if(ot != unit_type)
+		{
+			continue;
+		}
 
 		//this the first found?
 		if(!obj_choice)
@@ -4002,12 +4148,24 @@ ZObject* ZObject::NextSelectableObjectAboveID(std::vector<ZObject*> &the_list, i
 	{
 		unsigned char ot, oid;
 
-		if((*i)->GetRefID() <= min_ref_id) continue;
-		if((*i)->GetOwner() != only_team) continue;
-		if((*i)->IsMinion()) continue;
+		if((*i)->GetRefID() <= min_ref_id)
+		{
+			continue;
+		}
+		if((*i)->GetOwner() != only_team)
+		{
+			continue;
+		}
+		if((*i)->IsMinion())
+		{
+			continue;
+		}
 
 		(*i)->GetObjectID(ot, oid);
-		if(ot != unit_type) continue;
+		if(ot != unit_type)
+		{
+			continue;
+		}
 			
 		return *i;
 	}
@@ -4028,21 +4186,19 @@ void ZObject::RemoveObject(ZObject *obj)
 
 	//this is kind of crude but it needs to be done
 	for(std::vector<ZObject*>::iterator i=minion_list.begin();i!=minion_list.end();i++)
-		if(*i == obj) *i = NULL;
+	{
+		if(*i == obj)
+		{
+			*i = NULL;
+		}
+	}
 
 	//crude
-	if(leader_obj == obj) leader_obj = NULL;
+	if(leader_obj == obj)
+	{
+		leader_obj = NULL;
+	}
 }
-
-//bool ZObject::ServerFireTurrentMissile(int &x_, int &y_, int &damage, int &radius, double &offset_time)
-//{
-//	x_ = 0;
-//	y_ = 0;
-//	damage = 0;
-//	radius = 0;
-//	offset_time = 0;
-//	return false;
-//}
 
 std::vector<fire_missile_info> ZObject::ServerFireTurrentMissile(int &damage, int &radius)
 {
@@ -4149,16 +4305,21 @@ int ZObject::CannonsInZone(ZOLists &ols)
 	int cannons_found = 0;
 
 	for(std::vector<ZObject*>::iterator i=ols.object_list->begin();i!=ols.object_list->end();i++)
+	{
 		if(this != *i && connected_zone == (*i)->GetConnectedZone())
 		{
 			unsigned char ot, oid;
 
 			(*i)->GetObjectID(ot, oid);
 
-			if(ot != CANNON_OBJECT) continue;
+			if(ot != CANNON_OBJECT)
+			{
+				continue;
+			}
 
 			cannons_found++;
 		}
+	}
 
 	return cannons_found;
 }
@@ -4192,18 +4353,29 @@ void ZObject::DoPreRender(ZMap &the_map, SDL_Surface *dest, int shift_x, int shi
 
 bool ZObject::HasDestroyedFortInZone(ZOLists &ols)
 {
-	if(!connected_zone) return false;
-
-	for(std::vector<ZObject*>::iterator i=ols.building_olist.begin(); i!=ols.building_olist.end(); ++i)
+	if(!connected_zone)
 	{
+		return false;
+	}
+
+	for(ZObject* i : ols.building_olist)
+	{
+		if(connected_zone != i->GetConnectedZone())
+		{
+			continue;
+		}
+		if(!i->IsDestroyed())
+		{
+			continue;
+		}
+
 		unsigned char ot, oid;
+		i->GetObjectID(ot, oid);
 
-		if(connected_zone != (*i)->GetConnectedZone()) continue;
-		if(!(*i)->IsDestroyed()) continue;
-
-		(*i)->GetObjectID(ot, oid);
-
-		if(ot == BUILDING_OBJECT && (oid == FORT_FRONT || oid == FORT_FRONT)) return true;
+		if(ot == BUILDING_OBJECT && (oid == FORT_FRONT || oid == FORT_FRONT))
+		{
+			return true;
+		}
 	}
 
 	return false;
@@ -4213,24 +4385,30 @@ bool ZObject::DoAutoRepair(ZMap &tmap, ZOLists &ols)
 {
 	double &the_time = ztime->ztime;
 
-	if(!do_auto_repair) return false;
-
-	if(the_time >= next_auto_repair_time)
+	if(!do_auto_repair)
 	{
-		do_auto_repair = false;
-
-		//nevermind?
-		if(HasDestroyedFortInZone(ols)) return false;
-		
-		//do the repair
-		//health = max_health;
-		SetHealth(max_health, tmap);
-
-		//let them know
-		return true;
+		return false;
 	}
 
-	return false;
+	if(the_time < next_auto_repair_time)
+	{
+		return false;
+	}
+	
+	do_auto_repair = false;
+
+	//nevermind?
+	if(HasDestroyedFortInZone(ols))
+	{
+		return false;
+	}
+	
+	//do the repair
+	//health = max_health;
+	SetHealth(max_health, tmap);
+
+	//let them know
+	return true;
 }
 
 void ZObject::StopAutoRepair()
@@ -4265,8 +4443,14 @@ void ZObject::UnSetDestroyMapImpassables(ZMap &tmap)
 
 void ZObject::AddGroupMinion(ZObject *obj)
 {
-	if(!obj) return;
-	if(obj == this) return;
+	if(!obj)
+	{
+		return;
+	}
+	if(obj == this)
+	{
+		return;
+	}
 
 	minion_list.push_back(obj);
 }
@@ -4276,9 +4460,13 @@ void ZObject::RemoveGroupMinion(ZObject *obj)
 	for(std::vector<ZObject*>::iterator i=minion_list.begin();i!=minion_list.end();)
 	{
 		if(!*i || *i == obj)
+		{
 			i = minion_list.erase(i);
+		}
 		else
+		{
 			i++;
+		}
 	}
 }
 
@@ -4295,9 +4483,10 @@ ZObject* ZObject::GetGroupLeader()
 void ZObject::SetGroupLeader(ZObject *obj)
 {
 	//cant be your own leader
-	if(obj == this) return;
-
-	//if(leader_obj) minion_list.clear();
+	if(obj == this)
+	{
+		return;
+	}
 
 	leader_obj = obj;
 }
@@ -4320,15 +4509,18 @@ bool ZObject::IsApartOfAGroup()
 
 void ZObject::CloneMinionWayPoints()
 {
-	for(std::vector<ZObject*>::iterator i=minion_list.begin();i!=minion_list.end();i++)
+	for(ZObject* i : minion_list)
 	{
-		if(!*i) continue;
+		if(!i)
+		{
+			continue;
+		}
 
-		(*i)->GetWayPointList() = waypoint_list;
-		(*i)->SetVelocity();
+		i->GetWayPointList() = waypoint_list;
+		i->SetVelocity();
 
 		//just left cannon...
-		(*i)->SetJustLeftCannon(just_left_cannon);
+		i->SetJustLeftCannon(just_left_cannon);
 	}
 }
 
@@ -4344,14 +4536,16 @@ void ZObject::CreateGroupInfoData(char *&data, int &size)
 
 	//int ref_id;
 	int leader_ref_id;
-	int minions;
-
 	if(leader_obj)
+	{
 		leader_ref_id = leader_obj->GetRefID();
+	}
 	else
+	{
 		leader_ref_id = -1;
+	}
 
-	minions = minion_list.size();
+	int minions = minion_list.size();
 
 	size = 12 + (4 * minions);
 
@@ -4363,19 +4557,22 @@ void ZObject::CreateGroupInfoData(char *&data, int &size)
 	for(int i=0;i<minions;i++)
 	{
 		if(minion_list[i])
+		{
 			((int*)data)[2+i] = minion_list[i]->GetRefID();
+		}
 		else
+		{
 			((int*)data)[2+i] = -1;
+		}
 	}
 }
 
 void ZObject::CreateTeamData(char *&data, int &size)
 {
-	object_team_packet packet_header;
-
 	size = sizeof(object_team_packet) + (driver_info.size() * sizeof(driver_info_s));
 	data = (char*)malloc(size);
 
+	object_team_packet packet_header;
 	packet_header.ref_id = ref_id;
 	packet_header.owner = owner;
 	packet_header.driver_type = driver_type;
@@ -4393,20 +4590,25 @@ void ZObject::CreateTeamData(char *&data, int &size)
 
 void ZObject::ProcessGroupInfoData(char *data, int size, std::vector<ZObject*> &object_list)
 {
-	int ref_id_;
-	int leader_ref_id;
-	int minions;
-
 	//meet min requirements?
-	if(size < 12) return;
+	if(size < 12)
+	{
+		return;
+	}
 
-	ref_id_ = ((int*)data)[0];
-	leader_ref_id = ((int*)data)[1];
-	minions = ((int*)data)[2];
+	int ref_id_ = ((int*)data)[0];
+	int leader_ref_id = ((int*)data)[1];
+	int minions = ((int*)data)[2];
 
 	//other requirements?
-	if(ref_id_ != ref_id) return;
-	if(size != 12 + (4 * minions)) return;
+	if(ref_id_ != ref_id)
+	{
+		return;
+	}
+	if(size != 12 + (4 * minions))
+	{
+		return;
+	}
 
 	ClearGroupInfo();
 
@@ -4415,18 +4617,15 @@ void ZObject::ProcessGroupInfoData(char *data, int size, std::vector<ZObject*> &
 	//fill the minion list
 	for(int i=0;i<minions;i++)
 	{
-		ZObject *new_minion;
+		ZObject* new_minion = GetObjectFromID(((int*)data)[2+i], object_list);
 
-		new_minion = GetObjectFromID(((int*)data)[2+i], object_list);
+		if(!new_minion)
+		{
+			spdlog::warn("ZObject::ProcessGroupInfoData - Could not find a minion");
+			continue;
+		}
 
-		if(new_minion)
-		{
-			minion_list.push_back(new_minion);
-		}
-		else
-		{
-			printf("ProcessGroupInfoData:could not find a minion\n");
-		}
+		minion_list.push_back(new_minion);
 	}
 }
 
@@ -4462,20 +4661,41 @@ bool ZObject::RecalcBuildTime()
 
 double ZObject::SpeedOffsetPercent()
 {
-	if(!move_speed) return 1.0;
-	if(!IsMoving()) return 1.0;
+	if(!move_speed)
+	{
+		return 1.0;
+	}
+	if(!IsMoving())
+	{
+		return 1.0;
+	}
 
 	return sqrt((loc.dx*loc.dx)+(loc.dy*loc.dy)) / move_speed;
 }
 
 bool ZObject::CanBeRepairedByCrane(int repairers_team)
 {
-	if(object_type != BUILDING_OBJECT) return false;
-	if(object_id == FORT_FRONT) return false;
-	if(object_id == FORT_BACK) return false;
+	if(object_type != BUILDING_OBJECT)
+	{
+		return false;
+	}
+	if(object_id == FORT_FRONT)
+	{
+		return false;
+	}
+	if(object_id == FORT_BACK)
+	{
+		return false;
+	}
 
-	if(owner != NULL_TEAM && repairers_team != owner) return false;
-	if(!IsDestroyed()) return false;
+	if(owner != NULL_TEAM && repairers_team != owner)
+	{
+		return false;
+	}
+	if(!IsDestroyed())
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -4487,12 +4707,20 @@ bool ZObject::CanAttack()
 
 bool ZObject::HasExplosives()
 {
-	if(has_explosives) return true;
-	if(GetGrenadeAmount()) return true;
-	if(GetGroupLeader() && GetGroupLeader()->GetGrenadeAmount()) return true;
+	if(has_explosives)
+	{
+		return true;
+	}
+	if(GetGrenadeAmount())
+	{
+		return true;
+	}
+	if(GetGroupLeader() && GetGroupLeader()->GetGrenadeAmount())
+	{
+		return true;
+	}
 
 	return false;
-	//return has_explosives;
 }
 
 bool ZObject::AttackedOnlyByExplosives()
@@ -4504,8 +4732,14 @@ void ZObject::SetDriverType(int driver_type_)
 {
 	driver_type = driver_type_;
 
-	if(driver_type < 0) driver_type = 0;
-	if(driver_type >= MAX_ROBOT_TYPES) driver_type = MAX_ROBOT_TYPES-1;
+	if(driver_type < 0)
+	{
+		driver_type = 0;
+	}
+	if(driver_type >= MAX_ROBOT_TYPES)
+	{
+		driver_type = MAX_ROBOT_TYPES-1;
+	}
 
 	//drivers can mess with damage info
 	ResetDamageInfo();
@@ -4551,9 +4785,11 @@ int ZObject::GetDriverType()
 int ZObject::GetDriverHealth()
 {
 	if(driver_info.size())
+	{
 		return driver_info.begin()->driver_health;
-	else
-		return 0;
+	}
+
+	return 0;
 }
 
 bool ZObject::CanEjectDrivers()
@@ -4699,9 +4935,18 @@ void ZObject::DoDriverHitEffect()
 
 bool ZObject::CanBeEntered()
 {
-	if(owner != NULL_TEAM) return false;
-	if(IsDestroyed()) return false;
-	if(!(object_type == VEHICLE_OBJECT || object_type == CANNON_OBJECT)) return false;
+	if(owner != NULL_TEAM)
+	{
+		return false;
+	}
+	if(IsDestroyed())
+	{
+		return false;
+	}
+	if(!(object_type == VEHICLE_OBJECT || object_type == CANNON_OBJECT))
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -4743,36 +4988,52 @@ bool ZObject::CanMove()
 
 bool ZObject::CanAttackObject(ZObject *obj)
 {
-	if(!obj) return false;
+	if(!obj)
+	{
+		return false;
+	}
 
-	if(!CanAttack()) return false;
-	if(obj->IsDestroyed()) return false;
-	if(owner == obj->GetOwner()) return false;
-	if(!HasExplosives() && obj->AttackedOnlyByExplosives()) return false;
+	if(!CanAttack())
+	{
+		return false;
+	}
+	if(obj->IsDestroyed())
+	{
+		return false;
+	}
+	if(owner == obj->GetOwner())
+	{
+		return false;
+	}
+	if(!HasExplosives() && obj->AttackedOnlyByExplosives())
+	{
+		return false;
+	}
 
 	return true;
 }
 
 void ZObject::PostPathFindingResult(ZPath_Finding_Response* response)
 {
-	if(!response) return;
-
-	if(response->thread_id == cur_wp_info.path_finding_id)
+	if(!response)
 	{
-		//printf("got a good response - thread_id:%d\n", response->thread_id);
-		cur_wp_info.got_pf_response = true;
-		cur_wp_info.pf_point_list = response->pf_point_list;
-		cur_wp_info.path_finding_id = 0;
+		return;
+	}
 
-		if(cur_wp_info.pf_point_list.size())
-		{
-			//cur_wp_info.x = cur_wp_info.pf_point_list.begin()->x;
-			//cur_wp_info.y = cur_wp_info.pf_point_list.begin()->y;
-			SetTarget(cur_wp_info.pf_point_list.begin()->x, cur_wp_info.pf_point_list.begin()->y);
-			SetVelocity();
+	if(response->thread_id != cur_wp_info.path_finding_id)
+	{
+		return;
+	}
 
-			cur_wp_info.pf_point_list.erase(cur_wp_info.pf_point_list.begin());
-		}
+	cur_wp_info.got_pf_response = true;
+	cur_wp_info.pf_point_list = response->pf_point_list;
+	cur_wp_info.path_finding_id = 0;
+
+	if(cur_wp_info.pf_point_list.size())
+	{
+		SetTarget(cur_wp_info.pf_point_list.begin()->x, cur_wp_info.pf_point_list.begin()->y);
+		SetVelocity();
+		cur_wp_info.pf_point_list.erase(cur_wp_info.pf_point_list.begin());
 	}
 }
 
