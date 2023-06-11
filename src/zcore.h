@@ -185,8 +185,6 @@ class ZCore
 		
 		std::vector<p_info> player_info;
 		std::vector<ZObject*> object_list;
-		//vector<string> player_name;
-		//vector<team_type> player_team;
 		std::vector<std::string> selectable_map_list;
 
 		bool allow_run;

@@ -1,5 +1,9 @@
 #include "zcore.h"
 
+#include "Util/Random.h"
+
+#include <spdlog/spdlog.h>
+
 int p_info::next_p_id = 0;
 
 ZCore::ZCore()
@@ -34,8 +38,10 @@ void ZCore::Run()
 
 void ZCore::SetBotBypassData(char *data, int size)
 {
-	if(size > MAX_BOT_BYPASS_SIZE) return;
-	if(size < 1) return;
+	if((size < 1) || (size > MAX_BOT_BYPASS_SIZE))
+	{
+		return;
+	}
 
 	memcpy(bot_bypass_data, data, size);
 	bot_bypass_size = size;
@@ -43,12 +49,12 @@ void ZCore::SetBotBypassData(char *data, int size)
 
 void ZCore::CreateRandomBotBypassData(char *data, int &size)
 {
-	srand(time(0));
-
-	size = MAX_BOT_BYPASS_SIZE - (rand() % MAX_BOT_BYPASS_RANDOM_SIZE_OFFSET);
+	size = MAX_BOT_BYPASS_SIZE - OpenZod::Util::Random::Int(0, MAX_BOT_BYPASS_RANDOM_SIZE_OFFSET - 1);
 
 	for(int i=0;i<size;i++)
-		data[i] = rand() % 256;
+	{
+		data[i] = OpenZod::Util::Random::Int(0, 255);
+	}
 }
 
 void ZCore::SetupRandomizer()
@@ -62,41 +68,11 @@ void ZCore::InitEncryption()
 	unsigned char key[16] = {0xFE, 0xEA, 0x42, 0x35, 0x78, 0x02, 0x57, 0xEC, 0xEE, 0x92, 0x11, 0x58, 0xC2, 0x5d, 0xC3, 0x23};
 
 	zencrypt.Init_Key(key, 128);
-
-	//test
-	/*
-	{
-		char intest[16] = {'h','e','l','l','o',' ','t','h','e','r','e',0,13,14,15,16};
-		char enctest[16];
-		char outtest[16];
-
-		memset(enctest, 0, 16);
-		memset(outtest, 0, 16);
-
-		printf("normal:     ");
-		for(int i=0;i<16;i++) printf("%02x", (unsigned char)intest[i]);
-		printf("\n");
-
-		zencrypt.AES_Encrypt(intest,16,enctest);
-
-		printf("encrypted:  ");
-		for(int i=0;i<16;i++) printf("%02x", (unsigned char)enctest[i]);
-		printf("\n");
-
-		zencrypt.AES_Decrypt(enctest,16,outtest);
-
-		printf("deencrypted:");
-		for(int i=0;i<16;i++) printf("%02x", (unsigned char)outtest[i]);
-		printf("\n");
-	}
-	*/
 }
 
 bool ZCore::CheckRegistration()
 {
 	static SDL_mutex *check_mutex = SDL_CreateMutex();
-	FILE *fp;
-	int ret;
 	char buf_enc[16];
 	char buf_key[16];
 
@@ -111,7 +87,7 @@ bool ZCore::CheckRegistration()
 	//clients and servers on different threads may use this function
 	SDL_LockMutex(check_mutex);
 
-	fp = fopen("registration.zkey", "r");
+	FILE* fp = fopen("registration.zkey", "r");
 
 	if(!fp)
 	{
@@ -125,7 +101,7 @@ bool ZCore::CheckRegistration()
 		return false;
 	}
 
-	ret = fread(buf_enc, 1, 16, fp);
+	int ret = fread(buf_enc, 1, 16, fp);
 
 	if(ret == 16)
 	{
@@ -175,8 +151,12 @@ int ZCore::GetObjectIndex(ZObject* &the_object, std::vector<ZObject*> &the_list)
 	std::vector<ZObject*>::iterator obj;
 
 	for(i=0, obj=the_list.begin(); obj!=the_list.end();obj++, i++)
+	{
 		if(*obj == the_object)
+		{
 			return i;
+		}
+	}
 
 	return -1;
 }
@@ -188,7 +168,10 @@ ZObject* ZCore::GetObjectFromID(int ref_id, std::vector<ZObject*> &the_list)
 
 bool ZCore::CheckRallypoint(ZObject *obj, waypoint *wp)
 {
-	if(wp->mode != MOVE_WP) return false;
+	if(wp->mode != MOVE_WP)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -203,24 +186,36 @@ bool ZCore::CheckWaypoint(ZObject *obj, waypoint *wp)
 
 	//just set this to false if
 	//the unit can not attack
-	if(!obj->CanAttack()) wp->attack_to = false;
+	if(!obj->CanAttack())
+	{
+		wp->attack_to = false;
+	}
 
 	switch(wp->mode)
 	{
 	case MOVE_WP:
 		//can move?
-		if(!obj->CanMove()) return false;
+		if(!obj->CanMove())
+		{
+			return false;
+		}
 		break;
 	case FORCE_MOVE_WP:
 		//can move?
-		if(!obj->CanMove()) return false;
+		if(!obj->CanMove())
+		{
+			return false;
+		}
 
 		//clients are not allowed to set forcemove waypoints
 		wp->mode = MOVE_WP;
 		break;
 	case DODGE_WP:
 		//can move?
-		if(!obj->CanMove()) return false;
+		if(!obj->CanMove())
+		{
+			return false;
+		}
 
 		//clients are not allowed to set dodge waypoints
 		wp->mode = MOVE_WP;
@@ -232,86 +227,150 @@ bool ZCore::CheckWaypoint(ZObject *obj, waypoint *wp)
 		//attacking an object that can only be attacked by explosions?
 		aobj = GetObjectFromID(wp->ref_id, object_list);
 
-		if(!aobj) return false;
+		if(!aobj)
+		{
+			return false;
+		}
 
-		if(!obj->CanAttackObject(aobj)) return false;
-		//if(!obj->HasExplosives() && aobj->AttackedOnlyByExplosives()) return false;
-		//if(!obj->CanAttack()) return false;
+		if(!obj->CanAttackObject(aobj))
+		{
+			return false;
+		}
 		break;
 	case ENTER_WP:
 		//can move?
-		if(!obj->CanMove()) return false;
+		if(!obj->CanMove())
+		{
+			return false;
+		}
 
 		//entering ok?
-		if(ot != ROBOT_OBJECT) return false;
+		if(ot != ROBOT_OBJECT)
+		{
+			return false;
+		}
 
 		//target exist?
 		aobj = GetObjectFromID(wp->ref_id, object_list);
-		if(!aobj) return false;
+		if(!aobj)
+		{
+			return false;
+		}
 
 		//can the target be entered?
-		if(!aobj->CanBeEntered()) return false;
+		if(!aobj->CanBeEntered())
+		{
+			return false;
+		}
 		break;
 	case CRANE_REPAIR_WP:
 		//can move?
-		if(!obj->CanMove()) return false;
+		if(!obj->CanMove())
+		{
+			return false;
+		}
 
 		//it a crane?
-		if(!(ot == VEHICLE_OBJECT && oid == CRANE)) return false;
+		if(!(ot == VEHICLE_OBJECT && oid == CRANE))
+		{
+			return false;
+		}
 
 		//target exist?
 		aobj = GetObjectFromID(wp->ref_id, object_list);
-		if(!aobj) return false;
+		if(!aobj)
+		{
+			return false;
+		}
 
 		//can it repair that target?
-		if(!aobj->CanBeRepairedByCrane(obj->GetOwner())) return false;
+		if(!aobj->CanBeRepairedByCrane(obj->GetOwner()))
+		{
+			return false;
+		}
 		break;
 	case UNIT_REPAIR_WP:
 		//can move?
-		if(!obj->CanMove()) return false;
+		if(!obj->CanMove())
+		{
+			return false;
+		}
 
 		//can it be repaired?
-		if(!obj->CanBeRepaired()) return false;
+		if(!obj->CanBeRepaired())
+		{
+			return false;
+		}
 
 		//target exist?
 		aobj = GetObjectFromID(wp->ref_id, object_list);
-		if(!aobj) return false;
+		if(!aobj)
+		{
+			return false;
+		}
 
 		//can the target repair it?
-		if(!aobj->CanRepairUnit(obj->GetOwner())) return false;
+		if(!aobj->CanRepairUnit(obj->GetOwner()))
+		{
+			return false;
+		}
 		break;
 	case ENTER_FORT_WP:
 		//can move?
-		if(!obj->CanMove()) return false;
+		if(!obj->CanMove())
+		{
+			return false;
+		}
 
 		//target exist?
 		aobj = GetObjectFromID(wp->ref_id, object_list);
-		if(!aobj) return false;
+		if(!aobj)
+		{
+			return false;
+		}
 
 		//can we enter it?
-		if(!aobj->CanEnterFort(obj->GetOwner())) return false;
+		if(!aobj->CanEnterFort(obj->GetOwner()))
+		{
+			return false;
+		}
 
 		break;
 	case PICKUP_GRENADES_WP:
 		//can move?
-		if(!obj->CanMove()) return false;
+		if(!obj->CanMove())
+		{
+			return false;
+		}
 
 		//can pickup grenades?
-		if(!obj->CanPickupGrenades()) return false;
+		if(!obj->CanPickupGrenades())
+		{
+			return false;
+		}
 
 		//target exist?
 		aobj = GetObjectFromID(wp->ref_id, object_list);
-		if(!aobj) return false;
+		if(!aobj)
+		{
+			return false;
+		}
 
 		//is it grenades?
 		aobj->GetObjectID(aot, aoid);
-		if(!(aot == MAP_ITEM_OBJECT && aoid == GRENADES_ITEM)) return false;
+		if(!(aot == MAP_ITEM_OBJECT && aoid == GRENADES_ITEM))
+		{
+			return false;
+		}
 
 		break;
 	}
 
 	//bad mode?
-	if(wp->mode < 0 || wp->mode >= MAX_WAYPOINT_MODES) return false;
+	if(wp->mode < 0 || wp->mode >= MAX_WAYPOINT_MODES)
+	{
+		return false;
+	}
 
 	//should be good
 	return true;
@@ -356,7 +415,7 @@ bool ZCore::CreateObjectOk(unsigned char ot, unsigned char oid, int x, int y, in
 {
 	if(owner < 0 || owner >= MAX_TEAM_TYPES)
 	{
-		printf("CreateObjectOk:: invalid team:%d\n", owner);
+		spdlog::error("ZCore::CreateObjectOK - Invalid team {}", owner);
 		return false;
 	}
 
@@ -365,54 +424,66 @@ bool ZCore::CreateObjectOk(unsigned char ot, unsigned char oid, int x, int y, in
 
 void ZCore::ResetZoneOwnagePercentages(bool notify_players)
 {
-	int i;
-	int zone_ownage[MAX_TEAM_TYPES];
-	int zones;
-
 	//clear
-	zones = 0;
-	for(i=0;i<MAX_TEAM_TYPES;i++)
+	int zones = 0;
+	int zone_ownage[MAX_TEAM_TYPES];
+	for(int i=0;i<MAX_TEAM_TYPES;i++)
 	{
 		team_zone_percentage[i] = 0;
 		zone_ownage[i] = 0;
 	}
 
 	//tally
-	for(std::vector<ZObject*>::iterator of=object_list.begin(); of!=object_list.end(); of++)
+	for(ZObject* of : object_list)
 	{
 		unsigned char ot, oid;
+		of->GetObjectID(ot, oid);
 
-		(*of)->GetObjectID(ot, oid);
+		if(ot != MAP_ITEM_OBJECT || oid != FLAG_ITEM)
+		{
+			continue;
+		}
 
-		if(ot != MAP_ITEM_OBJECT || oid != FLAG_ITEM) continue;
-
-		zone_ownage[(*of)->GetOwner()]++;
+		zone_ownage[of->GetOwner()]++;
 		zones++;
 	}
 
 	//no flags?
-	if(!zones) return;
+	if(!zones)
+	{
+		return;
+	}
 
 	//percentage
-	for(i=0;i<MAX_TEAM_TYPES;i++)
-			team_zone_percentage[i] = 1.0 * zone_ownage[i] / zones;
+	for(int i=0;i<MAX_TEAM_TYPES;i++)
+	{
+		team_zone_percentage[i] = 1.0 * zone_ownage[i] / zones;
+	}
 
 	//tell all the buildings
-	for(std::vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
-		(*obj)->SetZoneOwnage(team_zone_percentage[(*obj)->GetOwner()]);
+	for(ZObject* obj : object_list)
+	{
+		obj->SetZoneOwnage(team_zone_percentage[obj->GetOwner()]);
+	}
 }
 
 int ZCore::VotesNeeded()
 {
 	int needed_power = 0;
 
-	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
-		if(i->vote_choice != P_PASS_VOTE)
-			needed_power += i->real_voting_power();
-			//needed_power += i->voting_power;
+	for(p_info i : player_info)
+	{
+		if(i.vote_choice != P_PASS_VOTE)
+		{
+			needed_power += i.real_voting_power();
+		}
+	}
 
 	//make an even number
-	if(needed_power % 2) needed_power++;
+	if(needed_power % 2)
+	{
+		needed_power++;
+	}
 
 	return needed_power / 2;
 }
@@ -421,10 +492,13 @@ int ZCore::VotesFor()
 {
 	int votes = 0;
 
-	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
-		if(i->vote_choice == P_YES_VOTE)
-			votes += i->real_voting_power();
-			//votes += i->voting_power;
+	for(p_info i : player_info)
+	{
+		if(i.vote_choice == P_YES_VOTE)
+		{
+			votes += i.real_voting_power();
+		}
+	}
 
 	return votes;
 }
@@ -433,37 +507,41 @@ int ZCore::VotesAgainst()
 {
 	int votes = 0;
 
-	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
-		if(i->vote_choice == P_NO_VOTE)
-			votes += i->real_voting_power();
-			//votes += i->voting_power;
+	for(p_info i : player_info)
+	{
+		if(i.vote_choice == P_NO_VOTE)
+		{
+			votes += i.real_voting_power();
+		}
+	}
 
 	return votes;
 }
 
 std::string ZCore::VoteAppendDescription()
 {
-	int vote_type;
-	int value;
-	char num_c[50];
-
-	vote_type = zvote.GetVoteType();
-	value = zvote.GetVoteValue();
+	int vote_type = zvote.GetVoteType();
+	int value = zvote.GetVoteValue();
 
 	switch(vote_type)
 	{
 	case CHANGE_MAP_VOTE:
-		if(value < 0) return "";
-		if(value >= selectable_map_list.size()) return "";
+		if((value < 0) || (value >= selectable_map_list.size()))
+		{
+			return "";
+		}
 
+		char num_c[50];
 		sprintf(num_c, "%d. ", value);
 
 		return num_c + selectable_map_list[value];
 		break;
 	case START_BOT:
 	case STOP_BOT:
-		if(value < 0) return "";
-		if(value >= MAX_TEAM_TYPES) return "";
+		if((value < 0) || (value >= MAX_TEAM_TYPES))
+		{
+			return "";
+		}
 
 		return team_type_string[value];
 		break;
@@ -474,7 +552,6 @@ std::string ZCore::VoteAppendDescription()
 
 void ZCore::CreateWaypointSendData(int ref_id, std::vector<waypoint> &waypoint_list, char* &data, int &size)
 {
-	std::vector<waypoint>::iterator j;
 	char *message;
 	int waypoint_amount = waypoint_list.size();
 
@@ -488,7 +565,7 @@ void ZCore::CreateWaypointSendData(int ref_id, std::vector<waypoint> &waypoint_l
 
 	//populate
 	message += 8;
-	for(j=waypoint_list.begin();j!=waypoint_list.end();j++)
+	for(std::vector<waypoint>::iterator j=waypoint_list.begin();j!=waypoint_list.end();j++)
 	{
 		memcpy(message, &(*j), sizeof(waypoint));
 		message += sizeof(waypoint);
@@ -497,44 +574,51 @@ void ZCore::CreateWaypointSendData(int ref_id, std::vector<waypoint> &waypoint_l
 
 ZObject* ZCore::ProcessWaypointData(char *data, int size, bool is_server, int ok_team)
 {
-	int expected_packet_size;
-	int waypoint_amount;
-	int ref_id;
-	ZObject *our_object;
-
 	//does it hold the header info?
-	if(size < 8) return NULL;
+	if(size < 8)
+	{
+		return NULL;
+	}
 
 	//get header
-	ref_id = ((int*)data)[0];
-	waypoint_amount = ((int*)data)[1];
-
-	expected_packet_size = 8 + (waypoint_amount * sizeof(waypoint));
+	int ref_id = ((int*)data)[0];
+	int waypoint_amount = ((int*)data)[1];
+	int expected_packet_size = 8 + (waypoint_amount * sizeof(waypoint));
 
 	//should we toss this packet for bad data?
-	if(size != expected_packet_size) return NULL;
+	if(size != expected_packet_size)
+	{
+		return NULL;
+	}
 
 	//find our object
-	our_object = GetObjectFromID(ref_id, object_list);
-
-	//not found?
-	if(!our_object) return NULL;
+	ZObject* our_object = GetObjectFromID(ref_id, object_list);
+	if(!our_object)
+	{
+		return NULL;
+	}
 
 	//ok team?
-	if(is_server && our_object->GetOwner() == NULL_TEAM) return NULL;
-	if(is_server && our_object->GetOwner() != ok_team) return NULL;
+	if(is_server && our_object->GetOwner() == NULL_TEAM)
+	{
+		return NULL;
+	}
+	if(is_server && our_object->GetOwner() != ok_team)
+	{
+		return NULL;
+	}
 
 	//can set waypoints?
-	if(is_server && !our_object->CanSetWaypoints()) return NULL;
-
-	//is this object currently doing a forced move wp?
-	//if(is_server && our_object->GetWayPointList().size() && our_object->GetWayPointList().begin()->mode == FORCE_MOVE_WP) return NULL;
-
-	//this a crane repair or forced move wp (or etc)?
-	//if(is_server && !our_object->CanOverwriteWP()) return NULL;
+	if(is_server && !our_object->CanSetWaypoints())
+	{
+		return NULL;
+	}
 
 	//is this object a minion?
-	if(is_server && our_object->IsMinion()) return NULL;
+	if(is_server && our_object->IsMinion())
+	{
+		return NULL;
+	}
 
 	//clear this objects waypoint list
 	if(is_server && !our_object->CanOverwriteWP())
@@ -543,14 +627,15 @@ ZObject* ZCore::ProcessWaypointData(char *data, int size, bool is_server, int ok
 		//write over it
 		if(our_object->GetWayPointList().size())
 		{
-			waypoint first_waypoint;
-			first_waypoint = *our_object->GetWayPointList().begin();
+			waypoint first_waypoint = *our_object->GetWayPointList().begin();
 			our_object->GetWayPointList().clear();
 			our_object->GetWayPointList().push_back(first_waypoint);
 		}
 	}
 	else
+	{
 		our_object->GetWayPointList().clear();
+	}
 
 	//begin the waypoint push
 	data += 8;
@@ -560,18 +645,12 @@ ZObject* ZCore::ProcessWaypointData(char *data, int size, bool is_server, int ok
 
 		memcpy(&new_waypoint, data, sizeof(waypoint));
 
-		//printf("ZServer:pushing waypoint... (%d,%d) id:%d mode:%d\n", new_waypoint.x, new_waypoint.y, new_waypoint.ref_id, new_waypoint.mode);
-
 		if(!is_server || CheckWaypoint(our_object, &new_waypoint))
+		{
 			our_object->GetWayPointList().push_back(new_waypoint);
+		}
 
 		data += sizeof(waypoint);
-	}
-
-	//do we need to clone the waypoints?
-	if(is_server)
-	{
-		
 	}
 
 	return our_object;
@@ -579,35 +658,45 @@ ZObject* ZCore::ProcessWaypointData(char *data, int size, bool is_server, int ok
 
 ZObject* ZCore::ProcessRallypointData(char *data, int size, bool is_server, int ok_team)
 {
-	int expected_packet_size;
-	int waypoint_amount;
-	int ref_id;
-	ZObject *our_object;
-
 	//does it hold the header info?
-	if(size < 8) return NULL;
+	if(size < 8)
+	{
+		return NULL;
+	}
 
 	//get header
-	ref_id = ((int*)data)[0];
-	waypoint_amount = ((int*)data)[1];
-
-	expected_packet_size = 8 + (waypoint_amount * sizeof(waypoint));
+	int ref_id = ((int*)data)[0];
+	int waypoint_amount = ((int*)data)[1];
 
 	//should we toss this packet for bad data?
-	if(size != expected_packet_size) return NULL;
+	int expected_packet_size = 8 + (waypoint_amount * sizeof(waypoint));
+	if(size != expected_packet_size)
+	{
+		return NULL;
+	}
 
 	//find our object
-	our_object = GetObjectFromID(ref_id, object_list);
-
-	//not found?
-	if(!our_object) return NULL;
+	ZObject* our_object = GetObjectFromID(ref_id, object_list);
+	if(!our_object)
+	{
+		return NULL;
+	}
 
 	//ok team?
-	if(is_server && our_object->GetOwner() == NULL_TEAM) return NULL;
-	if(is_server && our_object->GetOwner() != ok_team) return NULL;
+	if(is_server && our_object->GetOwner() == NULL_TEAM)
+	{
+		return NULL;
+	}
+	if(is_server && our_object->GetOwner() != ok_team)
+	{
+		return NULL;
+	}
 
 	//can set rallypoints?
-	if(!our_object->CanSetRallypoints()) return NULL;
+	if(!our_object->CanSetRallypoints())
+	{
+		return NULL;
+	}
 
 	//clear
 	our_object->GetRallyPointList().clear();
@@ -621,7 +710,9 @@ ZObject* ZCore::ProcessRallypointData(char *data, int size, bool is_server, int 
 		memcpy(&new_waypoint, data, sizeof(waypoint));
 
 		if(!is_server || CheckRallypoint(our_object, &new_waypoint))
+		{
 			our_object->GetRallyPointList().push_back(new_waypoint);
+		}
 
 		data += sizeof(waypoint);
 	}
@@ -635,76 +726,134 @@ void ZCore::DeleteObjectCleanUp(ZObject *obj)
 }
 
 bool ZCore::CannonPlacable(ZObject *building_obj, int tx, int ty)
-{
-	int x, y, right, bottom;
-	
-	if(!building_obj) return false;
+{	
+	if(!building_obj)
+	{
+		return false;
+	}
 
-	x = tx * 16;
-	y = ty * 16;
-	right = x + 32;
-	bottom = y + 32;
+	int x = tx * 16;
+	int y = ty * 16;
+	int right = x + 32;
+	int bottom = y + 32;
 
 	//within the map at all?
-	if(tx < 0) return false;
-	if(ty < 0) return false;
-	if(tx+1 >= zmap.GetMapBasics().width) return false;
-	if(ty+1 >= zmap.GetMapBasics().height) return false;
+	if(tx < 0)
+	{
+		return false;
+	}
+	if(ty < 0)
+	{
+		return false;
+	}
+	if(tx+1 >= zmap.GetMapBasics().width)
+	{
+		return false;
+	}
+	if(ty+1 >= zmap.GetMapBasics().height)
+	{
+		return false;
+	}
 
 	//it within the zone? (is there a zone?)
-	if(!building_obj->GetConnectedZone()) return false;
-	if(x < building_obj->GetConnectedZone()->x + 16) return false;
-	if(y < building_obj->GetConnectedZone()->y + 16) return false;
-	if(x + 32 > building_obj->GetConnectedZone()->x + building_obj->GetConnectedZone()->w - 16) return false;
-	if(y + 32 > building_obj->GetConnectedZone()->y + building_obj->GetConnectedZone()->h - 16) return false;
+	if(!building_obj->GetConnectedZone())
+	{
+		return false;
+	}
+	if(x < building_obj->GetConnectedZone()->x + 16)
+	{
+		return false;
+	}
+	if(y < building_obj->GetConnectedZone()->y + 16)
+	{
+		return false;
+	}
+	if(x + 32 > building_obj->GetConnectedZone()->x + building_obj->GetConnectedZone()->w - 16)
+	{
+		return false;
+	}
+	if(y + 32 > building_obj->GetConnectedZone()->y + building_obj->GetConnectedZone()->h - 16)
+	{
+		return false;
+	}
 
 	//it over lap any particular objects like buildings or other cannons?
-	for(std::vector<ZObject*>::iterator i=object_list.begin();i!=object_list.end();i++)
+	for(ZObject* i : object_list)
 	{
 		unsigned char ot, oid;
+		i->GetObjectID(ot, oid);
 
-		(*i)->GetObjectID(ot, oid);
+		if((ot == VEHICLE_OBJECT) || (ot == ROBOT_OBJECT))
+		{
+			continue;
+		}
 
-		if(ot == VEHICLE_OBJECT) continue;
-		if(ot == ROBOT_OBJECT) continue;
-
-		//if((*i)->WithinSelection(x, right, y, bottom)) return false;
-		if((*i)->CannonNotPlacable(x, right, y, bottom)) return false;
+		if(i->CannonNotPlacable(x, right, y, bottom))
+		{
+			return false;
+		}
 	}
 
 	//is it all over good terrain?
 	planet_type tt = (planet_type)zmap.GetMapBasics().terrain_type;
-	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y).tile).is_water) return false;
-	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y+16).tile).is_water) return false;
-	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y).tile).is_water) return false;
-	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y+16).tile).is_water) return false;
+	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y).tile).is_water)
+	{
+		return false;
+	}
+	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y+16).tile).is_water)
+	{
+		return false;
+	}
+	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y).tile).is_water)
+	{
+		return false;
+	}
+	if(zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y+16).tile).is_water)
+	{
+		return false;
+	}
 
-	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y).tile).is_passable) return false;
-	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y+16).tile).is_passable) return false;
-	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y).tile).is_passable) return false;
-	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y+16).tile).is_passable) return false;
+	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y).tile).is_passable)
+	{
+		return false;
+	}
+	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x,y+16).tile).is_passable)
+	{
+		return false;
+	}
+	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y).tile).is_passable)
+	{
+		return false;
+	}
+	if(!zmap.GetMapPaletteTileInfo(tt, zmap.GetTile(x+16,y+16).tile).is_passable)
+	{
+		return false;
+	}
 
 	return true;
 }
 
 bool ZCore::AreaIsFortTurret(int tx, int ty)
 {
-	int x, y, right, bottom;
+	int x = tx * 16;
+	int y = ty * 16;
+	int right = x + 32;
+	int bottom = y + 32;
 
-	x = tx * 16;
-	y = ty * 16;
-	right = x + 32;
-	bottom = y + 32;
-
-	for(std::vector<ZObject*>::iterator i=object_list.begin();i!=object_list.end();i++)
+	for(ZObject* i : object_list)
 	{
 		unsigned char ot, oid;
+		i->GetObjectID(ot, oid);
 
-		(*i)->GetObjectID(ot, oid);
+		if(!(ot == BUILDING_OBJECT && (oid == FORT_FRONT || oid == FORT_BACK)))
+		{
+			continue;
+		}
 
-		if(!(ot == BUILDING_OBJECT && (oid == FORT_FRONT || oid == FORT_BACK))) continue;
-
-		if((*i)->WithinSelection(x, right, y, bottom) && !(*i)->CannonNotPlacable(x, right, y, bottom)) return true;
+		if(i->WithinSelection(x, right, y, bottom) && !i->CannonNotPlacable(x, right, y, bottom))
+		{
+			return true;
+		}
 	}
 
 	return false;
@@ -712,9 +861,7 @@ bool ZCore::AreaIsFortTurret(int tx, int ty)
 
 void ZCore::ResetUnitLimitReached()
 {
-	int i;
-
-	for(i=0;i<MAX_TEAM_TYPES;i++)
+	for(int i=0;i<MAX_TEAM_TYPES;i++)
 	{
 		unit_limit_reached[i] = false;
 		team_units_available[i] = 0;
@@ -723,25 +870,28 @@ void ZCore::ResetUnitLimitReached()
 
 bool ZCore::CheckUnitLimitReached()
 {
-	int i;
 	bool change_made = false;
 
 	//clear
-	for(i=0;i<MAX_TEAM_TYPES;i++)
-		team_units_available[i] = 0;
-
-	for(std::vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
+	for(int i=0;i<MAX_TEAM_TYPES;i++)
 	{
-		unsigned char ot, oid;
-		
-		(*obj)->GetObjectID(ot, oid);
-
-		if(!(ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT || ot == CANNON_OBJECT)) continue;
-
-		team_units_available[(*obj)->GetOwner()]++;
+		team_units_available[i] = 0;
 	}
 
-	for(i=1;i<MAX_TEAM_TYPES;i++)
+	for(ZObject* obj : object_list)
+	{
+		unsigned char ot, oid;
+		obj->GetObjectID(ot, oid);
+
+		if(!(ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT || ot == CANNON_OBJECT))
+		{
+			continue;
+		}
+
+		team_units_available[obj->GetOwner()]++;
+	}
+
+	for(int i=1;i<MAX_TEAM_TYPES;i++)
 	{
 		if(team_units_available[i] >= max_units_per_team)
 		{
