@@ -1,5 +1,7 @@
 #include "zserver.h"
 
+#include <spdlog/spdlog.h>
+
 using namespace COMMON;
 
 void ParseCommandContents(std::string contents, std::string *output, int max_values)
@@ -7,93 +9,136 @@ void ParseCommandContents(std::string contents, std::string *output, int max_val
 	unsigned int pos = 0;
 	unsigned int last_pos = 0;
 
-	printf("contents:'%s'\n", contents.c_str());
-
 	//clear
-	for(int i=0; i<max_values; i++) output[i].clear();
+	for(int i=0; i<max_values; i++)
+	{
+		output[i].clear();
+	}
 
 	//pack
 	for(int i=0; i<max_values; i++)
 	{
 		pos = contents.find(',', last_pos);
-
 		if(pos == std::string::npos)
-			output[i] = contents.substr(last_pos);
-		else
-			output[i] = contents.substr(last_pos, pos - last_pos);
-
-		//remove all initial spaces
 		{
-			unsigned int cpos;
-
-			cpos = output[i].find_first_not_of(' ');
-
-			if(cpos == std::string::npos)
-				output[i].clear();
-			else if(cpos != 0)
-				output[i] = output[i].substr(cpos);
+			output[i] = contents.substr(last_pos);
+		}
+		else
+		{
+			output[i] = contents.substr(last_pos, pos - last_pos);
 		}
 
-		printf("output[%d]:'%s' pos:%d\n", i, output[i].c_str(), pos);
+		//remove all initial spaces
+		unsigned int cpos = output[i].find_first_not_of(' ');
+		if(cpos == std::string::npos)
+		{
+			output[i].clear();
+		}
+		else if(cpos != 0)
+		{
+			output[i] = output[i].substr(cpos);
+		}
 
 		last_pos = pos;
 		last_pos++;
 
-		if(pos == std::string::npos) break;
+		if(pos == std::string::npos)
+		{
+			break;
+		}
 	}
 }
 
 void ZServer::ProcessPlayerCommand(int player, std::string full_command)
 {
-	std::string command, contents;
-	unsigned int pos;
-
-	pos = full_command.find(' ');
-	command = full_command.substr(0, pos);
-	if(pos != std::string::npos) contents = full_command.substr(pos+1);
+	unsigned int pos = full_command.find(' ');
+	std::string command = full_command.substr(0, pos);
+	std::string contents;
+	if(pos != std::string::npos)
+	{
+		contents = full_command.substr(pos+1);
+	}
 
 	if(command == "help")
+	{
 		PlayerCommand_Help(player, contents);
+	}
 	else if(command == "listcommands")
+	{
 		PlayerCommand_ListCommands(player, contents);
+	}
 	else if(command == "login")
+	{
 		PlayerCommand_Login(player, contents);
+	}
 	else if(command == "logout")
+	{
 		PlayerCommand_Logout(player, contents);
+	}
 	else if(command == "createuser")
+	{
 		PlayerCommand_CreateUser(player, contents);
+	}
 	else if(command == "pause")
+	{
 		PlayerCommand_PauseGame(player, contents);
+	}
 	else if(command == "resume")
+	{
 		PlayerCommand_ResumeGame(player, contents);
+	}
 	else if(command == "listmaps")
+	{
 		PlayerCommand_ListMaps(player, contents);
+	}
 	else if(command == "changemap")
+	{
 		PlayerCommand_ChangeMap(player, contents);
+	}
 	else if(command == "startbot")
+	{
 		PlayerCommand_StartBot(player, contents);
+	}
 	else if(command == "stopbot")
+	{
 		PlayerCommand_StopBot(player, contents);
+	}
 	else if(command == "playerinfo")
+	{
 		PlayerCommand_PlayerInfo(player, contents);
+	}
 	else if(command == "currentmap")
+	{
 		PlayerCommand_CurrentMap(player, contents);
+	}
 	else if(command == "resetgame")
+	{
 		PlayerCommand_ResetGame(player, contents);
+	}
 	else if(command == "changeteam")
+	{
 		PlayerCommand_ChangeTeam(player, contents);
+	}
 	else if(command == "reshuffleteams")
+	{
 		PlayerCommand_ReshuffleTeams(player, contents);
+	}
 	else if(command == "buyregistration")
+	{
 		PlayerCommand_BuyRegistration(player, contents);
+	}
 	else if(command == "changespeed")
+	{
 		PlayerCommand_ChangeSpeed(player, contents);
+	}
 	else if(command == "version")
+	{
 		PlayerCommand_Version(player, contents);
+	}
 	else
+	{
 		PlayerCommand_NotFound(player, contents);
-
-	printf("processing full_command:'%s' command:'%s'\n", full_command.c_str(), command.c_str());
+	}
 }
 
 void ZServer::PlayerCommand_NotFound(int player, std::string contents)
@@ -215,11 +260,13 @@ void ZServer::PlayerCommand_Login(int player, std::string contents)
 	ParseCommandContents(contents, values, max_values);
 
 	for(int i=0;i<max_values;i++)
+	{
 		if(!values[i].length())
 		{
 			SendNews(player, "command error: invalid input(s)", 0, 0, 0);
 			return;
 		}
+	}
 
 	AttemptPlayerLogin(player, values[0], values[1]);
 }
@@ -237,11 +284,13 @@ void ZServer::PlayerCommand_CreateUser(int player, std::string contents)
 	ParseCommandContents(contents, values, max_values);
 
 	for(int i=0;i<max_values;i++)
+	{
 		if(!values[i].length())
 		{
 			SendNews(player, "command error: invalid input(s)", 0, 0, 0);
 			return;
 		}
+	}
 
 	AttemptCreateUser(player, values[0], values[1], values[2], values[3]);
 	return;
@@ -261,91 +310,85 @@ void ZServer::PlayerCommand_CreateUser(int player, std::string contents)
 		return;
 	}
 
-	if(psettings.use_mysql)
+	if(!psettings.use_mysql)
 	{
-		ZMysqlUser user;
-		std::string err_msg;
-
-		user.username = values[0];
-		user.loginname = values[1];
-		user.password = values[2];
-		user.email = values[3];
-
-		user.creation_time = time(0);
-		user.creation_ip = player_info[player].ip;
-
-		if(!user.format_okay())
-		{
-			char message[500];
-
-			sprintf(message, "create user error: only alphanumeric characters and entries under %d characters long allowed", MAX_PLAYER_NAME_SIZE);
-			SendNews(player, message, 0, 0, 0);
-
-			return;
-		}
-
-		bool user_exists;
-		if(!zmysql.CheckUserExistance(err_msg, user, user_exists))
-		{
-			printf("mysql error: %s\n", err_msg.c_str());
-
-			SendNews(player, "create user error: error with the user database", 0, 0, 0);
-		}
-		else
-		{
-			if(user_exists)
-			{
-				SendNews(player, "create user error: user already exists", 0, 0, 0);
-			}
-			else
-			{
-				bool user_added;
-
-				if(!zmysql.AddUser(err_msg, user, user_added))
-				{
-					printf("mysql error: %s\n", err_msg.c_str());
-
-					SendNews(player, "create user error: error with the user database", 0, 0, 0);
-				}
-				else
-				{
-					if(user_added)
-					{
-						AwardAffiliateCreation(user.creation_ip);
-
-						SendNews(player, std::string("user " + user.username + " created").c_str(), 0, 0, 0);
-					}
-					else
-						SendNews(player, "create user error: unknown error", 0, 0, 0);
-				}
-			}
-		}
+		return;
 	}
+
+	ZMysqlUser user;
+	user.username = values[0];
+	user.loginname = values[1];
+	user.password = values[2];
+	user.email = values[3];
+	user.creation_time = time(0);
+	user.creation_ip = player_info[player].ip;
+
+	if(!user.format_okay())
+	{
+		char message[500];
+
+		sprintf(message, "create user error: only alphanumeric characters and entries under %d characters long allowed", MAX_PLAYER_NAME_SIZE);
+		SendNews(player, message, 0, 0, 0);
+
+		return;
+	}
+
+	std::string err_msg;
+	bool user_exists;
+	if(!zmysql.CheckUserExistance(err_msg, user, user_exists))
+	{
+		spdlog::error("ZServer::PlayerCommand_CreateUser - MySQL Error - {}", err_msg);
+		SendNews(player, "create user error: error with the user database", 0, 0, 0);
+		return;
+	}
+
+	if(user_exists)
+	{
+		SendNews(player, "create user error: user already exists", 0, 0, 0);
+		return;
+	}
+	
+	bool user_added;
+	if(!zmysql.AddUser(err_msg, user, user_added))
+	{
+		spdlog::error("ZServer::PlayerCommand_CreateUser - MySQL Error - {}", err_msg);
+		SendNews(player, "create user error: error with the user database", 0, 0, 0);
+		return;
+	}
+
+	if(!user_added)
+	{
+		SendNews(player, "create user error: unknown error", 0, 0, 0);
+		return;
+	}
+
+	AwardAffiliateCreation(user.creation_ip);
+	SendNews(player, std::string("user " + user.username + " created").c_str(), 0, 0, 0);
 }
 
 void ZServer::PlayerCommand_PauseGame(int player, std::string contents)
 {
-	if(ztime.IsPaused()) return;
+	if(ztime.IsPaused())
+	{
+		return;
+	}
 
 	StartVote(PAUSE_VOTE, -1, player);
-
-	//PauseGame();
 }
 
 void ZServer::PlayerCommand_ResumeGame(int player, std::string contents)
 {
-	if(!ztime.IsPaused()) return;
+	if(!ztime.IsPaused())
+	{
+		return;
+	}
 
 	StartVote(RESUME_VOTE, -1, player);
-
-	//ResumeGame();
 }
 
 void ZServer::PlayerCommand_ListMaps(int player, std::string contents)
 {
-	int i;
-
-	for(i=0; i<selectable_map_list.size();)
+	for(int i=0; i<selectable_map_list.size();)
 	{
 		std::string send_str;
 
@@ -356,7 +399,9 @@ void ZServer::PlayerCommand_ListMaps(int player, std::string contents)
 			sprintf(num_c, "%d. ", i);
 
 			if(send_str.length())
+			{
 				send_str += ", ";
+			}
 
 			send_str += num_c + selectable_map_list[i];
 		}
@@ -375,15 +420,15 @@ void ZServer::PlayerCommand_ChangeMap(int player, std::string contents)
 	ParseCommandContents(contents, values, max_values);
 
 	for(int i=0;i<max_values;i++)
+	{
 		if(!values[i].length())
 		{
 			SendNews(player, "command error: invalid input(s)", 0, 0, 0);
 			return;
 		}
+	}
 
-	int map_num;
-
-	map_num = atoi(values[0].c_str());
+	int map_num = atoi(values[0].c_str());
 
 	StartVote(CHANGE_MAP_VOTE, map_num, player);
 }
@@ -396,31 +441,36 @@ void ZServer::PlayerCommand_StartBot(int player, std::string contents)
 	ParseCommandContents(contents, values, max_values);
 
 	for(int i=0;i<max_values;i++)
+	{
 		if(!values[i].length())
 		{
 			SendNews(player, "command error: invalid input(s)", 0, 0, 0);
 			return;
 		}
+	}
 
 	int team_num = -1;
 
 	for(int i=0;i<MAX_TEAM_TYPES;i++)
+	{
 		if(team_type_string[i] == values[0])
 		{
 			team_num = i;
 			break;
 		}
+	}
 
-	if(team_num == -1 || team_num==NULL_TEAM)// || !TeamHasBot(team_num))
+	if(team_num == -1 || team_num==NULL_TEAM)
 	{
 		std::string available_teams;
 		std::string send_str;
 
 		for(int i=NULL_TEAM+1;i<MAX_TEAM_TYPES;i++)
-			//if(TeamHasBot(i))
 		{
 			if(available_teams.length())
+			{
 				available_teams += ", ";
+			}
 
 			available_teams += team_type_string[i];
 		}
@@ -442,20 +492,24 @@ void ZServer::PlayerCommand_StopBot(int player, std::string contents)
 	ParseCommandContents(contents, values, max_values);
 
 	for(int i=0;i<max_values;i++)
+	{
 		if(!values[i].length())
 		{
 			SendNews(player, "command error: invalid input(s)", 0, 0, 0);
 			return;
 		}
+	}
 
 	int team_num = -1;
 
 	for(int i=0;i<MAX_TEAM_TYPES;i++)
+	{
 		if(team_type_string[i] == values[0])
 		{
 			team_num = i;
 			break;
 		}
+	}
 
 	if(team_num == -1 || !TeamHasBot(team_num))
 	{
@@ -463,12 +517,16 @@ void ZServer::PlayerCommand_StopBot(int player, std::string contents)
 		std::string send_str;
 
 		for(int i=0;i<MAX_TEAM_TYPES;i++)
-			if(TeamHasBot(i))
 		{
-			if(available_teams.length())
-				available_teams += ", ";
+			if(TeamHasBot(i))
+			{
+				if(available_teams.length())
+				{
+					available_teams += ", ";
+				}
 
-			available_teams += team_type_string[i];
+				available_teams += team_type_string[i];
+			}
 		}
 
 		send_str = "start bot error: invalid team, available teams: " + available_teams;
@@ -482,46 +540,45 @@ void ZServer::PlayerCommand_StopBot(int player, std::string contents)
 
 void ZServer::PlayerCommand_PlayerInfo(int player, std::string contents)
 {
-	char num_str[50];
-	std::string send_str;
-
-	send_str = "player info: name: '" + player_info[player].name + "'";
+	std::string send_str = "player info: name: '" + player_info[player].name + "'";
 	SendNews(player, send_str.c_str(), 0, 0, 0);
 
 	send_str = "player info: team: " + team_type_string[player_info[player].team];
 	SendNews(player, send_str.c_str(), 0, 0, 0);
 
-	if(player_info[player].logged_in)
-	{
-		send_str = "player info: logged in: yes";
-		SendNews(player, send_str.c_str(), 0, 0, 0);
-		
-		if(player_info[player].activated)
-			send_str = "player info: activated: yes";
-		else
-			send_str = "player info: activated: yes";
-		SendNews(player, send_str.c_str(), 0, 0, 0);
-
-		sprintf(num_str, "%d", player_info[player].voting_power);
-		send_str = "player info: voting power: " + std::string(num_str);
-		SendNews(player, send_str.c_str(), 0, 0, 0);
-
-		sprintf(num_str, "%d", player_info[player].real_voting_power());
-		send_str = "player info: real voting power: " + std::string(num_str);
-		SendNews(player, send_str.c_str(), 0, 0, 0);
-	}
-	else
+	if(!player_info[player].logged_in)
 	{
 		send_str = "player info: logged in: no";
 		SendNews(player, send_str.c_str(), 0, 0, 0);
+		return;
 	}
+
+	send_str = "player info: logged in: yes";
+	SendNews(player, send_str.c_str(), 0, 0, 0);
+	
+	if(player_info[player].activated)
+	{
+		send_str = "player info: activated: yes";
+	}
+	else
+	{
+		send_str = "player info: activated: yes";
+	}
+	SendNews(player, send_str.c_str(), 0, 0, 0);
+
+	char num_str[50];
+	sprintf(num_str, "%d", player_info[player].voting_power);
+	send_str = "player info: voting power: " + std::string(num_str);
+	SendNews(player, send_str.c_str(), 0, 0, 0);
+
+	sprintf(num_str, "%d", player_info[player].real_voting_power());
+	send_str = "player info: real voting power: " + std::string(num_str);
+	SendNews(player, send_str.c_str(), 0, 0, 0);
 }
 
 void ZServer::PlayerCommand_CurrentMap(int player, std::string contents)
 {
-	std::string send_str;
-
-	send_str = "current map: " + map_name;
+	std::string send_str = "current map: " + map_name;
 	SendNews(player, send_str.c_str(), 0, 0, 0);
 }
 
@@ -539,20 +596,24 @@ void ZServer::PlayerCommand_ChangeTeam(int player, std::string contents)
 	ParseCommandContents(contents, values, max_values);
 
 	for(int i=0;i<max_values;i++)
+	{
 		if(!values[i].length())
 		{
 			SendNews(player, "command error: invalid input(s)", 0, 0, 0);
 			return;
 		}
+	}
 
 	int team_num = -1;
 
 	for(int i=0;i<MAX_TEAM_TYPES;i++)
+	{
 		if(team_type_string[i] == values[0])
 		{
 			team_num = i;
 			break;
 		}
+	}
 
 	if(team_num == -1)
 	{
@@ -600,39 +661,20 @@ void ZServer::PlayerCommand_ChangeSpeed(int player, std::string contents)
 	ParseCommandContents(contents, values, max_values);
 
 	for(int i=0;i<max_values;i++)
+	{
 		if(!values[i].length())
 		{
 			SendNews(player, "command error: invalid input(s)", 0, 0, 0);
 			return;
 		}
+	}
 
 	new_speed = atoi(values[0].c_str());
 
-	//if(!psettings.allow_game_speed_change)
-	//{
-	//	SendNews(player, "changing the game speed is not allowed on this server", 0, 0, 0);
-	//	return;
-	//}
-
-	//if(!new_speed || new_speed < 0)
-	//{
-	//	SendNews(player, "new game speed must be above zero", 0, 0, 0);
-	//	return;
-	//}
-
 	StartVote(CHANGE_GAME_SPEED, new_speed, player);
-
-	//ChangeGameSpeed(new_speed / 100.0);
 }
 
 void ZServer::PlayerCommand_Version(int player, std::string contents)
 {
-	//string version_str;
-
-	//version_str = "the server version is ";
-	//version_str += GAME_VERSION;
-
-	//SendNews(player, version_str.c_str(), 0, 0, 0);
-
 	RelayVersion(player);
 }
