@@ -1,6 +1,10 @@
 #include "zbuilding.h"
 #include "zfont_engine.h"
 
+#include "Util/Random.h"
+
+#include <spdlog/spdlog.h>
+
 ZSDL_Surface ZBuilding::level_img[MAX_BUILDING_LEVELS];
 ZSDL_Surface ZBuilding::exhaust[13];
 ZSDL_Surface ZBuilding::little_exhaust[4];
@@ -41,48 +45,52 @@ ZBuilding::ZBuilding(ZTime *ztime_, ZSettings *zsettings_, planet_type palette_)
 	max_effects = 8;
 
 	show_time = -1;
-	//show_time_img = NULL;
 }
 
 ZBuilding::~ZBuilding()
 {
 	//no memory leaks
 	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.begin(); i++)
+	{
 		delete *i;
+	}
 
 	extra_effects.clear();
 }
 
 void ZBuilding::Init()
 {
-	int i;
 	char filename[500];
 	
-	for(i=0;i<MAX_BUILDING_LEVELS;i++)
+	for(int i=0;i<MAX_BUILDING_LEVELS;i++)
 	{
 		sprintf(filename, "assets/buildings/level_%d.bmp", i+1);
-		level_img[i].LoadBaseImage(filename);// = IMG_Load_Error(filename);
+		level_img[i].LoadBaseImage(filename);
 	}
 	
-	for(i=0;i<13;i++)
+	for(int i=0;i<13;i++)
 	{
 		sprintf(filename, "assets/buildings/exhaust_%d.png", i);
-		exhaust[i].LoadBaseImage(filename);// = IMG_Load_Error(filename);
+		exhaust[i].LoadBaseImage(filename);
 	}
 	
-	for(i=0;i<4;i++)
+	for(int i=0;i<4;i++)
 	{
 		sprintf(filename, "assets/buildings/little_exhaust_%d.png", i);
-		little_exhaust[i].LoadBaseImage(filename);// = IMG_Load_Error(filename);
+		little_exhaust[i].LoadBaseImage(filename);
 	}
 }
 
 int ZBuilding::GetBuildState()
 {
 	if(unit_limit_reached[owner])
+	{
 		return BUILDING_PAUSED;
+	}
 	else
+	{
 		return build_state;
+	}
 }
 
 int ZBuilding::GetLevel()
@@ -106,29 +114,43 @@ bool ZBuilding::SetBuildingDefaultProduction()
 
 	if(bot == (unsigned char)-1 && boid == (unsigned char)-1 && build_state == BUILDING_SELECT)
 	{
-		if(buildlist->GetFirstUnitInBuildList(object_id, level, ot, oid))
-			return SetBuildingProduction(ot, oid);
-		else
+		if(!buildlist->GetFirstUnitInBuildList(object_id, level, ot, oid))
+		{
 			return false;
+		}
+
+		return SetBuildingProduction(ot, oid);
 	}
 	else
+	{
 		return false;
+	}
 }
 
 bool ZBuilding::SetBuildingProduction(unsigned char ot, unsigned char oid)
 {
-	double &the_time = ztime->ztime;
-
-	if(owner == NULL_TEAM) return false;
+	if(owner == NULL_TEAM)
+	{
+		return false;
+	}
 
 	//produces units?
-	if(!ProducesUnits()) return false;
+	if(!ProducesUnits())
+	{
+		return false;
+	}
 
 	//we already building it?
-	if(ot == bot && oid == boid) return false;
+	if(ot == bot && oid == boid)
+	{
+		return false;
+	}
 
 	//is this unit available to be produced here?
-	if(!buildlist->UnitInBuildList(object_id, level, ot, oid)) return false;
+	if(!buildlist->UnitInBuildList(object_id, level, ot, oid))
+	{
+		return false;
+	}
 
 	//set this building to be producing this unit
 	//with the correct building time
@@ -136,54 +158,85 @@ bool ZBuilding::SetBuildingProduction(unsigned char ot, unsigned char oid)
 	boid = oid;
 
 	build_state = BUILDING_BUILDING;
+	double &the_time = ztime->ztime;
 	binit_time = the_time;
 	RecalcBuildTime();
-	//bfinal_time = binit_time + buildlist->UnitBuildTime(bot, boid);
 
 	//add to queue list?
-	if(!queue_list.size()) AddBuildingQueue(ot, oid);
+	if(!queue_list.size())
+	{
+		AddBuildingQueue(ot, oid);
+	}
 
 	return true;
 }
 
 bool ZBuilding::AddBuildingQueue(unsigned char ot, unsigned char oid, bool push_to_front)
 {
-	if(owner == NULL_TEAM) return false;
+	if(owner == NULL_TEAM)
+	{
+		return false;
+	}
 
 	//produces units?
-	if(!ProducesUnits()) return false;
+	if(!ProducesUnits())
+	{
+		return false;
+	}
 
 	//already maxed out?
-	if(queue_list.size() >= MAX_QUEUE_ITEMS) return false;
+	if(queue_list.size() >= MAX_QUEUE_ITEMS)
+	{
+		return false;
+	}
 
 	//is this unit available to be produced here?
-	if(!buildlist->UnitInBuildList(object_id, level, ot, oid)) return false;
-
-	//printf("ZBuilding::AddBuildingQueue::adding %d %d\n", ot, oid);
+	if(!buildlist->UnitInBuildList(object_id, level, ot, oid))
+	{
+		return false;
+	}
 
 	//add it..
 	if(push_to_front)
+	{
 		queue_list.insert(queue_list.begin(), ZBProductionUnit(ot, oid));
+	}
 	else
+	{
 		queue_list.push_back(ZBProductionUnit(ot, oid));
+	}
 
 	return true;
 }
 
 bool ZBuilding::CancelBuildingQueue(int list_i, unsigned char ot, unsigned char oid)
 {
-	if(owner == NULL_TEAM) return false;
+	if(owner == NULL_TEAM)
+	{
+		return false;
+	}
 
 	//produces units?
-	if(!ProducesUnits()) return false;
+	if(!ProducesUnits())
+	{
+		return false;
+	}
 
 	//list_i ok?
-	if(list_i<0) return false;
-	if(list_i>=queue_list.size()) return false;
+	if(list_i<0)
+	{
+		return false;
+	}
+	if(list_i>=queue_list.size())
+	{
+		return false;
+	}
 
 	//ot and oid match?
-	if(ot != queue_list[list_i].ot) return false;
-	if(oid != queue_list[list_i].oid) return false;
+	if((ot != queue_list[list_i].ot) || (oid != queue_list[list_i].oid))
+	{
+		return false;
+	}
 
 	//erase it
 	queue_list.erase(queue_list.begin() + list_i);
@@ -193,18 +246,19 @@ bool ZBuilding::CancelBuildingQueue(int list_i, unsigned char ot, unsigned char 
 
 void ZBuilding::CreateBuildingQueueData(char *&data, int &size)
 {
-	int queue_amount;
-	char *message;
-
 	data = NULL;
 	size = 0;
 
 	//produces units?
-	if(!ProducesUnits()) return;
+	if(!ProducesUnits())
+	{
+		return;
+	}
 
-	queue_amount = queue_list.size();
+	int queue_amount = queue_list.size();
 
 	//make mem
+	char* message;
 	size = 8 + (queue_amount * sizeof(ZBProductionUnit));
 	data = message = (char*)malloc(size);
 
@@ -214,9 +268,9 @@ void ZBuilding::CreateBuildingQueueData(char *&data, int &size)
 
 	//populate
 	message += 8;
-	for(std::vector<ZBProductionUnit>::iterator j=queue_list.begin(); j!=queue_list.end();j++)
+	for(ZBProductionUnit j : queue_list)
 	{
-		memcpy(message, &(*j), sizeof(ZBProductionUnit));
+		memcpy(message, &j, sizeof(ZBProductionUnit));
 		message += sizeof(ZBProductionUnit);
 	}
 }
@@ -228,10 +282,16 @@ void ZBuilding::ProcessBuildingQueueData(char *data, int size)
 	int data_ref_id;
 
 	//produces units?
-	if(!ProducesUnits()) return;
+	if(!ProducesUnits())
+	{
+		return;
+	}
 
 	//does it hold the header info?
-	if(size < 8) return;
+	if(size < 8)
+	{
+		return;
+	}
 
 	//get header
 	data_ref_id = ((int*)data)[0];
@@ -240,12 +300,15 @@ void ZBuilding::ProcessBuildingQueueData(char *data, int size)
 	expected_packet_size = 8 + (queue_amount * sizeof(ZBProductionUnit));
 
 	//should we toss this bad data?
-	if(size != expected_packet_size) return;
+	if(size != expected_packet_size)
+	{
+		return;
+	}
 
 	//not our ref_id... ?
 	if(ref_id != data_ref_id)
 	{
-		printf("ZBuilding::ProcessBuildingQueueData::ref_id's do not match %d vs %d\n", ref_id, data_ref_id);
+		spdlog::error("ZBuilding::ProcessBuildingQueueData - ref_id's do not match  - {} vs {}", ref_id, data_ref_id);
 		return;
 	}
 
@@ -262,28 +325,30 @@ void ZBuilding::ProcessBuildingQueueData(char *data, int size)
 
 		//add
 		if(!AddBuildingQueue(new_unit.ot, new_unit.oid, false))
-			printf("ZBuilding::ProcessBuildingQueueData::could not add unit %d:%d %d\n", i, new_unit.ot, new_unit.oid);
+		{
+			spdlog::error("ZBuilding::ProcessBuildingQueueData - Could not add unit {}:{} {}", i, new_unit.ot, new_unit.oid);
+		}
 
 		data += sizeof(ZBProductionUnit);
 	}
-
-	//debug
-	//printf("ZBuilding::ProcessBuildingQueueData::queue list now %d:", queue_list.size());
-	//for(vector<ZBProductionUnit>::iterator j=queue_list.begin(); j!=queue_list.end();j++)
-	//	printf("%d %d, ", j->ot, j->oid);
-	//printf("\n");
 }
 
 bool ZBuilding::StopBuildingProduction(bool clear_queue_list)
 {
-	if(bot == (unsigned char)-1 && boid == (unsigned char)-1 && build_state == BUILDING_SELECT) return false;
+	if(bot == (unsigned char)-1 && boid == (unsigned char)-1 && build_state == BUILDING_SELECT)
+	{
+		return false;
+	}
 
 	build_state = BUILDING_SELECT;
 	bot = -1;
 	boid = -1;
 
 	//also clear the queue_list
-	if(clear_queue_list) queue_list.clear();
+	if(clear_queue_list)
+	{
+		queue_list.clear();
+	}
 
 	return true;
 }
@@ -299,28 +364,30 @@ void ZBuilding::CreateBuiltCannonData(char *&data, int &size)
 	for(int i=0;i<built_cannon_list.size();i++)
 	{
 		*(char*)(data + 8 + i) = built_cannon_list[i];
-		//printf("storing cannon:%d\n", built_cannon_list[i]);
 	}
 }
 
 void ZBuilding::ProcessSetBuiltCannonData(char *data, int size)
 {
-	int cannon_amt;
+	//bad data?
+	if(size < 8)
+	{
+		return;
+	}
+
+	int cannon_amt = *(int*)(data + 4);
 
 	//bad data?
-	if(size < 8) return;
-
-	cannon_amt = *(int*)(data + 4);
-
-	//bad data?
-	if(size - 8 != cannon_amt) return;
+	if(size - 8 != cannon_amt)
+	{
+		return;
+	}
 
 	//set cannon placement list
 	built_cannon_list.clear();
 	for(int i=0;i<cannon_amt;i++)
 	{
 		built_cannon_list.push_back(*(unsigned char*)(data + 8 + i));
-		//printf("client cannon:%d\n", built_cannon_list[i]);
 	}
 }
 
@@ -345,13 +412,18 @@ void ZBuilding::ProcessSetBuildingStateData(char *data, int size)
 {
 	double &the_time = ztime->ztime;
 
+	//good packet?
+	if(size != sizeof(set_building_state_packet))
+	{
+		return;
+	}
 	set_building_state_packet *pi = (set_building_state_packet*)data;
 
-	//good packet?
-	if(size != sizeof(set_building_state_packet)) return;
-
 	//haha.
-	if(ref_id != pi->ref_id) return;
+	if(ref_id != pi->ref_id)
+	{
+		return;
+	}
 
 	build_state = pi->state;
 	bot = pi->ot;
@@ -363,23 +435,28 @@ void ZBuilding::ProcessSetBuildingStateData(char *data, int size)
 
 double ZBuilding::PercentageProduced(double &the_time)
 {
-	double the_percentage;
+	double the_percentage = (the_time - binit_time) / (bfinal_time - binit_time);
 
-	the_percentage = (the_time - binit_time) / (bfinal_time - binit_time);
-
-	if(the_percentage < 0) the_percentage = 0;
-	if(the_percentage > 1) the_percentage = 1;
+	if(the_percentage < 0)
+	{
+		the_percentage = 0;
+	}
+	if(the_percentage > 1)
+	{
+		the_percentage = 1;
+	}
 
 	return the_percentage;
 }
 
 double ZBuilding::ProductionTimeLeft(double &the_time)
 {
-	double time_left;
+	double time_left = bfinal_time - the_time;
 
-	time_left = bfinal_time - the_time;
-
-	if(time_left < 0) time_left = 0;
+	if(time_left < 0)
+	{
+		time_left = 0;
+	}
 
 	return time_left;
 }
@@ -402,10 +479,22 @@ bool ZBuilding::GetBuildingCreationMovePoint(int &x, int &y)
 
 bool ZBuilding::BuildUnit(double &the_time, unsigned char &ot, unsigned char &oid)
 {
-	if(bot == (unsigned char)-1) return false;
-	if(boid == (unsigned char)-1) return false;
-	if(build_state == BUILDING_SELECT) return false;
-	if(owner == NULL_TEAM) return false;
+	if(bot == (unsigned char)-1)
+	{
+		return false;
+	}
+	if(boid == (unsigned char)-1)
+	{
+		return false;
+	}
+	if(build_state == BUILDING_SELECT)
+	{
+		return false;
+	}
+	if(owner == NULL_TEAM)
+	{
+		return false;
+	}
 
 	if(the_time >= bfinal_time && !unit_limit_reached[owner])
 	{
@@ -420,9 +509,10 @@ bool ZBuilding::BuildUnit(double &the_time, unsigned char &ot, unsigned char &oi
 bool ZBuilding::StoreBuiltCannon(unsigned char oid)
 {
 	//already full?
-	if(built_cannon_list.size() >= MAX_STORED_CANNONS) return false;
-
-	//printf("cannon stored\n");
+	if(built_cannon_list.size() >= MAX_STORED_CANNONS)
+	{
+		return false;
+	}
 
 	built_cannon_list.push_back(oid);
 	return true;
@@ -434,7 +524,7 @@ int ZBuilding::CannonsInZone(ZOLists &ols)
 	int cannons_found = built_cannon_list.size();
 
 	for(std::vector<ZObject*>::iterator i=ols.object_list->begin();i!=ols.object_list->end();i++)
-	//for(vector<ZObject*>::iterator i=sol.cannon_object_list.begin();i!=sol.cannon_object_list.end();i++)
+	{
 		if(this != *i && connected_zone == (*i)->GetConnectedZone())
 		{
 			unsigned char ot, oid;
@@ -449,6 +539,7 @@ int ZBuilding::CannonsInZone(ZOLists &ols)
 
 			cannons_found++;
 		}
+	}
 
 	return cannons_found;
 }
@@ -457,11 +548,13 @@ bool ZBuilding::RemoveStoredCannon(unsigned char oid)
 {
 	//find it
 	for(std::vector<unsigned char>::iterator i=built_cannon_list.begin();i!=built_cannon_list.end();i++)
+	{
 		if(oid == *i)
 		{
 			built_cannon_list.erase(i);
 			return true;
 		}
+	}
 
 	return false;
 }
@@ -470,39 +563,37 @@ bool ZBuilding::HaveStoredCannon(unsigned char oid)
 {
 	//find it
 	for(std::vector<unsigned char>::iterator i=built_cannon_list.begin();i!=built_cannon_list.end();i++)
+	{
 		if(oid == *i)
+		{
 			return true;
+		}
+	}
 
 	return false;
 }
 
 void ZBuilding::ResetProduction()
 {
-	if(queue_list.size())
-	{
-		unsigned char ot, oid;
-
-		ot = queue_list.begin()->ot;
-		oid = queue_list.begin()->oid;
-
-		//take this off the list
-		queue_list.erase(queue_list.begin());
-
-		//clear current production
-		StopBuildingProduction(false);
-
-		//start new
-		SetBuildingProduction(ot, oid);
-	}
-	else
+	if(!queue_list.size())
 	{
 		StopBuildingProduction();
+		return;
 	}
 
+	unsigned char ot, oid;
 
-	//before queue list
-	//binit_time = the_time;
-	//RecalcBuildTime();
+	ot = queue_list.begin()->ot;
+	oid = queue_list.begin()->oid;
+
+	//take this off the list
+	queue_list.erase(queue_list.begin());
+
+	//clear current production
+	StopBuildingProduction(false);
+
+	//start new
+	SetBuildingProduction(ot, oid);
 }
 
 bool ZBuilding::GetBuildUnit(unsigned char &ot, unsigned char &oid)
@@ -515,30 +606,29 @@ bool ZBuilding::GetBuildUnit(unsigned char &ot, unsigned char &oid)
 
 void ZBuilding::ResetShowTime(int new_time)
 {
-	int minutes, seconds;
 	char message[50];
 
-	if(new_time == show_time) return;
+	if(new_time == show_time)
+	{
+		return;
+	}
 
 	show_time_img.Unload();
-	//if(show_time_img)
-	//{
-	//	SDL_FreeSurface(show_time_img);
-	//	show_time_img = NULL;
-	//}
 
-	if(new_time > -1)
+	if(new_time <= -1)
 	{
-		show_time = new_time;
-
-		//setup these numbers
-		seconds = new_time % 60;
-		new_time /= 60;
-		minutes = new_time % 60;
-
-		sprintf(message, "%d:%02d", minutes, seconds);
-		show_time_img.LoadBaseImage(ZFontEngine::GetFont(GREEN_BUILDING_FONT).Render(message));
+		return;
 	}
+
+	show_time = new_time;
+
+	//setup these numbers
+	int seconds = new_time % 60;
+	new_time /= 60;
+	int minutes = new_time % 60;
+
+	spdlog::debug("ZBuilding::ResetShowTime - {}:{}", minutes, seconds);
+	show_time_img.LoadBaseImage(ZFontEngine::GetFont(GREEN_BUILDING_FONT).Render(message));
 }
 
 void ZBuilding::SetOwner(team_type owner_)
@@ -568,91 +658,113 @@ void ZBuilding::DoReviveEffect()
 
 	//no memory leaks
 	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.begin(); i++)
+	{
 		delete *i;
+	}
 
 	extra_effects.clear();
 }
 
 void ZBuilding::ProcessBuildingsEffects(double &the_time)
 {
-	double damage_percent;
-	int should_effects;
-	bool effects_added = false;
-
 	for(std::vector<EStandard*>::iterator i=extra_effects.begin(); i!=extra_effects.end(); i++)
+	{
 		(*i)->Process();
+	}
 
-	damage_percent = 1.0 * health / max_health;
+	double damage_percent = 1.0 * health / max_health;
 
-	if(damage_percent > 1) damage_percent = 1;
-	if(damage_percent < 0) damage_percent = 0;
+	if(damage_percent > 1)
+	{
+		damage_percent = 1;
+	}
+	if(damage_percent < 0)
+	{
+		damage_percent = 0;
+	}
 
-	should_effects = max_effects * (1 - damage_percent);
-
-	//if(should_effects) printf("should_effects:%d size:%d\n", should_effects, extra_effects.size());
-
+	int should_effects = max_effects * (1 - damage_percent);
+	bool effects_added = false;
 	for(int i=extra_effects.size();i<should_effects;i++)
 	{
 		int ex, ey;
 		int choice;
 
-		ex = loc.x + effects_box.x + (rand() % effects_box.w);
-		ey = loc.y + effects_box.y + (rand() % effects_box.h);
+		ex = loc.x + effects_box.x + OpenZod::Util::Random::Int(0, effects_box.w - 1);
+		ey = loc.y + effects_box.y + OpenZod::Util::Random::Int(0, effects_box.h - 1);
 
-		choice = rand() % 100;
+		
+		choice = OpenZod::Util::Random::Int(0, 99);
 
 		if(choice < 10)
+		{
 			extra_effects.push_back(new EStandard(ztime, ex, ey, EDEATH_BIG_SMOKE));
+		}
 		else if(choice < 20)
+		{
 			extra_effects.push_back(new EStandard(ztime, ex, ey, EDEATH_SMALL_FIRE_SMOKE));
+		}
 		else if(choice < 50)
+		{
 			extra_effects.push_back(new EStandard(ztime, ex, ey, EDEATH_FIRE));
+		}
 		else
+		{
 			extra_effects.push_back(new EStandard(ztime, ex, ey, EDEATH_LITTLE_FIRE));
+		}
 
 		effects_added = true;
 	}
 
 	//sort effects
 	if(effects_added)
-		sort (extra_effects.begin(), extra_effects.end(), sort_estandards_func);
+	{
+		sort(extra_effects.begin(), extra_effects.end(), sort_estandards_func);
+	}
 }
 
 bool ZBuilding::ResetBuildTime(float zone_ownage_)
 {
-	if(zone_ownage_ == zone_ownage) return false;
+	if(zone_ownage_ == zone_ownage)
+	{
+		return false;
+	}
 
 	zone_ownage = zone_ownage_;
 
-	if(zone_ownage > 1) zone_ownage = 1;
-	if(zone_ownage < 0) zone_ownage = 0;
+	if(zone_ownage > 1)
+	{
+		zone_ownage = 1;
+	}
+	if(zone_ownage < 0)
+	{
+		zone_ownage = 0;
+	}
 
 	return RecalcBuildTime();
 }
 
 bool ZBuilding::RecalcBuildTime()
 {
-	double bfinal_time_old;
-	double build_time;
-
-	bfinal_time_old = bfinal_time;
+	double bfinal_time_old = bfinal_time;
 
 	//calc
-	if(!buildlist) return false;
+	if(!buildlist)
+	{
+		return false;
+	}
 
-	if(bot == (unsigned char)-1) return false;
-	if(boid == (unsigned char)-1) return false;
-	if(build_state == BUILDING_SELECT) return false;
+	if((bot == (unsigned char)-1) || (boid == (unsigned char)-1))
+	{
+		return false;
+	}
+	if(build_state == BUILDING_SELECT)
+	{
+		return false;
+	}
 		
 	//base time
-	build_time = BuildTimeModified(buildlist->UnitBuildTime(bot, boid));
-
-	//do effect from zone ownage
-	//build_time = build_time - (build_time * 0.5 * zone_ownage);
-
-	//do effect from building health
-	//build_time += BuildTimeIncrease(build_time);//build_time * (1.25 * (1.0 - (1.0 * health / max_health)));
-
+	double build_time = BuildTimeModified(buildlist->UnitBuildTime(bot, boid));
 	bfinal_time = binit_time + build_time;
 
 	return bfinal_time_old != bfinal_time;
