@@ -1,6 +1,10 @@
 #include "zclient.h"
 #include "common.h"
 
+#include "Util/Random.h"
+
+#include <spdlog/spdlog.h>
+
 using namespace COMMON;
 
 ZClient::ZClient() : ZCore()
@@ -35,7 +39,6 @@ void ZClient::ProcessConnect()
 	client_socket.SendMessage(REQUEST_SETTINGS, NULL, 0);
 
 	//give our name and mode
-	//client_socket.SendMessageAscii(GIVE_PLAYER_NAME, player_name.c_str());
 	SendPlayerInfo();
 	
 	//ask for player list
@@ -50,7 +53,7 @@ void ZClient::ProcessConnect()
 
 void ZClient::ProcessDisconnect()
 {
-	printf("ZClient::disconnected from the game server...\n");
+	spdlog::info("ZClient::disconnected from the game server...");
 }
 
 void ZClient::SetPlayerName(std::string player_name_)
@@ -70,17 +73,13 @@ void ZClient::SetDesiredTeam(team_type player_team)
 
 int ZClient::ProcessMapDownload(char *data, int size)
 {
-	//static char *map_data = 0;
-	//static int map_data_size;
+	if(size < 4)
+	{
+		return 1;
+	}
+
 	int pack_num;
-	int data_size;
-	
-	data_size = size - 4;
-	
-	//1 = done, 0 still going
-	
-	if(size < 4) return 1;
-	
+	int data_size = size - 4;
 	memcpy(&pack_num, data, 4);
 	
 	//last packet?
@@ -89,7 +88,7 @@ int ZClient::ProcessMapDownload(char *data, int size)
 		if(map_data && map_data_size > 0)
 		{
 			//load map
-			printf("map_data_size:%d\n", map_data_size);
+			spdlog::debug("ZClient::ProcessMapDownload - map_data_size = {}", map_data_size);
 			zmap.Read(map_data, map_data_size);
 			
 			//free mem
@@ -98,15 +97,11 @@ int ZClient::ProcessMapDownload(char *data, int size)
 			map_data_size = 0;
 		}
 		
-		//SendPlayerInfo();
 		RequestObjectList();
 		RequestZoneList();
 		
-		//return "loaded"
 		return 1;
 	}
-	
-// 	printf("pushing map data:%d:%d\n", pack_num, data_size);
 	
 	//first packet?
 	if(!pack_num)
@@ -145,15 +140,11 @@ void ZClient::RequestZoneList()
 }
 
 void ZClient::SendPlayerInfo()
-{
-   int the_team;
-   
-   the_team = desired_team;
+{  
+   int the_team = desired_team;
    
    client_socket.SendMessageAscii(SET_NAME, player_name.c_str());
    SendPlayerTeam(the_team);
-   //client_socket.SendMessage(SET_TEAM, (char*)&the_team, 4);
-
    SendPlayerMode();
 }
 
@@ -181,7 +172,7 @@ void ZClient::SendBotBypassData()
 {
 	if(bot_bypass_size < 1 || bot_bypass_size > MAX_BOT_BYPASS_SIZE)
 	{
-		printf("ZClient::SendBotBypassData:: invalid bot_bypass_size\n");
+		spdlog::error("ZClient::SendBotBypassData - Invalid bot_bypass_size");
 		return;
 	}
 
@@ -193,8 +184,12 @@ p_info &ZClient::OurPInfo()
 	static p_info not_found;
 
 	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();i++)
-			if(i->p_id == p_id)
-				return *i;
+	{
+		if(i->p_id == p_id)
+		{
+			return *i;
+		}
+	}
 
 	return not_found;
 }
@@ -206,13 +201,18 @@ void ZClient::DeleteObjectCleanUp(ZObject *obj)
 
 ZObject* ZClient::ProcessNewObject(char *data, int size)
 {
+	//good packet?
+	if(size != sizeof(object_init_packet))
+	{
+		return NULL;
+	}
 	object_init_packet *o = (object_init_packet*)data;
 
-	//good packet?
-	if(size != sizeof(object_init_packet)) return NULL;
-
 	//this a ok creation?
-	if(!CreateObjectOk(o->object_type, o->object_id, o->x, o->y, o->owner, o->blevel, o->extra_links)) return NULL;
+	if(!CreateObjectOk(o->object_type, o->object_id, o->x, o->y, o->owner, o->blevel, o->extra_links))
+	{
+		return NULL;
+	}
 
 	ZObject *new_object_ptr = NULL;
 
@@ -292,7 +292,9 @@ ZObject* ZClient::ProcessNewObject(char *data, int size)
 
 		//for fun
 		if(new_object_ptr)
-			new_object_ptr->SetDirection(rand()%MAX_ANGLE_TYPES);
+		{
+			new_object_ptr->SetDirection(OpenZod::Util::Random::Int(0, MAX_ANGLE_TYPES - 1));
+		}
 		break;
 	case ROBOT_OBJECT:
 		switch(o->object_id)
@@ -338,7 +340,9 @@ ZObject* ZClient::ProcessNewObject(char *data, int size)
 		}
 
 		if(o->object_id >= MAP0_ITEM && o->object_id <= MAP21_ITEM)
+		{
 			new_object_ptr = new OMapObject(&ztime, &zsettings, o->object_id);
+		}
 
 		break;
 	}
@@ -356,10 +360,7 @@ ZObject* ZClient::ProcessNewObject(char *data, int size)
 		new_object_ptr->SetMap(&zmap);
 		new_object_ptr->SetMapImpassables(zmap);
 
-		//object_list.push_back(new_object_ptr);
 		ols.AddObject(new_object_ptr);
-
-		//   	printf("object added to game:%s of %s\n", new_object_ptr->GetObjectName().c_str(), team_type_string[o->owner].c_str());
 	}
 
 	return new_object_ptr;
@@ -367,18 +368,22 @@ ZObject* ZClient::ProcessNewObject(char *data, int size)
 
 void ZClient::ProcessZoneInfo(char *data, int size)
 {
+	//good packet?
+	if(size != sizeof(zone_info_packet))
+	{
+		return;
+	}
 	zone_info_packet *pi = (zone_info_packet*)data;
 
-	//good packet?
-	if(size != sizeof(zone_info_packet)) return;
-
 	//will this data crash us?
-	if(pi->owner < 0) return;
-	if(pi->owner >= MAX_TEAM_TYPES) return;
-	if(pi->zone_number < 0) return;
-	if(pi->zone_number >= zmap.GetZoneInfoList().size()) return;
-
-	//printf("ProcessZoneInfo::id:%d owner:%d\n", pi->zone_number, pi->owner);
+	if((pi->owner < 0) || (pi->owner >= MAX_TEAM_TYPES))
+	{
+		return;
+	}
+	if((pi->zone_number < 0) || (pi->zone_number >= zmap.GetZoneInfoList().size()))
+	{
+		return;
+	}
 
 	//set the zone info
 	zmap.GetZoneInfoList()[pi->zone_number].owner = (team_type)pi->owner;
@@ -389,27 +394,32 @@ void ZClient::ProcessZoneInfo(char *data, int size)
 
 ZObject* ZClient::ProcessObjectTeam(char *data, int size)
 {
-	ZObject *obj;
-
 	//got the header?
-	if(size < sizeof(object_team_packet)) return NULL;
-
+	if(size < sizeof(object_team_packet))
+	{
+		return NULL;
+	}
 	object_team_packet *pi = (object_team_packet*)data;
 
 	//packet good?
-	if(size != sizeof(object_team_packet) + (pi->driver_amount * sizeof(driver_info_s))) return NULL;
+	if(size != sizeof(object_team_packet) + (pi->driver_amount * sizeof(driver_info_s)))
+	{
+		return NULL;
+	}
 
 	//will this data crash us?
-	if(pi->owner < 0) return NULL;
-	if(pi->owner >= MAX_TEAM_TYPES) return NULL;
+	if((pi->owner < 0) || (pi->owner >= MAX_TEAM_TYPES))
+	{
+		return NULL;
+	}
 
-	obj = GetObjectFromID(pi->ref_id, object_list);
-
-	if(!obj) return NULL;
+	ZObject* obj = GetObjectFromID(pi->ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->SetOwner((team_type)pi->owner);
-	//obj->SetDriver(pi->driver_type, 1);
-
 	obj->SetDriverType(pi->driver_type);
 	obj->ClearDrivers();
 
@@ -420,25 +430,24 @@ ZObject* ZClient::ProcessObjectTeam(char *data, int size)
 		shift_amt += sizeof(driver_info_s);
 	}
 
-	//printf("ProcessObjectTeam:obj driver set to %s\n", robot_type_string[obj->GetDriver()].c_str());
-
 	return obj;
 }
 
 ZObject* ZClient::ProcessObjectAttackObject(char *data, int size)
 {
-	attack_object_packet *pi = (attack_object_packet*)data;
-	ZObject *obj;
-	ZObject *attack_obj;
-
 	//good packet?
-	if(size != sizeof(attack_object_packet)) return NULL;
+	if(size != sizeof(attack_object_packet))
+	{
+		return NULL;
+	}
+	attack_object_packet *pi = (attack_object_packet*)data;
 
-	obj = GetObjectFromID(pi->ref_id, object_list);
-	attack_obj = GetObjectFromID(pi->attack_object_ref_id, object_list);
-
-	if(!obj) return NULL;
-
+	ZObject* obj = GetObjectFromID(pi->ref_id, object_list);
+	ZObject* attack_obj = GetObjectFromID(pi->attack_object_ref_id, object_list);
+	if(!obj || !attack_obj)
+	{
+		return NULL;
+	}
 	obj->SetAttackObject(attack_obj);
 
 	return obj;
@@ -446,20 +455,20 @@ ZObject* ZClient::ProcessObjectAttackObject(char *data, int size)
 
 ZObject* ZClient::ProcessDeleteObject(char *data, int size)
 {
-	int ref_id;
-	ZObject *obj;
+	if(size != sizeof(int))
+	{
+		return NULL;
+	}
 
-	if(size != sizeof(int)) return NULL;
-
-	ref_id = *(int*)data;
-
-	obj = GetObjectFromID(ref_id, object_list);
-
-	if(!obj) return NULL;
+	int ref_id = *(int*)data;
+	ZObject* obj = GetObjectFromID(ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	//clean up while it still exists
 	DeleteObjectCleanUp(obj);
-
 	//vaporize it
 	ols.DeleteObject(obj);
 
@@ -468,15 +477,18 @@ ZObject* ZClient::ProcessDeleteObject(char *data, int size)
 
 ZObject* ZClient::ProcessObjectHealthTeam(char *data, int size)
 {
-	object_health_packet *pi = (object_health_packet*)data;
-	ZObject *obj;
-
 	//good packet?
-	if(size != sizeof(object_health_packet)) return NULL;
+	if(size != sizeof(object_health_packet))
+	{
+		return NULL;
+	}
+	object_health_packet *pi = (object_health_packet*)data;
 
-	obj = GetObjectFromID(pi->ref_id, object_list);
-
-	if(!obj) return NULL;
+	ZObject* obj = GetObjectFromID(pi->ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->SetHealth(pi->health, zmap);
 
@@ -485,15 +497,18 @@ ZObject* ZClient::ProcessObjectHealthTeam(char *data, int size)
 
 ZObject* ZClient::ProcessFireMissile(char *data, int size)
 {
-	fire_missile_packet *pi = (fire_missile_packet*)data;
-	ZObject *obj;
-
 	//good packet?
-	if(size != sizeof(fire_missile_packet)) return NULL;
+	if(size != sizeof(fire_missile_packet))
+	{
+		return NULL;
+	}
+	fire_missile_packet *pi = (fire_missile_packet*)data;
 
-	obj = GetObjectFromID(pi->ref_id, object_list);
-
-	if(!obj) return NULL;
+	ZObject* obj = GetObjectFromID(pi->ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->FireMissile(pi->x, pi->y);
 
@@ -502,18 +517,20 @@ ZObject* ZClient::ProcessFireMissile(char *data, int size)
 
 ZObject* ZClient::ProcessObjectLoc(char *data, int size)
 {
-	ZObject *obj;
-	int ref_id;
+	if(size != 4 + sizeof(object_location))
+	{
+		return NULL;
+	}
+
 	object_location new_loc;
-
-	if(size != 4 + sizeof(object_location)) return NULL;
-
-	ref_id = ((int*)data)[0];
+	int ref_id = ((int*)data)[0];
 	memcpy(&new_loc, data+4, sizeof(object_location));
 
-	obj = GetObjectFromID(ref_id, object_list);
-
-	if(!obj) return NULL;
+	ZObject* obj = GetObjectFromID(ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->SetLoc(new_loc);
 
@@ -522,15 +539,17 @@ ZObject* ZClient::ProcessObjectLoc(char *data, int size)
 
 ZObject* ZClient::ProcessBuildingState(char *data, int size)
 {
+	if(size != sizeof(set_building_state_packet))
+	{
+		return NULL;
+	}
 	set_building_state_packet *pi = (set_building_state_packet*)data;
-	ZObject *obj;
 
-	//good packet?
-	if(size != sizeof(set_building_state_packet)) return NULL;
-
-	obj = GetObjectFromID(pi->ref_id, object_list);
-
-	if(!obj) return NULL;
+	ZObject* obj = GetObjectFromID(pi->ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->ProcessSetBuildingStateData(data, size);
 
@@ -539,18 +558,18 @@ ZObject* ZClient::ProcessBuildingState(char *data, int size)
 
 ZObject* ZClient::ProcessBuildingQueueList(char *data, int size)
 {
-	ZObject *obj;
-	int ref_id;
-
-	//does it hold the header info?
-	if(size < 8) return NULL;
+	if(size < 8)
+	{
+		return NULL;
+	}
 
 	//get header
-	ref_id = ((int*)data)[0];
-
-	obj = GetObjectFromID(ref_id, object_list);
-
-	if(!obj) return NULL;
+	int ref_id = ((int*)data)[0];
+	ZObject* obj = GetObjectFromID(ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->ProcessBuildingQueueData(data, size);
 
@@ -559,17 +578,18 @@ ZObject* ZClient::ProcessBuildingQueueList(char *data, int size)
 
 ZObject* ZClient::ProcessBuildingCannonList(char *data, int size)
 {
-	int ref_id;
-	ZObject *obj;
-
 	//good packet?
-	if(size < 8) return NULL;
+	if(size < 8)
+	{
+		return NULL;
+	}
 
-	ref_id = *(int*)(data);
-
-	obj = GetObjectFromID(ref_id, object_list);
-
-	if(!obj) return NULL;
+	int ref_id = *(int*)(data);
+	ZObject* obj = GetObjectFromID(ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->ProcessSetBuiltCannonData(data, size);
 
@@ -578,17 +598,18 @@ ZObject* ZClient::ProcessBuildingCannonList(char *data, int size)
 
 ZObject* ZClient::ProcessObjectGroupInfo(char *data, int size)
 {
-	int ref_id;
-	ZObject *obj;
-
 	//needs to atleast hold the ref_id at this point
-	if(size < 4) return NULL;
+	if(size < 4)
+	{
+		return NULL;
+	}
 
-	ref_id = *(int*)data;
-
-	obj = GetObjectFromID(ref_id, object_list);
-
-	if(!obj) return NULL;
+	int ref_id = *(int*)data;
+	ZObject* obj = GetObjectFromID(ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->ProcessGroupInfoData(data, size, object_list);
 
@@ -597,15 +618,17 @@ ZObject* ZClient::ProcessObjectGroupInfo(char *data, int size)
 
 ZObject* ZClient::ProcessObjectLidState(char *data, int size)
 {
+	if(size != sizeof(set_lid_state_packet))
+	{
+		return NULL;
+	}
 	set_lid_state_packet *pi = (set_lid_state_packet*)data;
-	ZObject *obj;
 
-	//good packet?
-	if(size != sizeof(set_lid_state_packet)) return NULL;
-
-	obj = GetObjectFromID(pi->ref_id, object_list);
-
-	if(!obj) return NULL;
+	ZObject* obj = GetObjectFromID(pi->ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->SetLidState(pi->lid_open);
 
@@ -614,15 +637,17 @@ ZObject* ZClient::ProcessObjectLidState(char *data, int size)
 
 ZObject* ZClient::ProcessSetGrenadeState(char *data, int size)
 {
+	if(size != sizeof(obj_grenade_amount_packet))
+	{
+		return NULL;
+	}
 	obj_grenade_amount_packet *pi = (obj_grenade_amount_packet*)data;
-	ZObject *obj;
-
-	//good packet?
-	if(size != sizeof(obj_grenade_amount_packet)) return NULL;
-
-	obj = GetObjectFromID(pi->ref_id, object_list);
-
-	if(!obj) return NULL;
+	
+	ZObject* obj = GetObjectFromID(pi->ref_id, object_list);
+	if(!obj)
+	{
+		return NULL;
+	}
 
 	obj->SetGrenadeAmount(pi->grenade_amount);
 
@@ -632,7 +657,10 @@ ZObject* ZClient::ProcessSetGrenadeState(char *data, int size)
 bool ZClient::ProcessZSettings(char *data, int size)
 {
 	//good packet?
-	if(size != sizeof(ZSettings)) return false;
+	if(size != sizeof(ZSettings))
+	{
+		return false;
+	}
 
 	//stuff it
 	memcpy(&zsettings, data, sizeof(ZSettings));
@@ -642,11 +670,13 @@ bool ZClient::ProcessZSettings(char *data, int size)
 
 bool ZClient::ProcessAddLPlayer(char *data, int size)
 {
-	add_remove_player_packet *pi = (add_remove_player_packet*)data;
-
 	//good packet?
-	if(size != sizeof(add_remove_player_packet)) return false;
+	if(size != sizeof(add_remove_player_packet))
+	{
+		return false;
+	}
 
+	add_remove_player_packet *pi = (add_remove_player_packet*)data;
 	player_info.push_back(p_info(pi->p_id));
 
 	return true;
@@ -654,17 +684,22 @@ bool ZClient::ProcessAddLPlayer(char *data, int size)
 
 bool ZClient::ProcessDeleteLPlayer(char *data, int size)
 {
+	if(size != sizeof(add_remove_player_packet))
+	{
+		return false;
+	}
 	add_remove_player_packet *pi = (add_remove_player_packet*)data;
-
-	//good packet?
-	if(size != sizeof(add_remove_player_packet)) return false;
 
 	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end();)
 	{
 		if(pi->p_id == i->p_id)
+		{
 			i = player_info.erase(i);
+		}
 		else
+		{
 			i++;
+		}
 	}
 
 	return true;
@@ -691,63 +726,89 @@ bool ZClient::ProcessSetLPlayerName(char *data, int size)
 
 bool ZClient::ProcessSetLPlayerTeam(char *data, int size)
 {
+	//good packet?
+	if(size != sizeof(set_player_int_packet))
+	{
+		return false;
+	}
 	set_player_int_packet *pi = (set_player_int_packet*)data;
 
-	//good packet?
-	if(size != sizeof(set_player_int_packet)) return false;
-
-	if(pi->value < 0) return false;
-	if(pi->value >= MAX_TEAM_TYPES) return false;
+	if((pi->value < 0) || (pi->value >= MAX_TEAM_TYPES))
+	{
+		return false;
+	}
 
 	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	{
 		if(pi->p_id == i->p_id)
+		{
 			i->team = (team_type)pi->value;
+		}
+	}
 
 	return true;
 }
 
 bool ZClient::ProcessSetLPlayerMode(char *data, int size)
 {
+	//good packet?
+	if(size != sizeof(set_player_int_packet))
+	{
+		return false;
+	}
 	set_player_int_packet *pi = (set_player_int_packet*)data;
 
-	//good packet?
-	if(size != sizeof(set_player_int_packet)) return false;
-
-	if(pi->value < 0) return false;
-	if(pi->value >= MAX_PLAYER_MODES) return false;
+	if((pi->value < 0) || (pi->value >= MAX_PLAYER_MODES))
+	{
+		return false;
+	}
 
 	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	{
 		if(pi->p_id == i->p_id)
+		{
 			i->mode = (player_mode)pi->value;
+		}
+	}
 
 	return true;
 }
 
 bool ZClient::ProcessSetLPlayerIgnored(char *data, int size)
 {
+	//good packet?
+	if(size != sizeof(set_player_int_packet))
+	{
+		return false;
+	}
 	set_player_int_packet *pi = (set_player_int_packet*)data;
 
-	//good packet?
-	if(size != sizeof(set_player_int_packet)) return false;
-
-	if(pi->value < 0) return false;
-	if(pi->value >= MAX_PLAYER_MODES) return false;
+	if((pi->value < 0) || (pi->value >= MAX_PLAYER_MODES))
+	{
+		return false;
+	}
 
 	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	{
 		if(pi->p_id == i->p_id)
+		{
 			i->ignored = (player_mode)pi->value;
+		}
+	}
 
 	return true;
 }
 
 bool ZClient::ProcessSetLPlayerLogInfo(char *data, int size)
 {
+	if(size != sizeof(set_player_loginfo_packet))
+	{
+		return false;
+	}
 	set_player_loginfo_packet *pi = (set_player_loginfo_packet*)data;
 
-	//good packet?
-	if(size != sizeof(set_player_loginfo_packet)) return false;
-
 	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	{
 		if(pi->p_id == i->p_id)
 		{
 			i->db_id = pi->db_id;
@@ -757,48 +818,65 @@ bool ZClient::ProcessSetLPlayerLogInfo(char *data, int size)
 			i->voting_power = pi->voting_power;
 			i->total_games = pi->total_games;
 		}
+	}
 
 	return true;
 }
 
 bool ZClient::ProcessSetLPlayerVoteInfo(char *data, int size)
 {
+	//good packet?
+	if(size != sizeof(set_player_int_packet))
+	{
+		return false;
+	}
 	set_player_int_packet *pi = (set_player_int_packet*)data;
 
-	//good packet?
-	if(size != sizeof(set_player_int_packet)) return false;
-
-	if(pi->value < 0) return false;
-	if(pi->value >= P_MAX_VOTE_CHOICES) return false;
+	if((pi->value < 0) || (pi->value >= P_MAX_VOTE_CHOICES))
+	{
+		return false;
+	}
 
 	for(std::vector<p_info>::iterator i=player_info.begin(); i!=player_info.end(); i++)
+	{
 		if(pi->p_id == i->p_id)
+		{
 			i->vote_choice = pi->value;
+		}
+	}
 
 	return true;
 }
 
 bool ZClient::ProcessUpdateGamePaused(char *data, int size)
 {
+	//good packet?
+	if(size != sizeof(update_game_paused_packet))
+	{
+		return false;
+	}
 	update_game_paused_packet *pi = (update_game_paused_packet*)data;
 
-	//good packet?
-	if(size != sizeof(update_game_paused_packet)) return false;
-
 	if(pi->game_paused)
+	{
 		ztime.Pause();
+	}
 	else
+	{
 		ztime.Resume();
+	}
 
 	return true;
 }
 
 bool ZClient::ProcessUpdateGameSpeed(char *data, int size)
 {
-	float_packet *pi = (float_packet*)data;
-
 	//good packet?
-	if(size != sizeof(float_packet)) return false;
+	if(size != sizeof(float_packet))
+	{
+		return false;
+	}
+	float_packet *pi = (float_packet*)data;
 
 	ztime.SetGameSpeed(pi->game_speed);
 
@@ -807,10 +885,12 @@ bool ZClient::ProcessUpdateGameSpeed(char *data, int size)
 
 bool ZClient::ProcessVoteInfo(char *data, int size)
 {
-	vote_info_packet *pi = (vote_info_packet*)data;
-
 	//good packet?
-	if(size != sizeof(vote_info_packet)) return false;
+	if(size != sizeof(vote_info_packet))
+	{
+		return false;
+	}
+	vote_info_packet *pi = (vote_info_packet*)data;
 
 	zvote.SetVoteInProgress(pi->in_progress);
 	zvote.SetVoteType(pi->vote_type);
@@ -821,10 +901,12 @@ bool ZClient::ProcessVoteInfo(char *data, int size)
 
 bool ZClient::ProcessPlayerID(char *data, int size)
 {
-	player_id_packet *pi = (player_id_packet*)data;
-
 	//good packet?
-	if(size != sizeof(player_id_packet)) return false;
+	if(size != sizeof(player_id_packet))
+	{
+		return false;
+	}
+	player_id_packet *pi = (player_id_packet*)data;
 
 	p_id = pi->p_id;
 
@@ -835,7 +917,10 @@ bool ZClient::ProcessSelectableMapList(char *data, int size)
 {
 	selectable_map_list.clear();
 
-	if(size <= 1) return true;
+	if(size <= 1)
+	{
+		return true;
+	}
 
 	const int buf_size = 500;
 	int len = size-1;
@@ -845,30 +930,25 @@ bool ZClient::ProcessSelectableMapList(char *data, int size)
 	while(i < len)
 	{
 		split(buf, data, ',', &i, buf_size, len);
-
 		selectable_map_list.push_back(buf);
 	}
-
-	//blah
-	//{
-	//	printf("loaded selectable map list:\n");
-
-	//	for(i=0; i<selectable_map_list.size(); i++)
-	//		printf("\t%d) '%s'\n", i, selectable_map_list[i].c_str());
-	//}
 
 	return true;
 }
 
 bool ZClient::ProcessSetTeam(char *data, int size)
 {
+	//good packet?
+	if(size != sizeof(int_packet))
+	{
+		return false;
+	}
 	int_packet *pi = (int_packet*)data;
 
-	//good packet?
-	if(size != sizeof(int_packet)) return false;
-
-	if(pi->team < 0) return true;
-	if(pi->team >= MAX_TEAM_TYPES) return true;
+	if((pi->team < 0) || (pi->team >= MAX_TEAM_TYPES))
+	{
+		return true;
+	}
 
 	SetPlayerTeam((team_type)pi->team);
 
@@ -887,12 +967,7 @@ void ZClient::ProcessResetGame()
 	
 	//clear object list
 	ols.DeleteAllObjects();
-	//for(vector<ZObject*>::iterator obj=object_list.begin(); obj!=object_list.end(); obj++)
-	//	delete *obj;
-
-	//object_list.clear();
 
 	//ask for the map
 	client_socket.SendMessage(REQUEST_MAP, NULL, 0);
 }
-
