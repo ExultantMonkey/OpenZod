@@ -6,12 +6,6 @@ void ZBot::SetupEHandler()
 {
 	ehandler.SetParent(this);
 
-	//ehandler.AddFunction(TCP_EVENT, DEBUG_EVENT_, test_event);
-	//ehandler.AddFunction(TCP_EVENT, STORE_MAP, store_map_event);
-	//ehandler.AddFunction(TCP_EVENT, ADD_NEW_OBJECT, add_new_object_event);
-	//ehandler.AddFunction(TCP_EVENT, SET_ZONE_INFO, set_zone_info_event);
-	//ehandler.AddFunction(TCP_EVENT, SEND_LOC, set_object_loc_event);
-
 	ehandler.AddFunction(TCP_EVENT, DEBUG_EVENT_, test_event);
 	ehandler.AddFunction(TCP_EVENT, STORE_MAP, store_map_event);
 	ehandler.AddFunction(TCP_EVENT, ADD_NEW_OBJECT, add_new_object_event);
@@ -73,7 +67,10 @@ void ZBot::nothing_event(ZBot *p, char *data, int size, int dummy)
 
 void ZBot::test_event(ZBot *p, char *data, int size, int dummy)
 {
-	if(size) printf("ZBot::test_event:%s...\n", data);
+	if(size)
+	{
+		printf("ZBot::test_event:%s...\n", data);
+	}
 }
 
 void ZBot::connect_event(ZBot *p, char *data, int size, int dummy)
@@ -81,7 +78,6 @@ void ZBot::connect_event(ZBot *p, char *data, int size, int dummy)
 	//needs to be before set team event
 	//in order to join teams that already have players
 	p->SendBotBypassData();
-	
 	p->ProcessConnect();
 }
 
@@ -97,20 +93,22 @@ void ZBot::store_map_event(ZBot *p, char *data, int size, int dummy)
 
 void ZBot::add_new_object_event(ZBot *p, char *data, int size, int dummy)
 {
-	ZObject *obj;
-
-	obj = p->ProcessNewObject(data, size);
-
-	if(!obj) return;
+	ZObject* obj = p->ProcessNewObject(data, size);
+	if(!obj)
+	{
+		return;
+	}
 
 	//add to short flag list?
 	unsigned char ot, oid;
-
 	obj->GetObjectID(ot, oid);
 
 	if(ot == MAP_ITEM_OBJECT)
 	{
-		if(oid == FLAG_ITEM || oid == GRENADES_ITEM) p->flag_object_list.push_back(obj);
+		if(oid == FLAG_ITEM || oid == GRENADES_ITEM)
+		{
+			p->flag_object_list.push_back(obj);
+		}
 		else 
 		{
 			//we don't care about the rest of the map object garbage
@@ -131,22 +129,22 @@ void ZBot::display_news_event(ZBot *p, char *data, int size, int dummy)
 
 void ZBot::set_object_waypoints_event(ZBot *p, char *data, int size, int dummy)
 {
-	ZObject *our_object;
-
-	our_object = p->ProcessWaypointData(data, size);
-
+	ZObject* our_object = p->ProcessWaypointData(data, size);
 	//did any objects get their waypoint list updated?
-	if(!our_object) return;
+	if(!our_object)
+	{
+		return;
+	}
 }
 
 void ZBot::set_object_rallypoints_event(ZBot *p, char *data, int size, int dummy)
 {
-	ZObject *our_object;
-
-	our_object = p->ProcessRallypointData(data, size);
-
+	ZObject* our_object = p->ProcessRallypointData(data, size);
 	//did any objects get their waypoint list updated?
-	if(!our_object) return;
+	if(!our_object)
+	{
+		return;
+	}
 }
 
 void ZBot::set_object_loc_event(ZBot *p, char *data, int size, int dummy)
@@ -166,16 +164,17 @@ void ZBot::set_object_attack_object_event(ZBot *p, char *data, int size, int dum
 
 void ZBot::delete_object_event(ZBot *p, char *data, int size, int dummy)
 {
-	ZObject *obj;
-
-	obj = p->ProcessDeleteObject(data, size);
-
-	if(!obj) return;
+	ZObject* obj = p->ProcessDeleteObject(data, size);
+	if(!obj)
+	{
+		return;
+	}
 
 	//clean up all parts of the bot who use this pointer
-	std::vector<ZObject*>::iterator i;
-	for(i=p->object_list.begin();i!=p->object_list.end();i++)
-		(*i)->RemoveObject(obj);
+	for(ZObject* i : p->object_list)
+	{
+		i->RemoveObject(obj);
+	}
 }
 
 void ZBot::set_object_health_event(ZBot *p, char *data, int size, int dummy)
@@ -200,34 +199,37 @@ void ZBot::fire_object_missile_event(ZBot *p, char *data, int size, int dummy)
 {
 	//this function starts an effect
 	//which is not available for the bot
-	//p->ProcessFireMissile(data, size);
+	
 }
 
 void ZBot::destroy_object_event(ZBot *p, char *data, int size, int dummy)
 {
-	destroy_object_packet *pi = (destroy_object_packet*)data;
-	ZObject *obj;
-	int i;
-
 	//good packet?
-	if(size < sizeof(destroy_object_packet)) return;
+	if(size < sizeof(destroy_object_packet))
+	{
+		return;
+	}
+	destroy_object_packet *pi = (destroy_object_packet*)data;
 
-	obj = p->GetObjectFromID(pi->ref_id, p->object_list);
-
-	if(!obj) return;
+	ZObject* obj = p->GetObjectFromID(pi->ref_id, p->object_list);
+	if(!obj)
+	{
+		return;
+	}
 
 	//good packet (double check)?
-	if(size != sizeof(destroy_object_packet) + (sizeof(fire_missile_info) * pi->fire_missile_amount)) return;
+	if(size != sizeof(destroy_object_packet) + (sizeof(fire_missile_info) * pi->fire_missile_amount))
+	{
+		return;
+	}
 
 	obj->SetHealth(0, p->zmap);
-	//obj->DoDeathEffect();
 
-	for(i=0;i<pi->fire_missile_amount;i++)
+	for(int i=0;i<pi->fire_missile_amount;i++)
 	{
 		fire_missile_info missile_info;
 
 		memcpy((char*)&missile_info, data + sizeof(destroy_object_packet) + (sizeof(fire_missile_info) * i), sizeof(fire_missile_info));
-		//obj->FireTurrentMissile(missile_info.missile_x, missile_info.missile_y, missile_info.missile_offset_time);
 	}
 
 	if(pi->destroy_object)

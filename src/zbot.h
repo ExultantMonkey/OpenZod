@@ -21,30 +21,20 @@ class ZBot : public ZClient
 		void ProcessSocketEvents();
 
 		void ProcessAI();
-
-		//AI 1
+		
 		bool Stage1AI();
-		bool Stage2AI();
-
-		//AI 2
-		bool Stage1AI_2();
-		void GiveOutOrders_2(std::vector<ZObject*> unit_list, std::vector<ZObject*> target_list, std::vector<ZObject*> &repair_building_list, std::vector<ZObject*> &grenade_box_list);
-
-		//AI 3
-		bool Stage1AI_3();
-		void CollectOurUnits_3(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targeted_list);
-		void CollectOurTargets_3(std::vector<ZObject*> &targets_list, bool all_out);
+		void CollectOurUnits(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targeted_list);
+		void CollectOurTargets(std::vector<ZObject*> &targets_list, bool all_out);
 		void ReduceUnitsToPercent(std::vector<ZObject*> &units_list, double max_percent);
 		void RemoveTargetedFromTargets(std::vector<ZObject*> &targets_list, std::vector<ZObject*> &targeted_list);
 		bool CullTargetFromCrane(ZObject* u, ZObject* t, std::vector<ZObject*> &ct_list);
-		void MatchTargets_3(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list);
-		void GiveOutOrders_3(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list);
-		bool GoAllOut_3(double &percent_to_order, double &order_delay);
+		void MatchTargets(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list);
+		void GiveOutOrders(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list);
+		bool GoAllOut(double &percent_to_order, double &order_delay);
 		
 		void PlaceCannons();
 
 		void ChooseBuildOrders();
-		void ChooseBuildOrders_2();
 		std::vector<ZObject*> ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit> &fb_list, std::vector<ZObject*> &guns_building_list, std::vector<ZObject*> &total_buildings_list);
 		BuildCombo GetBestBuildCombo(std::vector<ZObject*> &b_list, std::vector<PreferredUnit> &pu_list);
 		bool GetBestBuildComboIncCI(std::vector<int> &ci, int max_pu);
@@ -146,8 +136,6 @@ public:
 class BuildCombo
 {
 public:
-	void Debug();
-	
 	std::vector<BuildingUnit> b_list;
 	double target_distance;
 };

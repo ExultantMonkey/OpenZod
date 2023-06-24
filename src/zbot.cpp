@@ -1,5 +1,9 @@
 #include "zbot.h"
 
+#include "Util/Random.h"
+
+#include <spdlog/spdlog.h>
+
 using namespace COMMON;
 
 ZBot::ZBot() : ZClient()
@@ -34,7 +38,9 @@ void ZBot::Setup()
 	SetupRandomizer();
 
 	if(!client_socket.Start(remote_address.c_str()))
-		printf("ZBot::Setup:socket not setup\n");
+	{
+		spdlog::warn("ZBot::Setup:socket not setup");
+	}
 }
 
 void ZBot::Run()
@@ -44,7 +50,6 @@ void ZBot::Run()
 		ztime.UpdateTime();
 
 		//check for tcp events
-		//client_socket.Process();
 		ProcessSocketEvents();
 		
 		//process events
@@ -59,120 +64,107 @@ void ZBot::Run()
 
 void ZBot::ProcessSocketEvents()
 {
-	char *message;
-	int size;
-	int pack_id;
-	SocketHandler* shandler;
-
-	shandler = client_socket.GetHandler();
-
-	if(!shandler) return;
+	SocketHandler* shandler = client_socket.GetHandler();
+	if(!shandler)
+	{
+		return;
+	}
 	
 	//not connected, free it up
 	if(!shandler->Connected())
 	{
 		client_socket.ClearConnection();
-		
-		//event_list->push_back(new Event(OTHER_EVENT, DISCONNECT_EVENT, 0, NULL, 0));
 		ehandler.ProcessEvent(OTHER_EVENT, DISCONNECT_EVENT, NULL, 0, 0);
 	}
 	else if(shandler->DoRecv())
 	{
+		char* message;
+		int size;
+		int pack_id;
 		while(shandler->DoFastProcess(&message, &size, &pack_id))
+		{
 			ehandler.ProcessEvent(TCP_EVENT, pack_id, message, size, 0);
+		}
 		shandler->ResetFastProcess();
-
-		//while(shandler->DoProcess(&message, &size, &pack_id))
-		//{
-		//	ehandler.ProcessEvent(TCP_EVENT, pack_id, message, size, 0);
-		//	//event_list->push_back(new Event(TCP_EVENT, pack_id, 0, message, size));
- 	//		//printf("ClientSocket::Process:got packet id:%d\n", pack_id);
-		//}
 	}
-
-	/*
-	while(shandler->PacketAvailable() && shandler->GetPacket(&message, &size, &pack_id))
-	{
-		//event_list->push_back(new Event(TCP_EVENT, pack_id, 0, message, size));	
-		ehandler.ProcessEvent(TCP_EVENT, pack_id, message, size, 0);
-	}*/
 }
 
 void ZBot::ProcessAI()
 {
 	double &the_time = ztime.ztime;
 
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-		(*o)->SmoothMove(the_time);
+	for(ZObject* o : object_list)
+	{
+		o->SmoothMove(the_time);
+	}
 	
 	//process gun placement heatmap
 	gp_heatmap.Process(the_time, ols, zmap, our_team);
 
-	if(the_time < next_ai_time) return;
+	if(the_time < next_ai_time)
+	{
+		return;
+	}
 
 	next_ai_time = the_time + 1;
 
 	//are we ignored?
-	if(OurPInfo().ignored) return;
+	if(OurPInfo().ignored)
+	{
+		return;
+	}
 
-	Stage1AI_3();
-	//Stage1AI_2();
-	////capture all territories
-	//if(!Stage1AI())
-	//{
-	//	//kill all enemies
-	//	Stage2AI();
-	//}
+	Stage1AI();
 	
 	PlaceCannons();
 
 	//set new build orders
-	//ChooseBuildOrders();
-	ChooseBuildOrders_2();
+	ChooseBuildOrders();
 }
 
-bool ZBot::Stage1AI_3()
+bool ZBot::Stage1AI()
 {
 	double &the_time = ztime.ztime;
 	std::vector<ZObject*> units_list;
 	std::vector<ZObject*> targeted_list;
 	std::vector<ZObject*> targets_list;
-	std::vector<ZObject*> targets_orig_list;
-	bool all_out;
 	double percent_to_order, order_delay;
 
-	all_out = GoAllOut_3(percent_to_order, order_delay);
+	bool all_out = GoAllOut(percent_to_order, order_delay);
 
 	//ordering too fast?
-	if(the_time < last_order_time + order_delay) return true;
+	if(the_time < last_order_time + order_delay)
+	{
+		return true;
+	}
 
 	//collect our units
-	CollectOurUnits_3(units_list, targeted_list);
+	CollectOurUnits(units_list, targeted_list);
 
 	//collect our targets
-	CollectOurTargets_3(targets_list, all_out);
+	CollectOurTargets(targets_list, all_out);
 
 	//remove some units
 	ReduceUnitsToPercent(units_list, percent_to_order);
 
 	//remove already targeted
-	targets_orig_list = targets_list;
+	std::vector<ZObject*> targets_orig_list = targets_list;
 	RemoveTargetedFromTargets(targets_list, targeted_list);
 
 	//match targets to units
-	MatchTargets_3(units_list, targets_list);
+	MatchTargets(units_list, targets_list);
 
 	//give out orders
-	GiveOutOrders_3(units_list, targets_list);
+	GiveOutOrders(units_list, targets_list);
 
 	//did not some units not get orders because some targets were removed?
 	if(units_list.size() && targets_list.size() != targets_orig_list.size())
 	{
 		//match targets to units
-		MatchTargets_3(units_list, targets_orig_list);
+		MatchTargets(units_list, targets_orig_list);
 
 		//give out orders
-		GiveOutOrders_3(units_list, targets_orig_list);
+		GiveOutOrders(units_list, targets_orig_list);
 	}
 
 	last_order_time = the_time;
@@ -183,35 +175,46 @@ bool ZBot::Stage1AI_3()
 void ZBot::ReduceUnitsToPercent(std::vector<ZObject*> &units_list, double max_percent)
 {
 	std::vector<ZObject*> new_units_list;
-	int max_units;
 	bool own_repairable_buildings = false;
 	bool crane_in_new_list = false;
 
-	if(max_percent >= 0.95) return;
-	if(units_list.size() <= 1) return;
+	if(max_percent >= 0.95)
+	{
+		return;
+	}
+	if(units_list.size() <= 1)
+	{
+		return;
+	}
 
-	max_units = max_percent * units_list.size();
+	int max_units = max_percent * units_list.size();
 	max_units++;
 
-	if(max_units > units_list.size()) max_units = units_list.size();
+	if(max_units > units_list.size())
+	{
+		max_units = units_list.size();
+	}
 	
 	//do we own destroyed buildings?
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		unsigned char ot, oid;
-		
+	for(ZObject* o : object_list)
+	{	
 		//is it ours
-		if((*o)->GetOwner() != our_team) continue;
+		if(o->GetOwner() != our_team)
+		{
+			continue;
+		}
 
-		(*o)->GetObjectID(ot, oid);
+		unsigned char ot, oid;
+		o->GetObjectID(ot, oid);
 		
 		//a building?
-		if(ot != BUILDING_OBJECT) continue;
-		if(oid == BRIDGE_VERT) continue;
-		if(oid == BRIDGE_HORZ) continue;
+		if((ot != BUILDING_OBJECT) || (oid == BRIDGE_VERT) || (oid == BRIDGE_HORZ))
+		{
+			continue;
+		}
 		
 		//can be repaired by a crane?
-		if((*o)->CanBeRepairedByCrane(our_team))
+		if(o->CanBeRepairedByCrane(our_team))
 		{
 			own_repairable_buildings = true;
 			break;
@@ -221,21 +224,22 @@ void ZBot::ReduceUnitsToPercent(std::vector<ZObject*> &units_list, double max_pe
 	//select the percentage of units
 	while(new_units_list.size() < max_units && units_list.size())
 	{
-		int choice = rand() % units_list.size();
-		std::vector<ZObject*>::iterator u = units_list.begin() + choice;
-		unsigned char ot, oid;
+		std::vector<ZObject*>::iterator u = units_list.begin() + OpenZod::Util::Random::Int(0, units_list.size() - 1);
 
 		//adding a crane to the new list?
+		unsigned char ot, oid;
 		(*u)->GetObjectID(ot, oid);
 		if(ot == VEHICLE_OBJECT && oid == CRANE)
+		{
 			crane_in_new_list = true;
+		}
 		
 		new_units_list.push_back(*u);
 		units_list.erase(u);
 	}
 	
 	//add in a crane if we have destroyed buildings and we didn't add a crane
-	if(own_repairable_buildings && !crane_in_new_list && rand()%6)
+	if(own_repairable_buildings && !crane_in_new_list && OpenZod::Util::Random::Int(0, 5))
 	{
 		std::vector<std::vector<ZObject*>::iterator> cu_list;
 		
@@ -246,7 +250,10 @@ void ZBot::ReduceUnitsToPercent(std::vector<ZObject*> &units_list, double max_pe
 
 			//not a crane?
 			(*u)->GetObjectID(ot, oid);
-			if(!(ot == VEHICLE_OBJECT && oid == CRANE)) continue;
+			if(!(ot == VEHICLE_OBJECT && oid == CRANE))
+			{
+				continue;
+			}
 			
 			cu_list.push_back(u);
 		}
@@ -254,7 +261,7 @@ void ZBot::ReduceUnitsToPercent(std::vector<ZObject*> &units_list, double max_pe
 		//choose one from random
 		if(cu_list.size())
 		{
-			std::vector<ZObject*>::iterator u = cu_list[rand() % cu_list.size()];
+			std::vector<ZObject*>::iterator u = cu_list[OpenZod::Util::Random::Int(0, cu_list.size() - 1)];
 			
 			new_units_list.push_back(*u);
 			units_list.erase(u);
@@ -266,28 +273,35 @@ void ZBot::ReduceUnitsToPercent(std::vector<ZObject*> &units_list, double max_pe
 
 void ZBot::RemoveTargetedFromTargets(std::vector<ZObject*> &targets_list, std::vector<ZObject*> &targeted_list)
 {
-	std::vector<ZObject*> targets_orig_list;
-
 	//no targets?
-	if(!targets_list.size()) return;
+	if(!targets_list.size())
+	{
+		return;
+	}
 
 	//incase we want to undo
-	targets_orig_list = targets_list;
+	std::vector<ZObject*> targets_orig_list = targets_list;
 
 	for(std::vector<ZObject*>::iterator t=targeted_list.begin(); t!=targeted_list.end();t++)
+	{
 		ZObject::RemoveObjectFromList(*t, targets_list);
+	}
 
 	//if we removed more then 75% of targets
 	//then nevermind
 	if(1.0 * targets_list.size() / targets_orig_list.size() <= 0.25)
+	{
 		targets_list = targets_orig_list;
+	}
 }
 
-void ZBot::GiveOutOrders_3(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list)
+void ZBot::GiveOutOrders(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list)
 {
 	//set orig lists
-	for(std::vector<ZObject*>::iterator u=units_list.begin(); u!=units_list.end();u++)
-		(*u)->GetAIOrigList() = (*u)->GetAIList();
+	for(ZObject* u : units_list)
+	{
+		u->GetAIOrigList() = u->GetAIList();
+	}
 
 	while(units_list.size())
 	{
@@ -302,10 +316,11 @@ void ZBot::GiveOutOrders_3(std::vector<ZObject*> &units_list, std::vector<ZObjec
 			if(!(*u)->GetAIList().size())
 			{
 				if((*u)->GetAIOrigList().size())
+				{
 					(*u)->GetAIList() = (*u)->GetAIOrigList();
+				}
 				else
 				{
-					//printf("ZBot::GiveOutOrders_3: unit does not have any targets...\n");
 					u = units_list.erase(u);
 					continue;
 				}
@@ -318,7 +333,7 @@ void ZBot::GiveOutOrders_3(std::vector<ZObject*> &units_list, std::vector<ZObjec
 				//didn't find one?
 				if(!uc_obj)
 				{
-					printf("ZBot::GiveOutOrders_3: !uc_obj\n");
+					spdlog::debug("ZBot::GiveOutOrders - !uc_obj");
 					u = units_list.erase(u);
 					continue;
 				}
@@ -329,7 +344,10 @@ void ZBot::GiveOutOrders_3(std::vector<ZObject*> &units_list, std::vector<ZObjec
 				tc_obj = uc_obj->NearestObjectFromList(uc_obj->GetAIList());
 
 				//didn't find one?
-				if(!tc_obj) printf("ZBot::GiveOutOrders_3: !tc_obj\n");
+				if(!tc_obj)
+				{
+					spdlog::debug("ZBot::GiveOutOrders - !tc_obj");
+				}
 				//do we match?
 				else if(tc_obj != *u)
 				{
@@ -337,8 +355,6 @@ void ZBot::GiveOutOrders_3(std::vector<ZObject*> &units_list, std::vector<ZObjec
 					continue;
 				}
 			}
-
-			//printf("giving order\n");
 
 			//give command
 			{
@@ -436,7 +452,9 @@ void ZBot::GiveOutOrders_3(std::vector<ZObject*> &units_list, std::vector<ZObjec
 				if(set_waypoint)
 				{
 					if(new_waypoint.mode != ATTACK_WP)
+					{
 						uc_obj->GetCenterCords(new_waypoint.x, new_waypoint.y);
+					}
 					else
 					{
 						uc_obj->GetCords(new_waypoint.x, new_waypoint.y);
@@ -457,21 +475,24 @@ void ZBot::GiveOutOrders_3(std::vector<ZObject*> &units_list, std::vector<ZObjec
 			}
 
 			//take this unit off all targets lists
-			for(std::vector<ZObject*>::iterator t2=targets_list.begin(); t2!=targets_list.end();t2++)
-				ZObject::RemoveObjectFromList(*u, (*t2)->GetAIList());
+			for(ZObject* t2 : targets_list)
+			{
+				ZObject::RemoveObjectFromList(*u, t2->GetAIList());
+			}
 
 			//next u
 			order_given = true;
 			u = units_list.erase(u);
 
 			//take this target off every units list
-			for(std::vector<ZObject*>::iterator u2=units_list.begin(); u2!=units_list.end();u2++)
-				ZObject::RemoveObjectFromList(uc_obj, (*u2)->GetAIList());
+			for(ZObject* u2 : units_list)
+			{
+				ZObject::RemoveObjectFromList(uc_obj, u2->GetAIList());
+			}
 		}
 
 		if(!order_given)
 		{
-			//printf("ZBot::GiveOutOrders_3: exited loop with no orders given\n");
 			break;
 		}
 	}
@@ -488,29 +509,44 @@ bool ZBot::CullTargetFromCrane(ZObject* u, ZObject* t, std::vector<ZObject*> &ct
 	t->GetCenterCords(tcx, tcy);
 	
 	//see if it is along the way to any of the high priority targets
-	for(std::vector<ZObject*>::iterator ct=ct_list.begin();ct!=ct_list.end();++ct)
+	for(ZObject* ct : ct_list)
 	{
 		//is t one of the high priority targets?
-		if(t == *ct) return false;
+		if(t == ct)
+		{
+			return false;
+		}
 		
 		int ctcx, ctcy;
-		double u_ct_dist = u->DistanceFromObject(**ct);
-		double t_ct_dist = t->DistanceFromObject(**ct);
+		double u_ct_dist = u->DistanceFromObject(*ct);
+		double t_ct_dist = t->DistanceFromObject(*ct);
 		double u_t_dist  = u->DistanceFromObject(*t);
 		
-		(*ct)->GetCenterCords(ctcx, ctcy);
+		ct->GetCenterCords(ctcx, ctcy);
 		
 		//too far in the other direction past the crane?
-		if(t_ct_dist > u_ct_dist + max_line_dist) continue;
+		if(t_ct_dist > u_ct_dist + max_line_dist)
+		{
+			continue;
+		}
 		
 		//too far past the priority target?
-		if(u_t_dist > u_ct_dist + max_line_dist) continue;
+		if(u_t_dist > u_ct_dist + max_line_dist)
+		{
+			continue;
+		}
 		
 		//too far to trust is on the way to the high priority target?
-		if(u_t_dist > max_total_dist) continue;
+		if(u_t_dist > max_total_dist)
+		{
+			continue;
+		}
 		
 		//too far away from the line in between the crane and the high priority target?
-		if(point_distance_from_line(ucx, ucy, ctcx, ctcy, tcx, tcy) > max_line_dist) continue;
+		if(point_distance_from_line(ucx, ucy, ctcx, ctcy, tcx, tcy) > max_line_dist)
+		{
+			continue;
+		}
 		
 		//is within the line between the crane and the high priority target
 		//and not too far past the crane or target, or just too far away from crane
@@ -521,55 +557,71 @@ bool ZBot::CullTargetFromCrane(ZObject* u, ZObject* t, std::vector<ZObject*> &ct
 	return true;
 }
 
-void ZBot::MatchTargets_3(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list)
+void ZBot::MatchTargets(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targets_list)
 {
 	//clear the ai lists
-	for(std::vector<ZObject*>::iterator u=units_list.begin(); u!=units_list.end(); u++) (*u)->GetAIList().clear();
-	for(std::vector<ZObject*>::iterator t=targets_list.begin(); t!=targets_list.end(); t++) (*t)->GetAIList().clear();
+	for(ZObject* u : units_list)
+	{
+		u->GetAIList().clear();
+	}
+	for(ZObject* t : targets_list)
+	{
+		t->GetAIList().clear();
+	}
 	
 	//crane repair list needed to cull crane targets
 	std::set<ZObject*> cu_set;
 
 	//do the matching
-	for(std::vector<ZObject*>::iterator u=units_list.begin(); u!=units_list.end(); u++)
+	for(ZObject* u : units_list)
 	{
 		unsigned char uot, uoid;
 		int ux, uy;
 
-		(*u)->GetObjectID(uot, uoid);
-		(*u)->GetCords(ux, uy);
+		u->GetObjectID(uot, uoid);
+		u->GetCords(ux, uy);
 		ux += 8;
 		uy += 8;
 
-		for(std::vector<ZObject*>::iterator t=targets_list.begin(); t!=targets_list.end(); t++)
+		for(ZObject* t : targets_list)
 		{
 			unsigned char tot, toid;
+			t->GetObjectID(tot, toid);
+
 			int tx, ty;
-
-			(*t)->GetObjectID(tot, toid);
-
 			if(tot == BUILDING_OBJECT)
-				(*t)->GetCenterCords(tx, ty);
+			{
+				t->GetCenterCords(tx, ty);
+			}
 			else
 			{
-				(*t)->GetCords(tx, ty);
+				t->GetCords(tx, ty);
 				tx += 8;
 				ty += 8;
 			}
 
 			//can this unit go to this region?
 			if(!zmap.GetPathFinder().InSameRegion(ux, uy, tx, ty, (uot == ROBOT_OBJECT)))
+			{
 				continue;
+			}
 
 			switch(tot)
 			{
 			case MAP_ITEM_OBJECT:
 				//capture flag
-				if(toid == FLAG_ITEM && (*t)->GetOwner() != our_team) 
-					(*u)->AddToAIList(*t);
+				if(toid == FLAG_ITEM && t->GetOwner() != our_team)
+				{
+					u->AddToAIList(t);
+				}
 				//grenades
 				if(toid == GRENADES_ITEM)
-					if((*u)->CanPickupGrenades()) (*u)->AddToAIList(*t);
+				{
+					if(u->CanPickupGrenades())
+					{
+						u->AddToAIList(t);
+					}
+				}
 				break;
 			case BUILDING_OBJECT:
 				switch(toid)
@@ -577,126 +629,176 @@ void ZBot::MatchTargets_3(std::vector<ZObject*> &units_list, std::vector<ZObject
 				case FORT_FRONT:
 				case FORT_BACK:
 					//enter fort
-					if((*t)->GetOwner() != our_team && (*t)->GetOwner() != NULL_TEAM && !(*t)->IsDestroyed())
-						(*u)->AddToAIList(*t);
+					if(t->GetOwner() != our_team && t->GetOwner() != NULL_TEAM && !t->IsDestroyed())
+					{
+						u->AddToAIList(t);
+					}
 					break;
 				case REPAIR:
 					//repair building
-					if((*t)->GetOwner() == our_team && !(*t)->IsDestroyed())
-						if((*u)->CanBeRepaired()) (*u)->AddToAIList(*t);
+					if(t->GetOwner() == our_team && !t->IsDestroyed())
+					{
+						if(u->CanBeRepaired())
+						{
+							u->AddToAIList(t);
+						}
+					}
 					break;
 				}
 
 				//crane repairable
-				if((*t)->CanBeRepairedByCrane(our_team))
+				if(t->CanBeRepairedByCrane(our_team))
+				{
 					if(uot == VEHICLE_OBJECT && uoid == CRANE)
 					{
-						(*u)->AddToAIList(*t);
+						u->AddToAIList(t);
 						
 						//this a high priority crane target that needs to cull out other targets?
-						if(tot == BUILDING_OBJECT && toid != BRIDGE_VERT && toid != BRIDGE_HORZ && our_team == (*t)->GetOwner())
-							cu_set.insert(*u);
+						if(tot == BUILDING_OBJECT && toid != BRIDGE_VERT && toid != BRIDGE_HORZ && our_team == t->GetOwner())
+						{
+							cu_set.insert(u);
+						}
 					}
+				}
 
 				break;
 			case CANNON_OBJECT:
 				//enter vehicle / cannon?
-				if((*t)->CanBeEntered())
+				if(t->CanBeEntered())
 				{
-					if(uot == ROBOT_OBJECT) (*u)->AddToAIList(*t);
+					if(uot == ROBOT_OBJECT)
+					{
+						u->AddToAIList(t);
+					}
 				}
 
 				//attack_object
-				else if((*u)->CanAttackObject(*t)) (*u)->AddToAIList(*t);
+				else if(u->CanAttackObject(t))
+				{
+					u->AddToAIList(t);
+				}
 				break;
 			case VEHICLE_OBJECT:
 				//enter vehicle / cannon?
-				if((*t)->CanBeEntered())
+				if(t->CanBeEntered())
 				{
-					if(uot == ROBOT_OBJECT) (*u)->AddToAIList(*t);
+					if(uot == ROBOT_OBJECT)
+					{
+						u->AddToAIList(t);
+					}
 				}
 
 				//attack_object
-				else if((*u)->CanAttackObject(*t)) (*u)->AddToAIList(*t);
+				else if(u->CanAttackObject(t))
+				{
+					u->AddToAIList(t);
+				}
 				break;
 			case ROBOT_OBJECT:
 				//attack_object
-				if((*u)->CanAttackObject(*t)) (*u)->AddToAIList(*t);
+				if(u->CanAttackObject(t))
+				{
+					u->AddToAIList(t);
+				}
 				break;
 			}
 		}
 	}
 	
 	//do we have high priority crane targets that need to cull out other targets?
-	if(cu_set.size())
+	if(!cu_set.size())
 	{
-		for(std::set<ZObject*>::iterator u=cu_set.begin();u!=cu_set.end();++u)
-		{
-			std::vector<ZObject*> ct_list;
-			std::vector<ZObject*> &u_ai_list = (*u)->GetAIList();
-			
-			//build high priority target list for this crane
-			for(std::vector<ZObject*>::iterator t=u_ai_list.begin();t!=u_ai_list.end();++t)
+		return;
+	}
+
+	for(std::set<ZObject*>::iterator u=cu_set.begin();u!=cu_set.end();++u)
+	{
+		std::vector<ZObject*> ct_list;
+		std::vector<ZObject*> &u_ai_list = (*u)->GetAIList();
+		
+		//build high priority target list for this crane
+		for(ZObject* t : u_ai_list)
+		{			
+			if(!t->CanBeRepairedByCrane(our_team))
 			{
-				unsigned char tot, toid;
-				
-				if(!(*t)->CanBeRepairedByCrane(our_team)) continue;
-				
-				(*t)->GetObjectID(tot, toid);
-				
-				if(tot != BUILDING_OBJECT) continue;
-				if(toid == BRIDGE_VERT) continue;
-				if(toid == BRIDGE_HORZ) continue;
-				if(our_team != (*t)->GetOwner()) continue;
-				
-				ct_list.push_back(*t);
+				continue;
+			}
+		
+			unsigned char tot, toid;	
+			t->GetObjectID(tot, toid);
+			
+			if(tot != BUILDING_OBJECT)
+			{
+				continue;
+			}
+			if((toid == BRIDGE_VERT) || (toid == BRIDGE_HORZ))
+			{
+				continue;
+			}
+			if(our_team != t->GetOwner())
+			{
+				continue;
 			}
 			
-			//this crane doesn't have high priority targets?
-			if(!ct_list.size()) continue;
-			
-			//cull targets
-			for(std::vector<ZObject*>::iterator t=u_ai_list.begin();t!=u_ai_list.end();)
+			ct_list.push_back(t);
+		}
+		
+		//this crane doesn't have high priority targets?
+		if(!ct_list.size())
+		{
+			continue;
+		}
+		
+		//cull targets
+		for(std::vector<ZObject*>::iterator t=u_ai_list.begin();t!=u_ai_list.end();)
+		{
+			if(CullTargetFromCrane(*u, *t, ct_list))
 			{
-				if(CullTargetFromCrane(*u, *t, ct_list))
+				std::vector<ZObject*> &t_ai_list = (*t)->GetAIList();
+				
+				//remove from lists
+				for(std::vector<ZObject*>::iterator tu=t_ai_list.begin();tu!=t_ai_list.end();)
 				{
-					std::vector<ZObject*> &t_ai_list = (*t)->GetAIList();
-					
-					//remove from lists
-					for(std::vector<ZObject*>::iterator tu=t_ai_list.begin();tu!=t_ai_list.end();)
+					if(*tu == *u)
 					{
-						if(*tu == *u)
-							tu=t_ai_list.erase(tu);
-						else
-							++tu;
+						tu=t_ai_list.erase(tu);
 					}
-					
-					t=u_ai_list.erase(t);
+					else
+					{
+						++tu;
+					}
 				}
-				else
-					++t;
+				
+				t=u_ai_list.erase(t);
+			}
+			else
+			{
+				++t;
 			}
 		}
 	}
 }
 
-void ZBot::CollectOurTargets_3(std::vector<ZObject*> &targets_list, bool all_out)
+void ZBot::CollectOurTargets(std::vector<ZObject*> &targets_list, bool all_out)
 {
-	for(std::vector<ZObject*>::iterator t=object_list.begin(); t!=object_list.end(); t++)
+	for(ZObject* t : object_list)
 	{
 		unsigned char tot, toid;
-
-		(*t)->GetObjectID(tot, toid);
+		t->GetObjectID(tot, toid);
 
 		switch(tot)
 		{
 		case MAP_ITEM_OBJECT:
 			//capture flag
-			if(toid == FLAG_ITEM && (*t)->GetOwner() != our_team) 
-				targets_list.push_back(*t);
+			if(toid == FLAG_ITEM && t->GetOwner() != our_team)
+			{
+				targets_list.push_back(t);
+			}
 			//grenades?
 			if(toid == GRENADES_ITEM)
-				targets_list.push_back(*t);
+			{
+				targets_list.push_back(t);
+			}
 			break;
 		case BUILDING_OBJECT:
 			switch(toid)
@@ -704,75 +806,91 @@ void ZBot::CollectOurTargets_3(std::vector<ZObject*> &targets_list, bool all_out
 			case FORT_FRONT:
 			case FORT_BACK:
 				//enter fort
-				if((*t)->GetOwner() != our_team && (*t)->GetOwner() != NULL_TEAM && !(*t)->IsDestroyed())
-					targets_list.push_back(*t);
+				if(t->GetOwner() != our_team && t->GetOwner() != NULL_TEAM && !t->IsDestroyed())
+				{
+					targets_list.push_back(t);
+				}
 				break;
 			case REPAIR:
 				//repair building
-				if((*t)->GetOwner() == our_team && !(*t)->IsDestroyed())
-					targets_list.push_back(*t);
+				if(t->GetOwner() == our_team && !t->IsDestroyed())
+				{
+					targets_list.push_back(t);
+				}
 			}
 
 			//crane repairable
-			if((*t)->CanBeRepairedByCrane(our_team))
-				targets_list.push_back(*t);
+			if(t->CanBeRepairedByCrane(our_team))
+			{
+				targets_list.push_back(t);
+			}
 
 			break;
 		case CANNON_OBJECT:
 			//enter vehicle / cannon?
-			if((*t)->CanBeEntered())
-				targets_list.push_back(*t);
+			if(t->CanBeEntered())
+			{
+				targets_list.push_back(t);
+			}
 
 			//attack object
-			else if(all_out && (*t)->GetOwner() != our_team && (*t)->GetOwner() != NULL_TEAM && !(*t)->IsDestroyed())
-				targets_list.push_back(*t);
+			else if(all_out && t->GetOwner() != our_team && t->GetOwner() != NULL_TEAM && !t->IsDestroyed())
+			{
+				targets_list.push_back(t);
+			}
 			break;
 		case VEHICLE_OBJECT:
 			//enter vehicle / cannon?
-			if((*t)->CanBeEntered())
-				targets_list.push_back(*t);
-
+			if(t->CanBeEntered())
+			{
+				targets_list.push_back(t);
+			}
 			//attack object
-			else if(all_out && (*t)->GetOwner() != our_team && (*t)->GetOwner() != NULL_TEAM && !(*t)->IsDestroyed())
-				targets_list.push_back(*t);
+			else if(all_out && t->GetOwner() != our_team && t->GetOwner() != NULL_TEAM && !t->IsDestroyed())
+			{
+				targets_list.push_back(t);
+			}
 			break;
 		case ROBOT_OBJECT:
 			//attack object
-			if(all_out && (*t)->GetOwner() != our_team && (*t)->GetOwner() != NULL_TEAM && !(*t)->IsDestroyed())
-				targets_list.push_back(*t);
+			if(all_out && t->GetOwner() != our_team && t->GetOwner() != NULL_TEAM && !t->IsDestroyed())
+			{
+				targets_list.push_back(t);
+			}
 			break;
 		}
 	}
 }
 
-void ZBot::CollectOurUnits_3(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targeted_list)
+void ZBot::CollectOurUnits(std::vector<ZObject*> &units_list, std::vector<ZObject*> &targeted_list)
 {
-	for(std::vector<ZObject*>::iterator o=ols.mobile_olist.begin(); o!=ols.mobile_olist.end(); o++)
-		if((*o)->GetOwner() == our_team)
+	for(ZObject* o : ols.mobile_olist)
 	{
-		unsigned char ot, oid;
+		if(o->GetOwner() != our_team)
+		{
+			continue;
+		}
 
-		(*o)->GetObjectID(ot, oid);
+		unsigned char ot, oid;
+		o->GetObjectID(ot, oid);
 
 		//minions can't be given waypoints
-		if(ot == ROBOT_OBJECT && (*o)->IsMinion()) continue;
+		if(ot == ROBOT_OBJECT && o->IsMinion())
+		{
+			continue;
+		}
 
 		//already got a target?
-		if((*o)->GetWayPointList().size())
+		if(o->GetWayPointList().size())
 		{
-			int ref_id;
-			ZObject *tobj;
-
-			ref_id = (*o)->GetWayPointList().begin()->ref_id;
-
-			tobj = this->GetObjectFromID(ref_id, object_list);
+			int ref_id = o->GetWayPointList().begin()->ref_id;
+			ZObject* tobj = this->GetObjectFromID(ref_id, object_list);
 
 			//if we have a target skip this unit
 			//unless it is going to a flag we own
 			if(tobj)
 			{
 				unsigned char tot, toid;
-
 				tobj->GetObjectID(tot, toid);
 
 				if(tot == MAP_ITEM_OBJECT && toid == FLAG_ITEM)
@@ -788,21 +906,25 @@ void ZBot::CollectOurUnits_3(std::vector<ZObject*> &units_list, std::vector<ZObj
 					//do not flag a repair station as "targeted"
 					//(and therefor to be possibly ignored)
 					if(!(tot == BUILDING_OBJECT && toid == REPAIR))
+					{
 						targeted_list.push_back(tobj);
+					}
 					continue;
 				}
 			}
 
 			//if this is a dodge wp then let the unit be
-			if((*o)->GetWayPointList().begin()->mode == DODGE_WP)
+			if(o->GetWayPointList().begin()->mode == DODGE_WP)
+			{
 				continue;
+			}
 		}
 
-		units_list.push_back(*o);
+		units_list.push_back(o);
 	}
 }
 
-bool ZBot::GoAllOut_3(double &percent_to_order, double &order_delay)
+bool ZBot::GoAllOut(double &percent_to_order, double &order_delay)
 {
 	bool team_exists[MAX_TEAM_TYPES];
 	int our_flags = 0;
@@ -814,30 +936,42 @@ bool ZBot::GoAllOut_3(double &percent_to_order, double &order_delay)
 
 	//clear team exists
 	for(int i=0;i<MAX_TEAM_TYPES;i++)
-		team_exists[i] = false;
-
-	for(std::vector<ZObject*>::iterator o=ols.flag_olist.begin(); o!=ols.flag_olist.end(); o++)
 	{
-		team_exists[(*o)->GetOwner()] = true;
+		team_exists[i] = false;
+	}
 
-		if((*o)->GetOwner() == our_team)
+	for(ZObject* o : ols.flag_olist)
+	{
+		team_exists[o->GetOwner()] = true;
+
+		if(o->GetOwner() == our_team)
+		{
 			our_flags++;
+		}
 	}
 
 	for(int i=0;i<MAX_TEAM_TYPES;i++)
+	{
 		if(team_exists[i])
+		{
 			teams_existing++;
+		}
+	}
 
 	//eh?
-	if(!teams_existing) return true;
-	if(!ols.flag_olist.size()) return true;
+	if(!teams_existing)
+	{
+		return true;
+	}
+	if(!ols.flag_olist.size())
+	{
+		return true;
+	}
 
 	//do we own our fair portion of the zones?
 	{
-		double percent_owned, percent_half;
-
-		percent_owned = 1.0 * our_flags / ols.flag_olist.size();
-		percent_half = 1.0 / teams_existing;
+		double percent_owned = 1.0 * our_flags / ols.flag_olist.size();
+		double percent_half = 1.0 / teams_existing;
 
 		if(percent_owned >= percent_half)
 		{
@@ -860,685 +994,6 @@ bool ZBot::GoAllOut_3(double &percent_to_order, double &order_delay)
 	return all_out;
 }
 
-bool ZBot::Stage1AI_2()
-{
-	bool team_exists[MAX_TEAM_TYPES];
-
-	for(int i=0;i<MAX_TEAM_TYPES;i++)
-		team_exists[i] = false;
-
-	team_exists[our_team] = true;
-
-	std::vector<ZObject*> empty_unit_list;//
-	std::vector<ZObject*> enemy_flag_list;//
-	std::vector<ZObject*> enemy_fort_list;//
-	std::vector<ZObject*> enemy_unit_list;//
-	std::vector<ZObject*> destroyed_building_list;//
-	std::vector<ZObject*> repair_building_list;//
-	std::vector<ZObject*> grenade_box_list;//
-
-	std::vector<ZObject*> our_robot_list;//
-	std::vector<ZObject*> our_vehicle_list;//
-	std::vector<ZObject*> our_crane_list;//
-
-	//populate our lists
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		unsigned char ot, oid;
-
-		(*o)->GetObjectID(ot, oid);
-
-		if(ot == MAP_ITEM_OBJECT && oid == GRENADES_ITEM)
-		{
-			grenade_box_list.push_back(*o);
-			continue;
-		}
-
-		if((*o)->GetOwner() == NULL_TEAM)
-		{
-			if(ot == MAP_ITEM_OBJECT && oid == FLAG_ITEM)
-			{
-				enemy_flag_list.push_back(*o);
-				continue;
-			}
-
-			if(ot == CANNON_OBJECT || ot == VEHICLE_OBJECT)
-			{
-				empty_unit_list.push_back(*o);
-				continue;
-			}
-
-			if(ot == BUILDING_OBJECT && (*o)->IsDestroyed())
-			{
-				destroyed_building_list.push_back(*o);
-				continue;
-			}
-		}
-		else if((*o)->GetOwner() == our_team)
-		{
-			if(ot == BUILDING_OBJECT && (*o)->IsDestroyed())
-			{
-				destroyed_building_list.push_back(*o);
-				continue;
-			}
-
-			if(ot == BUILDING_OBJECT && oid == REPAIR && !(*o)->IsDestroyed())
-			{
-				repair_building_list.push_back(*o);
-				continue;
-			}
-
-			//from here out is choosable units
-			//if((*o)->GetWayPointList().size())
-			//{
-			//	//is this actually us trying to get a flag
-			//	//we currently own?
-			//	if((*o)->GetWayPointList().begin()->mode == MOVE_WP)
-			//	{
-			//		ZObject *temp_obj = GetObjectFromID((*o)->GetWayPointList().begin()->ref_id, object_list);
-
-			//		if(!temp_obj) continue;
-
-			//		unsigned char tot, toid;
-			//		temp_obj->GetObjectID(tot, toid);
-			//		if(!(tot == MAP_ITEM_OBJECT && toid == FLAG_ITEM)) continue;
-			//		if(temp_obj->GetOwner() != our_team) continue;
-			//	}
-			//	else
-			//		continue;
-			//}
-
-			//if robot, is it a leader?
-			if((*o)->IsApartOfAGroup() && (*o)->IsMinion()) continue;
-
-			if(ot == ROBOT_OBJECT && !(*o)->IsDestroyed())
-			{
-				our_robot_list.push_back(*o);
-				continue;
-			}
-
-			if(ot == VEHICLE_OBJECT && !(*o)->IsDestroyed())
-			{
-				if(oid == CRANE)
-					our_crane_list.push_back(*o);
-				else
-					our_vehicle_list.push_back(*o);
-
-				continue;
-			}
-		}
-		else //is an enemy
-		{
-			if(!(*o)->IsDestroyed())
-				team_exists[(*o)->GetOwner()] = true;
-
-			if(ot == MAP_ITEM_OBJECT && oid == FLAG_ITEM)
-			{
-				enemy_flag_list.push_back(*o);
-				continue;
-			}
-
-			if(ot == BUILDING_OBJECT && (oid == FORT_FRONT || oid == FORT_BACK) && !(*o)->IsDestroyed())
-			{
-				enemy_fort_list.push_back(*o);
-				continue;
-			}
-
-			if((ot == CANNON_OBJECT || ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT ) && !(*o)->IsDestroyed())
-			{
-				enemy_unit_list.push_back(*o);
-				continue;
-			}
-		}
-	}
-
-	//are we in all out mode?
-	bool all_out = false;
-
-	if(!enemy_flag_list.size())
-		all_out = true;
-	else
-	{
-		int our_flags = 0;
-		int teams_existing = 0;
-
-		for(int i=0;i<MAX_TEAM_TYPES;i++)
-			if(team_exists[i])
-				teams_existing++;
-
-		//eh?
-		if(!teams_existing) teams_existing = 1;
-
-		for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-			if((*o)->GetOwner() == our_team)
-				our_flags++;
-
-		//do we own our fair portion of the zones?
-		if(1.0 * our_flags / enemy_flag_list.size() > 1.0 / teams_existing)
-			all_out = true;
-	}
-
-	std::vector<ZObject*> target_list;
-
-	//vector<ZObject*> empty_unit_list;//
-	//vector<ZObject*> enemy_flag_list;//
-	//vector<ZObject*> enemy_fort_list;//
-	//vector<ZObject*> enemy_unit_list;//
-	//vector<ZObject*> destroyed_building_list;//
-	//vector<ZObject*> repair_building_list;//
-
-	//vector<ZObject*> our_robot_list;//
-	//vector<ZObject*> our_perfect_vehicle_list;//
-	//vector<ZObject*> our_repairable_vehicle_list;//
-	//vector<ZObject*> our_perfect_crane_list;//
-	//vector<ZObject*> our_repairable_crane_list;//
-
-	//robot
-	target_list = enemy_flag_list;
-	target_list.insert(target_list.begin(), empty_unit_list.begin(), empty_unit_list.end());
-	if(all_out)
-	{
-		target_list.insert(target_list.begin(), enemy_fort_list.begin(), enemy_fort_list.end());
-		target_list.insert(target_list.begin(), enemy_unit_list.begin(), enemy_unit_list.end());
-	}
-	GiveOutOrders_2(our_robot_list, target_list, repair_building_list, grenade_box_list);
-
-	//our_vehicle_list
-	target_list = enemy_flag_list;
-	if(all_out)
-	{
-		target_list.insert(target_list.begin(), enemy_fort_list.begin(), enemy_fort_list.end());
-		target_list.insert(target_list.begin(), enemy_unit_list.begin(), enemy_unit_list.end());
-	}
-	GiveOutOrders_2(our_vehicle_list, target_list, repair_building_list, grenade_box_list);
-
-	//our_crane_list
-	target_list = enemy_flag_list;
-	target_list.insert(target_list.begin(), destroyed_building_list.begin(), destroyed_building_list.end());
-	if(all_out)
-	{
-		target_list.insert(target_list.begin(), enemy_fort_list.begin(), enemy_fort_list.end());
-	}
-	GiveOutOrders_2(our_crane_list, target_list, repair_building_list, grenade_box_list);
-	
-
-	return true;
-}
-
-void ZBot::GiveOutOrders_2(std::vector<ZObject*> unit_list, std::vector<ZObject*> target_list, std::vector<ZObject*> &repair_building_list, std::vector<ZObject*> &grenade_box_list)
-{
-	//no targets?
-	if(!target_list.size()) return;
-
-	std::vector<ZObject*> orig_target_list = target_list;
-	std::vector<ZObject*> orig_grenade_box_list = grenade_box_list;
-
-	//remove targets that are already being targeted
-	for(std::vector<ZObject*>::iterator u=unit_list.begin(); u!=unit_list.end(); u++)
-	{
-		if((*u)->GetWayPointList().size())
-		{
-			int ref_id;
-
-			ref_id = (*u)->GetWayPointList().begin()->ref_id;
-
-			for(std::vector<ZObject*>::iterator t=target_list.begin(); t!=target_list.end();)
-			{
-				if((*t)->GetRefID() == ref_id)
-					t = target_list.erase(t);
-				else
-					t++;
-			}
-		}
-	}
-
-	while(unit_list.size())
-	{
-		for(std::vector<ZObject*>::iterator u=unit_list.begin(); u!=unit_list.end();)
-		{
-			ZObject* closest_obj;
-
-			//unit already moving?
-			if((*u)->GetWayPointList().size())
-			{
-				//is it still trying to get a flag we don't own?
-				if((*u)->GetWayPointList().begin()->mode == MOVE_WP)
-				{
-					ZObject *temp_obj = GetObjectFromID((*u)->GetWayPointList().begin()->ref_id, object_list);
-
-					if(temp_obj)
-					{
-						unsigned char tot, toid;
-						temp_obj->GetObjectID(tot, toid);
-						if((tot == MAP_ITEM_OBJECT && toid == FLAG_ITEM) && temp_obj->GetOwner() != our_team)
-						{
-							u = unit_list.erase(u);
-							continue;
-						}
-					}
-				}
-				else
-				{
-					u = unit_list.erase(u);
-					continue;
-				}
-			}
-
-			//reset target list?
-			if(!target_list.size()) target_list = orig_target_list;
-			if(!grenade_box_list.size()) grenade_box_list = orig_grenade_box_list;
-
-			closest_obj = (*u)->NearestObjectFromList(target_list);
-
-			//odd this should never happen...
-			if(!closest_obj)
-			{
-				u = unit_list.erase(u);
-				continue;
-			}
-
-			//this match not made in heaven?
-			if(closest_obj->NearestObjectFromList(unit_list) != *u)
-			{
-				u++;
-				continue;
-			}
-
-			//ok but do we need repaired 
-			//and are we closer to a repair building?
-			if((*u)->CanBeRepaired() && repair_building_list.size())
-			{
-				ZObject *repair_obj;
-				
-				repair_obj = (*u)->NearestObjectFromList(repair_building_list);
-
-				if(repair_obj)
-				{
-					double co_dist;
-					double ro_dist;
-
-					co_dist = (*u)->DistanceFromObject(*closest_obj);
-					ro_dist = (*u)->DistanceFromObject(*repair_obj);
-
-					if(ro_dist <= co_dist)
-					{
-						waypoint new_waypoint;
-
-						new_waypoint.mode = UNIT_REPAIR_WP;
-						new_waypoint.player_given = true;
-						repair_obj->GetCenterCords(new_waypoint.x, new_waypoint.y);
-						new_waypoint.ref_id = repair_obj->GetRefID();
-						new_waypoint.attack_to = true;
-
-						//add waypoint to the list
-						(*u)->GetWayPointDevList().clear();
-						(*u)->GetWayPointDevList().push_back(new_waypoint);
-
-						//send
-						SendBotDevWaypointList(*u);
-
-						//premature exit
-						u = unit_list.erase(u);
-						continue;
-					}
-				}
-			}
-
-			//ok but do we need grenades 
-			//and are we closer to a grenade box?
-			if((*u)->CanPickupGrenades() && grenade_box_list.size())
-			{
-				ZObject *special_choice_obj;
-				
-				special_choice_obj = (*u)->NearestObjectFromList(grenade_box_list);
-
-				if(special_choice_obj)
-				{
-					double co_dist;
-					double ro_dist;
-
-					co_dist = (*u)->DistanceFromObject(*closest_obj);
-					ro_dist = (*u)->DistanceFromObject(*special_choice_obj);
-
-					if(ro_dist <= co_dist)
-					{
-						waypoint new_waypoint;
-
-						new_waypoint.mode = PICKUP_GRENADES_WP;
-						new_waypoint.player_given = true;
-						special_choice_obj->GetCenterCords(new_waypoint.x, new_waypoint.y);
-						new_waypoint.ref_id = special_choice_obj->GetRefID();
-						new_waypoint.attack_to = true;
-
-						//add waypoint to the list
-						(*u)->GetWayPointDevList().clear();
-						(*u)->GetWayPointDevList().push_back(new_waypoint);
-
-						//send
-						SendBotDevWaypointList(*u);
-
-						//premature exit
-						u = unit_list.erase(u);
-
-						//remove target from list because it's been used
-						ZObject::RemoveObjectFromList(special_choice_obj, grenade_box_list);
-						continue;
-					}
-				}
-			}
-
-			//they're a match, make the waypoint
-			unsigned char ot, oid;
-			bool set_waypoint = false;
-			waypoint new_waypoint;
-
-			closest_obj->GetObjectID(ot, oid);
-
-			//a flag?
-			if(ot == MAP_ITEM_OBJECT && oid == FLAG_ITEM)
-			{
-				new_waypoint.mode = MOVE_WP;
-				set_waypoint = true;
-			}
-
-			//empty unit?
-			else if(closest_obj->GetOwner() == NULL_TEAM && 
-				(ot == CANNON_OBJECT || ot == VEHICLE_OBJECT) && 
-				!closest_obj->IsDestroyed())
-			{
-				new_waypoint.mode = ENTER_WP;
-				set_waypoint = true;
-			}
-
-			//enemy fort?
-			else if(closest_obj->GetOwner() != our_team && 
-				(ot == BUILDING_OBJECT && (oid == FORT_FRONT || oid == FORT_BACK)) && 
-				!closest_obj->IsDestroyed())
-			{
-				new_waypoint.mode = ENTER_FORT_WP;
-				set_waypoint = true;
-			}
-
-			//destroyed building?
-			else if((closest_obj->GetOwner() == our_team || closest_obj->GetOwner() == NULL_TEAM) &&
-				ot == BUILDING_OBJECT &&
-				closest_obj->IsDestroyed())
-			{
-				new_waypoint.mode = CRANE_REPAIR_WP;
-				set_waypoint = true;
-			}
-
-			////repair building?
-			//else if(ot == BUILDING_OBJECT && oid == REPAIR && !closest_obj->IsDestroyed())
-			//{
-			//	new_waypoint.mode = UNIT_REPAIR_WP;
-			//	set_waypoint = true;
-			//}
-
-			//enemy unit?
-			else if((ot == CANNON_OBJECT || ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT) && 
-				(closest_obj->GetOwner() != NULL_TEAM && closest_obj->GetOwner() != our_team) &&
-				!closest_obj->IsDestroyed())
-			{
-				new_waypoint.mode = ATTACK_WP;
-				set_waypoint = true;
-			}
-
-			if(set_waypoint)
-			{
-				closest_obj->GetCenterCords(new_waypoint.x, new_waypoint.y);
-				new_waypoint.ref_id = closest_obj->GetRefID();
-				new_waypoint.attack_to = true;
-				new_waypoint.player_given = true;
-
-				//add waypoint to the list
-				(*u)->GetWayPointDevList().clear();
-				(*u)->GetWayPointDevList().push_back(new_waypoint);
-
-				//send
-				SendBotDevWaypointList(*u);
-
-				//remove target from list because it's been used
-				ZObject::RemoveObjectFromList(closest_obj, target_list);
-			}
-
-			//remove both the unit from the list
-			//it had its chance and we don't care if
-			//it used it
-			u = unit_list.erase(u);
-		}
-	}
-}
-
-bool ZBot::Stage1AI()
-{
-	std::vector<ZObject*> enemy_flag_list;
-	std::vector<ZObject*> empty_unit_list;
-	std::vector<ZObject*> destroyed_building_list;
-
-	//collect enemy flags
-	for(std::vector<ZObject*>::iterator f=flag_object_list.begin(); f!=flag_object_list.end(); f++)
-	{
-		if((*f)->GetOwner() == our_team) continue;
-
-		enemy_flag_list.push_back(*f);
-	}
-
-	//any enemy flags to take over?
-	if(!enemy_flag_list.size()) return false;
-
-	//collect empty unit list
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		unsigned char ot, oid;
-
-		if((*o)->GetOwner() != NULL_TEAM) continue;
-
-		(*o)->GetObjectID(ot, oid);
-
-		if(!(ot == CANNON_OBJECT || ot == VEHICLE_OBJECT)) continue;
-
-		empty_unit_list.push_back(*o);
-	}
-
-	//collect repairable building list
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		unsigned char ot, oid;
-
-		if((*o)->GetOwner() != NULL_TEAM && (*o)->GetOwner() != our_team) continue;
-
-		(*o)->GetObjectID(ot, oid);
-
-		if(ot != BUILDING_OBJECT) continue;
-		if(!(*o)->IsDestroyed()) continue;
-
-		destroyed_building_list.push_back(*o);
-	}
-
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		unsigned char oot, ooid;
-
-		//is it ours
-		if((*o)->GetOwner() != our_team) continue;
-
-		(*o)->GetObjectID(oot, ooid);
-
-		//is it mobile
-		if(!(oot == ROBOT_OBJECT || oot == VEHICLE_OBJECT)) continue;
-		//is it already moving
-		if((*o)->GetWayPointList().size())
-		{
-			//is this actually us trying to get a flag
-			//we currently own?
-			if((*o)->GetWayPointList().begin()->mode == MOVE_WP)
-			{
-				ZObject *temp_obj = GetObjectFromID((*o)->GetWayPointList().begin()->ref_id, object_list);
-
-				if(!temp_obj) continue;
-
-				unsigned char tot, toid;
-				temp_obj->GetObjectID(tot, toid);
-				if(!(tot == MAP_ITEM_OBJECT && toid == FLAG_ITEM)) continue;
-				if(temp_obj->GetOwner() != our_team) continue;
-			}
-			else
-				continue;
-		}
-		//if robot, is it a leader?
-		if((*o)->IsApartOfAGroup() && (*o)->IsMinion()) continue;
-
-		//if crane find something destroyed first
-		if(oot == VEHICLE_OBJECT && ooid == CRANE && destroyed_building_list.size())
-		{
-			ZObject *bobj_choice;
-		
-			bobj_choice = (*o)->NearestObjectFromList(destroyed_building_list);
-
-			if(bobj_choice)
-			{
-				waypoint new_waypoint;
-
-				new_waypoint.mode = CRANE_REPAIR_WP;
-				bobj_choice->GetCenterCords(new_waypoint.x, new_waypoint.y);
-				new_waypoint.ref_id = bobj_choice->GetRefID();
-				new_waypoint.attack_to = true;
-
-				//add waypoint to the list
-				(*o)->GetWayPointDevList().clear();
-				(*o)->GetWayPointDevList().push_back(new_waypoint);
-
-				//send
-				SendBotDevWaypointList(*o);
-
-				continue;
-			}
-		}
-
-		//choose nearest flag
-		ZObject *obj_choice;
-		
-		obj_choice = (*o)->NearestObjectFromList(enemy_flag_list);
-
-		if(!obj_choice) continue;
-
-		//maybe choose to enter an empty unit instead?
-		if(oot == ROBOT_OBJECT && empty_unit_list.size())
-		{
-			ZObject *eobj_choice;
-			double obj_dist, eobj_dist;
-		
-			eobj_choice = (*o)->NearestObjectFromList(empty_unit_list);
-
-			if(eobj_choice)
-			{
-				//this closer?
-				obj_dist = (*o)->DistanceFromObject(*obj_choice);
-				eobj_dist = (*o)->DistanceFromObject(*eobj_choice);
-
-				if(eobj_dist < obj_dist)
-				{
-					waypoint new_waypoint;
-
-					new_waypoint.mode = ENTER_WP;
-					eobj_choice->GetCenterCords(new_waypoint.x, new_waypoint.y);
-					new_waypoint.ref_id = eobj_choice->GetRefID();
-					new_waypoint.attack_to = true;
-
-					//add waypoint to the list
-					(*o)->GetWayPointDevList().clear();
-					(*o)->GetWayPointDevList().push_back(new_waypoint);
-
-					//send
-					SendBotDevWaypointList(*o);
-
-					continue;
-				}
-			}
-		}
-
-		//move to the flag
-		waypoint new_waypoint;
-
-		new_waypoint.mode = MOVE_WP;
-		obj_choice->GetCenterCords(new_waypoint.x, new_waypoint.y);
-		new_waypoint.ref_id = obj_choice->GetRefID();
-		new_waypoint.attack_to = true;
-
-		//add waypoint to the list
-		(*o)->GetWayPointDevList().clear();
-		(*o)->GetWayPointDevList().push_back(new_waypoint);
-
-		//send
-		SendBotDevWaypointList(*o);
-	}
-
-	return true;
-}
-
-bool ZBot::Stage2AI()
-{
-	std::vector<ZObject*> enemy_list;
-
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		unsigned char ot, oid;
-
-		(*o)->GetObjectID(ot, oid);
-
-		if((*o)->GetOwner() == our_team) continue;
-		if((*o)->GetOwner() == NULL_TEAM) continue;
-		if(!(ot == ROBOT_OBJECT || ot == VEHICLE_OBJECT || ot == CANNON_OBJECT)) continue;
-
-		enemy_list.push_back(*o);
-	}
-
-	//any enemy flags to take over?
-	if(!enemy_list.size()) return false;
-
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		unsigned char oot, ooid;
-
-		//is it ours
-		if((*o)->GetOwner() != our_team) continue;
-
-		(*o)->GetObjectID(oot, ooid);
-
-		//is it mobile
-		if(!(oot == ROBOT_OBJECT || oot == VEHICLE_OBJECT)) continue;
-		//is it already moving
-		if((*o)->GetWayPointList().size()) continue;
-		//if robot, is it a leader?
-		if((*o)->IsApartOfAGroup() && (*o)->IsMinion()) continue;
-
-		//choose nearest flag
-		ZObject *obj_choice;
-		
-		obj_choice = (*o)->NearestObjectFromList(enemy_list);
-
-		if(!obj_choice) continue;
-
-		//move to the flag
-		waypoint new_waypoint;
-
-		new_waypoint.mode = ATTACK_WP;
-		obj_choice->GetCenterCords(new_waypoint.x, new_waypoint.y);
-		new_waypoint.ref_id = obj_choice->GetRefID();
-		new_waypoint.attack_to = true;
-
-		//add waypoint to the list
-		(*o)->GetWayPointDevList().clear();
-		(*o)->GetWayPointDevList().push_back(new_waypoint);
-
-		//send
-		SendBotDevWaypointList(*o);
-	}
-
-	return true;
-}
-
 bool ZBot::GetBestBuildComboIncCI(std::vector<int> &ci, int max_pu)
 {
 	int i=0;
@@ -1546,7 +1001,10 @@ bool ZBot::GetBestBuildComboIncCI(std::vector<int> &ci, int max_pu)
 	while(1)
 	{
 		//incremented ci's past the max number of ci's?
-		if(i>=ci.size()) return false;
+		if(i>=ci.size())
+		{
+			return false;
+		}
 		
 		//increment this ci
 		ci[i]++;
@@ -1560,7 +1018,9 @@ bool ZBot::GetBestBuildComboIncCI(std::vector<int> &ci, int max_pu)
 			i++;
 		}
 		else
+		{
 			return true;
+		}
 	}
 	
 	return false;
@@ -1571,8 +1031,10 @@ bool ZBot::GetBestBuildComboBuildretn(std::vector<int> &ci, std::vector<ZObject*
 	//clear
 	retn.b_list.clear();
 	
-	if(!pu_list.size()) return false;
-	if(!b_list.size()) return false;
+	if(!pu_list.size() || !b_list.size())
+	{
+		return false;
+	}
 	
 	std::vector<int> pu_count(pu_list.size(), 0);
 	
@@ -1583,11 +1045,14 @@ bool ZBot::GetBestBuildComboBuildretn(std::vector<int> &ci, std::vector<ZObject*
 		ZObject* &b = *bi;
 		int cci = *cii;
 		
-		if(!b) return false;
+		if(!b)
+		{
+			return false;
+		}
 		
 		if(cci < 0 || cci >= pu_list.size())
 		{
-			printf("GetBestBuildComboBuildretn::bad cci:%d\n", cci);
+			spdlog::error("ZBot::GetBestBuildComboBuildretn - Bad cci {}", cci);
 			return false;
 		}
 		
@@ -1598,17 +1063,14 @@ bool ZBot::GetBestBuildComboBuildretn(std::vector<int> &ci, std::vector<ZObject*
 		//does this building have this unit?
 		if(!buildlist.UnitInBuildList(oid, b->GetLevel(), pu.ot, pu.oid))
 		{
-			//printf("GetBestBuildComboBuildretn::building does not have unit type cci:%d ot:%d oid:%d\n", cci, pu.ot, pu.oid);
 			return false;
 		}
 		
 		//has unit type so add building unit to build combo
 		BuildingUnit new_bu;
-		
 		new_bu.b = b;
 		new_bu.pot = pu.ot;
 		new_bu.poid = pu.oid;
-		
 		retn.b_list.push_back(new_bu);
 		
 		//increment build count of this prefered unit
@@ -1628,10 +1090,8 @@ bool ZBot::GetBestBuildComboBuildretn(std::vector<int> &ci, std::vector<ZObject*
 	{
 		double squared_dist_sum = 0;
 		
-		//for(vector<PreferredUnit>::iterator pu=pu_list.begin();pu!=pu_list.end();++pu)
 		for(int i=0;i<pu_list.size() && i<pu_count.size(); i++)
 		{
-			//double diff = ((pu_count[i] * 1.0 / b_list.size()) - pu_list[i].p_value);
 			double diff = ((pu_count[i] * 1.0 / total_units_building) - pu_list[i].p_value);
 			
 			squared_dist_sum += diff * diff;
@@ -1648,8 +1108,10 @@ BuildCombo ZBot::GetBestBuildCombo(std::vector<ZObject*> &b_list, std::vector<Pr
 	BuildCombo ret;
 	
 	//checks
-	if(!b_list.size()) return ret;
-	if(!pu_list.size()) return ret;
+	if(!b_list.size() || !pu_list.size())
+	{
+		return ret;
+	}
 	
 	int max_pu = pu_list.size();
 	std::vector<int> ci(b_list.size(), 0);
@@ -1663,53 +1125,50 @@ BuildCombo ZBot::GetBestBuildCombo(std::vector<ZObject*> &b_list, std::vector<Pr
 		{
 			//it's value better than store ret build combo?
 			if(!ret.b_list.size())
+			{
 				ret = retn;
+			}
 			else
 			{
 				//if the values are effectively the same, then choose it randomly
 				if(fabs(retn.target_distance - ret.target_distance) <= 0.001)
 				{
-					if(!(rand() % 2))
+					if(OpenZod::Util::Random::Bool())
+					{
 						ret = retn;
+					}
 				}
 				else if(retn.target_distance < ret.target_distance)
+				{
 					ret = retn;
+				}
 			}
 		}
 		
 		//increment ci
-		if(!GetBestBuildComboIncCI(ci, max_pu)) break;
+		if(!GetBestBuildComboIncCI(ci, max_pu))
+		{
+			break;
+		}
 	}
 	
 	return ret;
-}
-
-void BuildCombo::Debug()
-{
-	if(b_list.size())
-		printf("BuildCombo::%p - target_distance:%lf\n", this, target_distance);
-	
-	for(std::vector<BuildingUnit>::iterator bu=b_list.begin();bu!=b_list.end();++bu)
-	{
-		if(bu->pot == ROBOT_OBJECT && bu->poid >= 0 && bu->poid < MAX_ROBOT_TYPES)
-			printf("BuildCombo::%p - builbing:%p unit:%s\n", this, bu->b, robot_production_string[bu->poid].c_str());
-		else if(bu->pot == VEHICLE_OBJECT && bu->poid >= 0 && bu->poid < MAX_VEHICLE_TYPES)
-			printf("BuildCombo::%p - builbing:%p unit:%s\n", this, bu->b, vehicle_production_string[bu->poid].c_str());
-		else if(bu->pot == VEHICLE_OBJECT && bu->poid >= 0 && bu->poid < MAX_CANNON_TYPES)
-			printf("BuildCombo::%p - builbing:%p unit:%s\n", this, bu->b, cannon_production_string[bu->poid].c_str());
-		else
-			printf("BuildCombo::%p - builbing:%p unit: ot:%d oid:%d\n", this, bu->b, bu->pot, bu->poid);
-	}
 }
 
 bool ZBot::CanBuildAt(ZObject *b)
 {
 	double &the_time = ztime.ztime;
 	
-	if(!b) return false;
+	if(!b)
+	{
+		return false;
+	}
 	
 	//if building nothing then true
-	if(b->GetBuildState() == BUILDING_SELECT) return true;
+	if(b->GetBuildState() == BUILDING_SELECT)
+	{
+		return true;
+	}
 	
 	double percentage_produced = b->PercentageProduced(the_time);
 	double btotal_time = b->ProductionTimeTotal();
@@ -1717,13 +1176,11 @@ bool ZBot::CanBuildAt(ZObject *b)
 	
 	if(percentage_produced >= 0.25)
 	{
-		//printf("ChooseBuildOrders_2::too much already produced, skipping...\n");
 		return false;
 	}
 	
 	if(the_time < last_set_build_time + (btotal_time * 0.35))
 	{
-		//printf("ChooseBuildOrders_2::attempting to set too quickly, skipping...\n");
 		return false;
 	}
 	
@@ -1732,57 +1189,66 @@ bool ZBot::CanBuildAt(ZObject *b)
 
 void ZBot::AddBuildingProductionSums(ZObject *b, std::vector<PreferredUnit> &preferred_build_list)
 {
-	unsigned char cot, coid;
-	
-	if(!b) return;
-	
-	if(!b->GetBuildUnit(cot, coid)) return;
+	if(!b)
+	{
+		return;
+	}
+
+	unsigned char cot, coid;	
+	if(!b->GetBuildUnit(cot, coid))
+	{
+		return;
+	}
 	
 	for(std::vector<PreferredUnit>::iterator p=preferred_build_list.begin(); p!=preferred_build_list.end(); p++)
+	{
 		if(p->ot == cot && p->oid == coid)
 		{
 			p->in_production++;
 			break;
 		}
+	}
 }
 
 void ZBot::PlaceCannons()
 {
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		unsigned char ot, oid;
-		
+	for(ZObject* o : object_list)
+	{	
 		//is it ours
-		if((*o)->GetOwner() != our_team) continue;
+		if(o->GetOwner() != our_team)
+		{
+			continue;
+		}
 
-		(*o)->GetObjectID(ot, oid);
+		unsigned char ot, oid;
+		o->GetObjectID(ot, oid);
 
-		//a building?
-		if(ot != BUILDING_OBJECT) continue;
-		
-		//building can build?
-		if(oid == RADAR) continue;
-		if(oid == REPAIR) continue;
-		if(oid == BRIDGE_VERT) continue;
-		if(oid == BRIDGE_HORZ) continue;
+		//a building that can build?
+		if(ot != BUILDING_OBJECT || !o->ProducesUnits())
+		{
+			continue;
+		}
 		
 		//is destroyed?
-		if((*o)->IsDestroyed()) continue;
+		if(o->IsDestroyed())
+		{
+			continue;
+		}
 		
-		std::vector<unsigned char> c_list = (*o)->GetBuiltCannonList();
-		
-		if(!c_list.size()) continue;
+		std::vector<unsigned char> c_list = o->GetBuiltCannonList();
+		if(!c_list.size())
+		{
+			continue;
+		}
 		
 		//only place the first one
 		//this way the heatmap doesn't try to place them all in the same place
-		
 		int tx, ty;
-		
-		if(gp_heatmap.FindCannonPlace(this, zmap, zsettings, *o, c_list[0], tx, ty))
+		if(gp_heatmap.FindCannonPlace(this, zmap, zsettings, o, c_list[0], tx, ty))
 		{
 			struct place_cannon_packet the_data;
 			
-			the_data.ref_id = (*o)->GetRefID();
+			the_data.ref_id = o->GetRefID();
 			the_data.oid = c_list[0];
 			the_data.tx = tx;
 			the_data.ty = ty;
@@ -1802,21 +1268,19 @@ std::vector<ZObject*> ZBot::ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit>
 	std::map<map_zone_info*,int> guns_building_in_zone;
 	
 	//if the map can build a light or toughs and up then never build a gatling gun 
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
+	for(ZObject* o : object_list)
 	{
 		unsigned char ot, oid;
-		
-		(*o)->GetObjectID(ot, oid);
+		o->GetObjectID(ot, oid);
 		
 		//a building that can build?
-		if(ot != BUILDING_OBJECT) continue;
-		if(oid == RADAR) continue;
-		if(oid == REPAIR) continue;
-		if(oid == BRIDGE_VERT) continue;
-		if(oid == BRIDGE_HORZ) continue;
+		if(ot != BUILDING_OBJECT || !o->ProducesUnits())
+		{
+			continue;
+		}
 		
-		if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), ROBOT_OBJECT, TOUGH) ||
-			buildlist.UnitInBuildList(oid, (*o)->GetLevel(), VEHICLE_OBJECT, LIGHT))
+		if(buildlist.UnitInBuildList(oid, o->GetLevel(), ROBOT_OBJECT, TOUGH) ||
+			buildlist.UnitInBuildList(oid, o->GetLevel(), VEHICLE_OBJECT, LIGHT))
 		{
 			map_cant_build_gatling = true;
 			break;
@@ -1827,12 +1291,17 @@ std::vector<ZObject*> ZBot::ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit>
 	for(std::map<ZObject*,BuildingUnit>::iterator fb=fb_list.begin();fb!=fb_list.end();++fb)
 	{
 		ZObject *bo = fb->first;
-		
-		if(!bo) continue;
+		if(!bo)
+		{
+			continue;
+		}
 		
 		//this building already building / finished a cannon?
 		unsigned char cot, coid;
-		if(bo->GetBuildUnit(cot, coid) && cot == CANNON_OBJECT) continue;
+		if(bo->GetBuildUnit(cot, coid) && cot == CANNON_OBJECT)
+		{
+			continue;
+		}
 		
 		gb_plist.push_back(fb->first);
 	}
@@ -1840,13 +1309,16 @@ std::vector<ZObject*> ZBot::ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit>
 	//pull from list until the next one would go over 20%
 	while((1.0 + guns_building_list.size()) / total_buildings <= percent_guns_building_max && gb_plist.size())
 	{
-		std::vector<ZObject*>::iterator gb = gb_plist.begin() + (rand() % gb_plist.size());
+		std::vector<ZObject*>::iterator gb = gb_plist.begin() + OpenZod::Util::Random::Int(0, gb_plist.size() - 1);
 		ZObject *gbo = *gb;
 		
 		//remove from potential list
 		gb_plist.erase(gb);
 		
-		if(!gbo) continue;
+		if(!gbo)
+		{
+			continue;
+		}
 		
 		map_zone_info *gb_zone = gbo->GetConnectedZone();
 		
@@ -1855,11 +1327,18 @@ std::vector<ZObject*> ZBot::ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit>
 			int c_in_zone = gbo->CannonsInZone(ols);
 			int c_building_in_zone = 0;
 			
-			for(std::vector<ZObject*>::iterator o=guns_building_list.begin(); o!=guns_building_list.end(); o++)
-				if(gb_zone == (*o)->GetConnectedZone())
+			for(ZObject* o : guns_building_list)
+			{
+				if(gb_zone == o->GetConnectedZone())
+				{
 					c_building_in_zone++;
+				}
+			}
 				
-			if(c_in_zone + c_building_in_zone >= MAX_STORED_CANNONS) continue;
+			if(c_in_zone + c_building_in_zone >= MAX_STORED_CANNONS)
+			{
+				continue;
+			}
 		}
 		
 		//choose cannon to build
@@ -1868,11 +1347,11 @@ std::vector<ZObject*> ZBot::ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit>
 		
 		{
 			unsigned char bot, boid;
-			
 			gbo->GetObjectID(bot, boid);
 			
 			//start with the highest gun available then choose howitzer 1/6 % if choose missle cannon
 			for(int oid=MAX_CANNON_TYPES-1;oid>=0;oid--)
+			{
 				if(buildlist.UnitInBuildList(boid, gbo->GetLevel(), CANNON_OBJECT, oid))
 				{
 					coid = oid;
@@ -1880,6 +1359,7 @@ std::vector<ZObject*> ZBot::ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit>
 					
 					break;
 				}
+			}
 				
 			if(buildlist.UnitInBuildList(boid, gbo->GetLevel(), CANNON_OBJECT, HOWITZER) && !(rand()%6))
 			{
@@ -1889,39 +1369,50 @@ std::vector<ZObject*> ZBot::ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit>
 		}
 		
 		//didn't choose a cannon?
-		if(!cchoosen) continue;
+		if(!cchoosen)
+		{
+			continue;
+		}
 		
 		//choose a gatling when they aren't allowed?
-		if(coid == GATLING && map_cant_build_gatling) continue;
+		if(coid == GATLING && map_cant_build_gatling)
+		{
+			continue;
+		}
 		
 		//choose a gatling or gun when a howitzer or missle can be built in the zone?
 		if(coid == GATLING || coid == GUN)
 		{
 			bool can_build_h_or_m_in_zone = false;
 			
-			for(std::vector<ZObject*>::iterator to=total_buildings_list.begin(); to!=total_buildings_list.end(); to++)
-			{
-				ZObject *too = *to;
-				
-				if(!too) continue;
+			for(ZObject* to : total_buildings_list)
+			{			
+				if(!to)
+				{
+					continue;
+				}
 				
 				//not in same zone or are the same building?
-				if(gb_zone != too->GetConnectedZone()) continue;
-				if(gbo == too) continue;
+				if((gb_zone != to->GetConnectedZone()) || (gbo == to))
+				{
+					continue;
+				}
 				
 				unsigned char tot, toid;
+				to->GetObjectID(tot, toid);
 				
-				too->GetObjectID(tot, toid);
-				
-				if(buildlist.UnitInBuildList(toid, too->GetLevel(), CANNON_OBJECT, HOWITZER) ||
-					buildlist.UnitInBuildList(toid, too->GetLevel(), CANNON_OBJECT, MISSILE_CANNON))
+				if(buildlist.UnitInBuildList(toid, to->GetLevel(), CANNON_OBJECT, HOWITZER) ||
+					buildlist.UnitInBuildList(toid, to->GetLevel(), CANNON_OBJECT, MISSILE_CANNON))
 				{
 					can_build_h_or_m_in_zone = true;
 					break;
 				}
 			}
 			
-			if(can_build_h_or_m_in_zone) continue;
+			if(can_build_h_or_m_in_zone)
+			{
+				continue;
+			}
 		}
 		
 		//set cannon build info
@@ -1939,7 +1430,7 @@ std::vector<ZObject*> ZBot::ChooseGunBuildOrders(std::map<ZObject*,BuildingUnit>
 	return gb_list;
 }
 
-void ZBot::ChooseBuildOrders_2()
+void ZBot::ChooseBuildOrders()
 {
 	double &the_time = ztime.ztime;
 	const int max_combo_check = 6;
@@ -1974,90 +1465,118 @@ void ZBot::ChooseBuildOrders_2()
 	//final build list
 	std::map<ZObject*,BuildingUnit> fb_list;
 	
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		unsigned char ot, oid;
-		
+	for(ZObject* o : object_list)
+	{	
 		//is it ours
-		if((*o)->GetOwner() != our_team) continue;
+		if(o->GetOwner() != our_team)
+		{
+			continue;
+		}
 
-		(*o)->GetObjectID(ot, oid);
+		unsigned char ot, oid;
+		o->GetObjectID(ot, oid);
 		
 		//is a crane?
 		if(ot == VEHICLE_OBJECT && oid == CRANE)
+		{
 			own_crange = true;
+		}
 
 		//a building?
-		if(ot != BUILDING_OBJECT) continue;
+		if(ot != BUILDING_OBJECT)
+		{
+			continue;
+		}
 		
 		//can be repaired by a crane?
-		if((*o)->CanBeRepairedByCrane(our_team) && oid != BRIDGE_VERT && oid != BRIDGE_HORZ)
+		if(o->CanBeRepairedByCrane(our_team) && oid != BRIDGE_VERT && oid != BRIDGE_HORZ)
+		{
 			own_repairable_buildings = true;
+		}
 		
 		//building can build?
-		if(oid == RADAR) continue;
-		if(oid == REPAIR) continue;
-		if(oid == BRIDGE_VERT) continue;
-		if(oid == BRIDGE_HORZ) continue;
+		if(!o->ProducesUnits())
+		{
+			continue;
+		}
 		
 		//is destroyed?
-		if((*o)->IsDestroyed()) continue;
+		if(o->IsDestroyed())
+		{
+			continue;
+		}
 		
 		//building a crane?
 		unsigned char cot, coid;
 		bool got_build_unit = false;
-		if((got_build_unit = (*o)->GetBuildUnit(cot, coid)) && cot == VEHICLE_OBJECT && coid == CRANE)
+		if((got_build_unit = o->GetBuildUnit(cot, coid)) && cot == VEHICLE_OBJECT && coid == CRANE)
+		{
 			building_crane = true;
+		}
 		
 		//needed for guns 
-		total_buildings_list.push_back(*o);
+		total_buildings_list.push_back(o);
 		
 		//enough time hasn't passed?
-		if(!CanBuildAt(*o))
+		if(!CanBuildAt(o))
 		{
 			//is it building one of the prefered units?
-			AddBuildingProductionSums(*o, robot_build_list);
-			AddBuildingProductionSums(*o, vehicle_build_list);
+			AddBuildingProductionSums(o, robot_build_list);
+			AddBuildingProductionSums(o, vehicle_build_list);
 			
 			if(got_build_unit && cot == CANNON_OBJECT)
-				guns_building_list.push_back(*o);
+			{
+				guns_building_list.push_back(o);
+			}
 		}
 		else
 		{
 			//vehicle factory? (consider forts a vehicle factory)
 			if(oid == VEHICLE_FACTORY || (oid == FORT_FRONT || oid == FORT_BACK))
+			{
 				for(std::vector<PreferredUnit>::iterator p=vehicle_build_list.begin(); p!=vehicle_build_list.end(); p++)
-					if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
+				{
+					if(buildlist.UnitInBuildList(oid, o->GetLevel(), p->ot, p->oid))
 					{
-						vb_list.push_back(*o);
+						vb_list.push_back(o);
 						break;
 					}
+				}
+			}
 			
 			//robot factory?
 			if(oid == ROBOT_FACTORY)
+			{
 				for(std::vector<PreferredUnit>::iterator p=robot_build_list.begin(); p!=robot_build_list.end(); p++)
-					if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
+				{
+					if(buildlist.UnitInBuildList(oid, o->GetLevel(), p->ot, p->oid))
 					{
-						rb_list.push_back(*o);
+						rb_list.push_back(o);
 						break;
 					}
+				}
+			}
 			
 			//can build a crane?
-			if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), VEHICLE_OBJECT, CRANE))
-				cb_list.push_back(*o);
+			if(buildlist.UnitInBuildList(oid, o->GetLevel(), VEHICLE_OBJECT, CRANE))
+			{
+				cb_list.push_back(o);
+			}
 			
 			//add it to the final list with a simple prefered ordered choice
 			for(std::vector<PreferredUnit>::iterator p=preferred_build_list.begin(); p!=preferred_build_list.end(); p++)
-				if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
+			{
+				if(buildlist.UnitInBuildList(oid, o->GetLevel(), p->ot, p->oid))
 				{
 					BuildingUnit new_bu;
-					new_bu.b = *o;
+					new_bu.b = o;
 					new_bu.pot = p->ot;
 					new_bu.poid = p->oid;
 					
-					fb_list[*o] = new_bu;
+					fb_list[o] = new_bu;
 					break;
 				}
+			}
 		}
 	}
 	
@@ -2066,23 +1585,31 @@ void ZBot::ChooseBuildOrders_2()
 		std::vector<ZObject*> gb_list = ChooseGunBuildOrders(fb_list, guns_building_list, total_buildings_list);
 		
 		//remove gun builds from vehicle / robot potential build lists
-		for(std::vector<ZObject*>::iterator gb=gb_list.begin();gb!=gb_list.end();++gb)
+		for(ZObject* gb : gb_list)
 		{
 			//remove building from preferred building lists
 			for(std::vector<ZObject*>::iterator b=vb_list.begin();b!=vb_list.end();)
 			{
-				if(*b==*gb)
+				if(*b==gb)
+				{
 					b=vb_list.erase(b);
+				}
 				else
+				{
 					++b;
+				}
 			}
 			
 			for(std::vector<ZObject*>::iterator b=rb_list.begin();b!=rb_list.end();)
 			{
-				if(*b==*gb)
+				if(*b==gb)
+				{
 					b=rb_list.erase(b);
+				}
 				else
+				{
 					++b;
+				}
 			}
 		}
 	}
@@ -2090,7 +1617,7 @@ void ZBot::ChooseBuildOrders_2()
 	//build a crane?
 	if(own_repairable_buildings && !building_crane && !own_crange && cb_list.size())
 	{
-		std::vector<ZObject*>::iterator cb = cb_list.begin() + (rand() % cb_list.size());
+		std::vector<ZObject*>::iterator cb = cb_list.begin() + (OpenZod::Util::Random::Int(0, cb_list.size() - 1));
 		
 		//set to crane
 		BuildingUnit &bu = fb_list[*cb];
@@ -2101,17 +1628,25 @@ void ZBot::ChooseBuildOrders_2()
 		for(std::vector<ZObject*>::iterator b=vb_list.begin();b!=vb_list.end();)
 		{
 			if(*b==*cb)
+			{
 				b=vb_list.erase(b);
+			}
 			else
+			{
 				++b;
+			}
 		}
 		
 		for(std::vector<ZObject*>::iterator b=rb_list.begin();b!=rb_list.end();)
 		{
 			if(*b==*cb)
+			{
 				b=rb_list.erase(b);
+			}
 			else
+			{
 				++b;
+			}
 		}
 	}
 	
@@ -2120,7 +1655,7 @@ void ZBot::ChooseBuildOrders_2()
 	{
 		while(vb_list.size() > max_combo_check)
 		{
-			std::vector<ZObject*>::iterator b = vb_list.begin() + (rand() % vb_list.size());
+			std::vector<ZObject*>::iterator b = vb_list.begin() + OpenZod::Util::Random::Int(0, vb_list.size() - 1);
 			
 			//add it to the production sums
 			AddBuildingProductionSums(*b, vehicle_build_list);
@@ -2132,7 +1667,7 @@ void ZBot::ChooseBuildOrders_2()
 		
 		while(rb_list.size() > max_combo_check)
 		{
-			std::vector<ZObject*>::iterator b = rb_list.begin() + (rand() % rb_list.size());
+			std::vector<ZObject*>::iterator b = rb_list.begin() + OpenZod::Util::Random::Int(0, rb_list.size() - 1);
 			
 			//add it to the production sums
 			AddBuildingProductionSums(*b, robot_build_list);
@@ -2144,21 +1679,20 @@ void ZBot::ChooseBuildOrders_2()
 	}
 	
 	//get prefered build lists for robot and vehicle factories
-	//last_time = current_time();
 	BuildCombo vb_combo = GetBestBuildCombo(vb_list, vehicle_build_list);
 	BuildCombo rb_combo = GetBestBuildCombo(rb_list, robot_build_list);
-	//printf("GetBestBuildCombo time:%lf\n", current_time() - last_time);
-	
-	//vb_combo.Debug();
-	//rb_combo.Debug();
 	
 	//set prefered build combos to final build list
 	{
 		for(std::vector<BuildingUnit>::iterator bu=vb_combo.b_list.begin();bu!=vb_combo.b_list.end();++bu)
+		{
 			fb_list[bu->b] = *bu;
+		}
 		
 		for(std::vector<BuildingUnit>::iterator bu=rb_combo.b_list.begin();bu!=rb_combo.b_list.end();++bu)
+		{
 			fb_list[bu->b] = *bu;
+		}
 	}
 	
 	//make the build orders
@@ -2170,12 +1704,15 @@ void ZBot::ChooseBuildOrders_2()
 		//sanity check?
 		if(bu.b != fb->first)
 		{
-			printf("ChooseBuildOrders_2::bu.b != fb->first\n");
+			spdlog::error("ZBot::ChooseBuildOrders - bu.b != fb->first");
 			continue;
 		}
 		
 		//get current production
-		if(!bu.b->GetBuildUnit(cot, coid)) continue;
+		if(!bu.b->GetBuildUnit(cot, coid))
+		{
+			continue;
+		}
 		
 		//perfered different than current?
 		//then send request
@@ -2183,17 +1720,13 @@ void ZBot::ChooseBuildOrders_2()
 		{
 			//stop production
 			{
-				int the_data;
-
-				the_data = bu.b->GetRefID();
-
+				int the_data = bu.b->GetRefID();
 				client_socket.SendMessage(STOP_BUILDING, (const char*)&the_data, sizeof(int));
 			}
 
 			//start new
 			{
 				start_building_packet the_data;
-				
 				the_data.ref_id = bu.b->GetRefID();
 				the_data.ot = bu.pot;
 				the_data.oid = bu.poid;
@@ -2207,75 +1740,15 @@ void ZBot::ChooseBuildOrders_2()
 	}
 }
 
-void ZBot::ChooseBuildOrders()
-{
-	for(std::vector<ZObject*>::iterator o=object_list.begin(); o!=object_list.end(); o++)
-	{
-		bool found_build = false;
-		unsigned char ot, oid;
-		unsigned char pot, poid;
-		unsigned char cot, coid;
-
-		//is it ours
-		if((*o)->GetOwner() != our_team) continue;
-
-		(*o)->GetObjectID(ot, oid);
-
-		//a building?
-		if(ot != BUILDING_OBJECT) continue;
-		//one that can build?
-		if(oid == RADAR) continue;
-		if(oid == REPAIR) continue;
-		if(oid == BRIDGE_VERT) continue;
-		if(oid == BRIDGE_HORZ) continue;
-		
-		//get current production
-		if(!(*o)->GetBuildUnit(cot, coid)) continue;
-
-		//find the choosen
-		for(std::vector<PreferredUnit>::iterator p=preferred_build_list.begin(); p!=preferred_build_list.end(); p++)
-			if(buildlist.UnitInBuildList(oid, (*o)->GetLevel(), p->ot, p->oid))
-			{
-				pot = p->ot;
-				poid = p->oid;
-				found_build = true;
-				break;
-			}
-
-		//send the request
-		if(found_build && !(cot == pot && coid == poid))
-		{
-			//stop production
-			{
-				int the_data;
-
-				the_data = (*o)->GetRefID();
-
-				client_socket.SendMessage(STOP_BUILDING, (const char*)&the_data, sizeof(int));
-			}
-
-			//start new
-			{
-				start_building_packet the_data;
-				
-				the_data.ref_id = (*o)->GetRefID();
-				the_data.ot = pot;
-				the_data.oid = poid;
-
-				client_socket.SendMessage(START_BUILDING, (const char*)&the_data, sizeof(start_building_packet));
-			}
-		}
-
-	}
-}
-
 void ZBot::SendBotDevWaypointList(ZObject *obj)
 {
+	if(!obj)
+	{
+		return;
+	}
+
 	char *data;
 	int size;
-
-	if(!obj) return;
-
 	CreateWaypointSendData(obj->GetRefID(), obj->GetWayPointDevList(), data, size);
 
 	if(data)
