@@ -627,7 +627,7 @@ void ZBuilding::ResetShowTime(int new_time)
 	new_time /= 60;
 	int minutes = new_time % 60;
 
-	spdlog::debug("ZBuilding::ResetShowTime - {}:{}", minutes, seconds);
+	sprintf(message, "%i:%02i", minutes, seconds);
 	show_time_img.LoadBaseImage(ZFontEngine::GetFont(GREEN_BUILDING_FONT).Render(message));
 }
 
