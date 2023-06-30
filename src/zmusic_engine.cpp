@@ -1,6 +1,8 @@
 #include "zmusic_engine.h"
 #include "common.h"
 
+#include "Util/Math.h"
+
 using namespace COMMON;
 
 bool ZMusicEngine::sound_system_on = true;
@@ -257,7 +259,7 @@ void ZMusicEngine::Process(std::vector<ZObject*> &object_list, ZMap &tmap, int o
 
 					(*obj)->GetCenterCords(ox, oy);
 
-					if(points_within_distance(fx, fy, ox, oy, 250))
+					if(OpenZod::Util::Math::PointsWithinDistance(fx, fy, ox, oy, 250))
 					{
 						new_d_level = M_FORT;
 						break;

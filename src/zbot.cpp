@@ -1,5 +1,6 @@
 #include "zbot.h"
 
+#include "Util/Math.h"
 #include "Util/Random.h"
 
 #include <spdlog/spdlog.h>
@@ -543,7 +544,7 @@ bool ZBot::CullTargetFromCrane(ZObject* u, ZObject* t, std::vector<ZObject*> &ct
 		}
 		
 		//too far away from the line in between the crane and the high priority target?
-		if(point_distance_from_line(ucx, ucy, ctcx, ctcy, tcx, tcy) > max_line_dist)
+		if(OpenZod::Util::Math::PointDistanceFromLine(ucx, ucy, ctcx, ctcy, tcx, tcy) > max_line_dist)
 		{
 			continue;
 		}

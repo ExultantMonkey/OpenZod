@@ -1,6 +1,8 @@
 #include "zsdl.h"
 #include "common.h"
 
+#include "Util/Math.h"
+
 using namespace COMMON;
 
 bool zsdl_play_music = true;
@@ -159,7 +161,7 @@ int AngleFromLoc(float dx, float dy)
 
 	//are we going anywhere?
 	//if((dx > -z && dx < z) && (dy > -z && dy < z))
-	if(isz(dx) && isz(dy))
+	if(OpenZod::Util::Math::IsZ(dx) && OpenZod::Util::Math::IsZ(dy))
 		return -1;
 
 	a = atan2(dy,dx);

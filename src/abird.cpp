@@ -1,5 +1,7 @@
 #include "abird.h"
 
+#include "Util/Math.h"
+
 #define BIRD_MAP_PADDING 160
 
 ZSDL_Surface ABird::bird_img[MAX_PLANET_TYPES][MAX_ANGLE_TYPES][5];
@@ -88,7 +90,7 @@ int ABird::Process()
 
 	if(the_time >= next_dangle_time)
 	{
-		if(dangle < 0.00001 && dangle > -0.00001)
+		if(OpenZod::Util::Math::IsZ(dangle))
 		{
 			//start it
 			next_dangle_time = the_time + 5 + ((rand() % 30) * 0.1);

@@ -1,6 +1,8 @@
 #include "zplayer.h"
 #include <math.h>
 
+#include "Util/Math.h"
+
 using namespace COMMON;
 
 void ZPlayer::SetupEHandler()
@@ -941,7 +943,7 @@ void ZPlayer::destroy_object_event(ZPlayer *p, char *data, int size, int dummy)
 			aobj->GetCenterCords(ax, ay);
 			kobj->GetCenterCords(kx, ky);
 
-			if(aobj == kobj || points_within_distance(ax, ay, kx, ky, 100))
+			if(aobj == kobj || OpenZod::Util::Math::PointsWithinDistance(ax, ay, kx, ky, 100))
 			{
 				static int last_anim = -1;
 				int next_anim;

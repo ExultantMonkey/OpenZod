@@ -5,6 +5,8 @@
 #include "zsettings.h"
 #include "zolists.h"
 
+#include "Util/Math.h"
+
 ZGunPlacementHeatMap::ZGunPlacementHeatMap()
 {
 	hm_list.push_back(new ZFlagHeatMap());
@@ -164,7 +166,7 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 			for(int i=0;i<c_tile_width;i++)
 				for(int j=0;j<c_tile_width;j++)
 				{
-					float dist = distance((i*16)+8, (j*16)+8, c_center, c_center);
+					float dist = OpenZod::Util::Math::DistanceBetweenPoints((i*16)+8, (j*16)+8, c_center, c_center);
 					int cxyi = xy_to_i(i,j,c_tile_width);
 					
 					//insanity check
@@ -434,7 +436,7 @@ void ZHeatMapBase::AddHeat(ZMap &tmap, int cx, int cy, int heat_dist, float weig
 			if(xyi < 0) continue;
 			if(xyi >= heatmap_size) continue;
 			
-			double dist = distance(cx,cy,(i*16)+8,(j*16)+8);
+			double dist = OpenZod::Util::Math::DistanceBetweenPoints(cx, cy, (i*16)+8, (j*16)+8);
 			
 			//tile outside of heat range?
 			if(dist > heat_dist) continue;

@@ -23,10 +23,6 @@ namespace COMMON
 	extern void lcase(std::string &message);
 	extern double current_time();
 	extern void uni_pause(int m_sec);
-	extern double distance(int x1, int y1, int x2, int y2);
-	extern double point_distance_from_line(int x1, int y1, int x2, int y2, int px, int py);
-	extern bool points_within_distance(int x1, int y1, int x2, int y2, int distance);
-	extern bool points_within_area(int px, int py, int ax, int ay, int aw, int ah);
 	extern bool good_user_char(int c);
 	extern bool good_user_string(const char *message);
 	extern void printd_reg(char *message);
@@ -35,13 +31,6 @@ namespace COMMON
 	extern std::vector<std::string> directory_filelist(std::string foldername);
 	extern void parse_filelist(std::vector<std::string> &filelist, std::string extension);
 	extern bool sort_string_func (const std::string &a, const std::string &b);
-
-	//inline functions...
-	inline bool isz(float num) { return (num < 0.00001 && num > -0.00001); };
-	inline bool isz(double num) { return (num < 0.00001 && num > -0.00001); };
-
-	inline bool is1(float num) { return (num < 1.00001 && num > 0.99999); };
-	inline bool is1(double num) { return (num < 1.00001 && num > 0.99999); };
 
 	inline void swap(int &a, int &b)
 	{

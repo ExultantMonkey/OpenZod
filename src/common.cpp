@@ -133,61 +133,6 @@ void uni_pause(int ms)
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-double distance(int x1, int y1, int x2, int y2)
-{
-	int dx = x1 - x2;
-	int dy = y1 - y2;
-	
-	return sqrt((double)((dx * dx) + (dy * dy)));
-}
-
-double point_distance_from_line(int x1, int y1, int x2, int y2, int px, int py)
-{
-	int A, B, C;
-	double under;
-	
-	A = -1 * (y1 - y2);
-	B = (x1 - x2);
-	C = -1 * (A * x1 + B * y1);
-
-	under = sqrt((double)((A * A) + (B * B)));
-	
-	//distance from line equals...
-	//|A*x + B*y + C| / (A^2 + B^2)^0.5
-	
-	return abs(A * px + B * py + C) / under;
-}
-
-bool points_within_distance(int x1, int y1, int x2, int y2, int distance)
-{
-	//quick prelim tests
-	if(x2 < x1 - distance) return false;
-	if(x2 > x1 + distance) return false;
-	if(y2 < y1 - distance) return false;
-	if(y2 > y1 + distance) return false;
-
-	//semi quick tests
-	int sh_dist = distance * 0.707106781; //sin(45)
-	int dx = abs(x1 - x2);
-	int dy = abs(y1 - y2);
-	if(dx < sh_dist && dy < sh_dist) return true;
-
-	//slow test
-	if(sqrt((float)((dx * dx) + (dy * dy))) > distance) return false;
-
-	return true;
-}
-
-bool points_within_area(int px, int py, int ax, int ay, int aw, int ah)
-{
-	if(px < ax) return false;
-	if(py < ay) return false;
-	if(px > ax + aw) return false;
-	if(py > ay + ah) return false;
-
-	return true;
-}
-
 bool good_user_char(int c)
 {
 	if(isalnum(c)) return true;

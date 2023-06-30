@@ -2,6 +2,7 @@
 #include "common.h"
 #include "zfont_engine.h"
 
+#include "Util/Math.h"
 #include "Util/Random.h"
 
 #include <spdlog/spdlog.h>
@@ -873,7 +874,7 @@ bool ZObject::WithinAutoEnterRadius(int ox, int oy)
 	int &x = center_x;
 	int &y = center_y;
 
-	return points_within_distance(x, y, ox, oy, ae_radius);
+	return OpenZod::Util::Math::PointsWithinDistance(x, y, ox, oy, ae_radius);
 }
 
 bool ZObject::WithinAutoGrabFlagRadius(int ox, int oy)
@@ -882,7 +883,7 @@ bool ZObject::WithinAutoGrabFlagRadius(int ox, int oy)
 	int &x = center_x;
 	int &y = center_y;
 
-	return points_within_distance(x, y, ox, oy, agf_radius);
+	return OpenZod::Util::Math::PointsWithinDistance(x, y, ox, oy, agf_radius);
 }
 
 bool ZObject::WithinAgroRadius(ZObject *obj)
@@ -916,7 +917,7 @@ bool ZObject::WithinAgroRadius(int ox, int oy)
 	int &x = center_x;
 	int &y = center_y;
 
-	return points_within_distance(x, y, ox, oy, agro_radius);
+	return OpenZod::Util::Math::PointsWithinDistance(x, y, ox, oy, agro_radius);
 }
 
 bool ZObject::WithinAttackRadius(ZObject *obj)
@@ -949,7 +950,7 @@ bool ZObject::WithinAttackRadius(int ox, int oy)
 	int &x = center_x;
 	int &y = center_y;
 
-	return points_within_distance(x, y, ox, oy, attack_radius);
+	return OpenZod::Util::Math::PointsWithinDistance(x, y, ox, oy, attack_radius);
 }
 
 bool ZObject::WithinAttackRadiusOf(std::vector<ZObject*> &avoid_list, int ox, int oy)
@@ -1627,9 +1628,7 @@ bool ZObject::Disengage()
 
 bool ZObject::IsMoving()
 {
-	const double z = 0.00001;
-
-	return !((loc.dx > -z && loc.dx < z) && (loc.dy > -z && loc.dy < z));
+	return !(OpenZod::Util::Math::IsZ(loc.dx) && OpenZod::Util::Math::IsZ(loc.dy));
 }
 
 void ZObject::CheckPassiveEngage(double &the_time, ZOLists &ols)
@@ -1963,7 +1962,7 @@ bool ZObject::EstimateMissileTarget(ZObject *target, int &tx, int &ty)
 
 	//don't need to estimate if
 	//the target isn't moving
-	if(isz(target->loc.dx) && isz(target->loc.dy))
+	if (!target->IsMoving())
 	{
 		return false;
 	}
@@ -1993,7 +1992,7 @@ bool ZObject::EstimateMissileTarget(ZObject *target, int &tx, int &ty)
 		spdlog::error("ZObject::EstimateMissileTarget - Not solvable");
 		return false;
 	}
-	if(isz(a))
+	if(OpenZod::Util::Math::IsZ(a))
 	{
 		spdlog::error("ZObject::EstimateMissileTarget - a is zero");
 		return false;
@@ -2022,11 +2021,11 @@ bool ZObject::EstimateMissileTarget(ZObject *target, int &tx, int &ty)
 	double dd;
 
 	//dd = dx - dx2;
-	if(!isz(dd = dx - dx2))
+	if(!OpenZod::Util::Math::IsZ(dd = dx - dx2))
 	{
 		t = -1 * Cd / dd;
 	}
-	else if(!isz(dd = dy - dy2))
+	else if(!OpenZod::Util::Math::IsZ(dd = dy - dy2))
 	{
 		t = -1 * Cu / dd;
 	}
@@ -2051,11 +2050,11 @@ bool ZObject::EstimateMissileTarget(ZObject *target, int &tx, int &ty)
 		dy2 = sqrt(dy2_guts);
 
 		//dd = dx - dx2;
-		if(!isz(dd = dx - dx2))
+		if(!OpenZod::Util::Math::IsZ(dd = dx - dx2))
 		{
 			t = -1 * Cd / dd;
 		}
-		else if(!isz(dd = dy - dy2))
+		else if(!OpenZod::Util::Math::IsZ(dd = dy - dy2))
 		{
 			t = -1 * Cu / dd;
 		}
@@ -2139,7 +2138,7 @@ bool ZObject::NearestAttackLoc(int sx, int sy, int &ex, int &ey, int aa_radius, 
 			ex = (lx<<4)+8;
 			ey = (ly<<4)+8;
 
-			if(!points_within_distance(cx, cy, ex, ey, aa_radius))
+			if(!OpenZod::Util::Math::PointsWithinDistance(cx, cy, ex, ey, aa_radius))
 			{
 				break;
 			}
@@ -2185,7 +2184,7 @@ bool ZObject::CanReachTargetRunning(int x, int y)
 	//an estimate because the real speed can change with terrain
 	double distance_runnable = move_speed * stamina;
 
-	return points_within_distance(center_x, center_y, x, y, distance_runnable);
+	return OpenZod::Util::Math::PointsWithinDistance(center_x, center_y, x, y, distance_runnable);
 }
 
 void ZObject::ProcessRunStamina(double time_dif)
@@ -2400,7 +2399,7 @@ void ZObject::ProcessAgroWP(std::vector<waypoint>::iterator &wp, double time_dif
 	int ox, oy;
 	target_object->GetCenterCords(ox, oy);
 
-	if(!points_within_distance(ox, oy, cur_wp_info.agro_center_x, cur_wp_info.agro_center_y, attack_radius + zsettings->agro_distance))
+	if(!OpenZod::Util::Math::PointsWithinDistance(ox, oy, cur_wp_info.agro_center_x, cur_wp_info.agro_center_y, attack_radius + zsettings->agro_distance))
 	{
 		//go back to center
 		//if we aren't already
@@ -3582,7 +3581,7 @@ bool ZObject::ProcessMove(double time_dif, ZMap &tmap, int &stop_x, int &stop_y,
 	float &dy = loc.dy;
 
 	//are we moving?
-	if(isz(dx) && isz(dy))
+	if(OpenZod::Util::Math::IsZ(dx) && OpenZod::Util::Math::IsZ(dy))
 	{
 		return true;
 	}
@@ -3623,7 +3622,7 @@ bool ZObject::ProcessMove(double time_dif, ZMap &tmap, int &stop_x, int &stop_y,
 	center_y = y + (height_pix >> 1);
 
 	//set new real move speed
-	if(!isz(dx) || !isz(dy))
+	if(!OpenZod::Util::Math::IsZ(dx) || !OpenZod::Util::Math::IsZ(dy))
 	{
 		double previous_real_speed = real_move_speed;
 
@@ -3671,7 +3670,7 @@ void ZObject::SetVelocity(ZObject *target_object)
 
 		dx = cur_wp_info.x - cx;
 		dy = cur_wp_info.y - cy;
-		if(!isz(dx) || !isz(dy))
+		if(!OpenZod::Util::Math::IsZ(dx) || !OpenZod::Util::Math::IsZ(dy))
 		{
 			mag = sqrt((dx * dx) + (dy * dy));
 			dx /= mag;
@@ -3881,11 +3880,11 @@ void ZObject::SmoothMove(double &the_time)
 	float &dy = loc.dy;
 
 	//move if it is moving
-	if(!isz(dx))
+	if(!OpenZod::Util::Math::IsZ(dx))
 	{
 		loc.x = last_loc.x + floor(dx * (the_time - last_loc_set_time));
 	}
-	if(!isz(dy))
+	if(!OpenZod::Util::Math::IsZ(dy))
 	{
 		loc.y = last_loc.y + floor(dy * (the_time - last_loc_set_time));
 	}
@@ -3908,7 +3907,7 @@ void ZObject::RecalcDirection()
 int ZObject::DirectionFromLoc(float dx, float dy)
 {
 	//are we going anywhere?
-	if(isz(dx) && isz(dy))
+	if(OpenZod::Util::Math::IsZ(dx) && OpenZod::Util::Math::IsZ(dy))
 	{
 		return -1;
 	}

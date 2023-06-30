@@ -3,6 +3,8 @@
 #include "constants.h"
 #include "common.h"
 
+#include "Util/Math.h"
+
 using namespace COMMON;
 
 void InitOpenGL()
@@ -480,7 +482,7 @@ void ZSDL_Surface::RenderSurface(int x, int y, bool render_hit, bool about_cente
 		SDL_Surface *render_surface;
 
 		//should we be using the rotozoom surface?
-		if(!isz(angle) || !is1(size))
+		if(!OpenZod::Util::Math::IsZ(angle) || !OpenZod::Util::Math::Is1(size))
 		{
 			if(!rotozoom_loaded && !LoadRotoZoomSurface()) return;
 			render_surface = sdl_rotozoom;

@@ -1,5 +1,7 @@
 #include "ahutanimal.h"
 
+#include "Util/Math.h"
+
 void hut_animal_graphics::LoadGraphics(int ha_num)
 {
 	char filename[1500];
@@ -180,7 +182,7 @@ bool AHutAnimal::TileIsTooFar(int tx, int ty)
 	ex = (tx<<4) + 8;
 	ey = (ty<<4) + 8;
 
-	return !points_within_distance(home_x, home_y, ex, ey, zsettings->hut_animal_roam_distance);
+	return !OpenZod::Util::Math::PointsWithinDistance(home_x, home_y, ex, ey, zsettings->hut_animal_roam_distance);
 }
 
 void AHutAnimal::GoHome()

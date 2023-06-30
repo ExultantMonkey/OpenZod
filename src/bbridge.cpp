@@ -1,5 +1,7 @@
 #include "bbridge.h"
 
+#include "Util/Math.h"
+
 ZSDL_Surface BBridge::planet_template[MAX_PLANET_TYPES];
 
 BBridge::BBridge(ZTime *ztime_, ZSettings *zsettings_, planet_type palette_, bool is_vertical_, unsigned short extra_links_) : ZBuilding(ztime_, zsettings_, palette_)
@@ -238,18 +240,18 @@ bool BBridge::UnderCursorCanAttack(int &map_x, int &map_y)
 	if(is_vertical)
 	{
 		//left section?
-		if(points_within_area(rx, ry, 0, 0, 16, height_pix)) return true;
+		if(OpenZod::Util::Math::PointWithinArea(rx, ry, 0, 0, 16, height_pix)) return true;
 
 		//right section?
-		if(points_within_area(rx, ry, 16 * 3, 0, 16, height_pix)) return true;
+		if(OpenZod::Util::Math::PointWithinArea(rx, ry, 16 * 3, 0, 16, height_pix)) return true;
 	}
 	else
 	{
 		//top section?
-		if(points_within_area(rx, ry, 0, 0, width_pix, 16)) return true;
+		if(OpenZod::Util::Math::PointWithinArea(rx, ry, 0, 0, width_pix, 16)) return true;
 
 		//bottom section?
-		if(points_within_area(rx, ry, 0, 16 * 3, width_pix, 16)) return true;
+		if(OpenZod::Util::Math::PointWithinArea(rx, ry, 0, 16 * 3, width_pix, 16)) return true;
 	}
 
 	return false;

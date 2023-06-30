@@ -1,6 +1,8 @@
 #include "bfort.h"
 #include "gwproduction.h"
 
+#include "Util/Math.h"
+
 ZSDL_Surface BFort::base_front[MAX_PLANET_TYPES];
 ZSDL_Surface BFort::base_back[MAX_PLANET_TYPES];
 ZSDL_Surface BFort::base_front_destroyed[MAX_PLANET_TYPES];
@@ -489,22 +491,22 @@ bool BFort::UnderCursorCanAttack(int &map_x, int &map_y)
 	int ry = map_y - loc.y;
 
 	//within main area?
-	if(points_within_area(rx, ry, 16, 16, 16 * 8, 16 * 7)) return true;
+	if(OpenZod::Util::Math::PointWithinArea(rx, ry, 16, 16, 16 * 8, 16 * 7)) return true;
 
 	//side areas?
-	if(points_within_area(rx, ry, 0, 16 * 3, 16 * 10, 16 * 4)) return true;
+	if(OpenZod::Util::Math::PointWithinArea(rx, ry, 0, 16 * 3, 16 * 10, 16 * 4)) return true;
 
 	//top left tower?
-	if(points_within_area(rx, ry, 16, 0, 16 * 2, 16)) return true;
+	if(OpenZod::Util::Math::PointWithinArea(rx, ry, 16, 0, 16 * 2, 16)) return true;
 
 	//top right tower?
-	if(points_within_area(rx, ry, 16 * 7, 0, 16 * 2, 16)) return true;
+	if(OpenZod::Util::Math::PointWithinArea(rx, ry, 16 * 7, 0, 16 * 2, 16)) return true;
 
 	//bottom left foot?
-	if(points_within_area(rx, ry, 16 * 2, 16 * 8, 16, 16)) return true;
+	if(OpenZod::Util::Math::PointWithinArea(rx, ry, 16 * 2, 16 * 8, 16, 16)) return true;
 
 	//bottom right foot?
-	if(points_within_area(rx, ry, 16 * 7, 16 * 8, 16, 16)) return true;
+	if(OpenZod::Util::Math::PointWithinArea(rx, ry, 16 * 7, 16 * 8, 16, 16)) return true;
 
 	return false;
 }
@@ -516,11 +518,11 @@ bool BFort::UnderCursorFortCanEnter(int &map_x, int &map_y)
 
 	if(is_front)
 	{
-		if(points_within_area(rx, ry, 16 * 4, 16 * 2, 32, 16 * 6)) return true;
+		if(OpenZod::Util::Math::PointWithinArea(rx, ry, 16 * 4, 16 * 2, 32, 16 * 6)) return true;
 	}
 	else
 	{
-		if(points_within_area(rx, ry, 16 * 4, 16 * 1, 32, 16 * 4)) return true;
+		if(OpenZod::Util::Math::PointWithinArea(rx, ry, 16 * 4, 16 * 1, 32, 16 * 4)) return true;
 	}
 
 	return false;
