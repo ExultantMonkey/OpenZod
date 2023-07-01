@@ -115,7 +115,7 @@ public:
 		select_obj = select_obj_;
 		open_gui = open_gui_;
 
-		creation_time = current_time();
+		creation_time = COMMON::current_time();
 	}
 
 	void clear()
@@ -127,7 +127,7 @@ public:
 
 	bool past_lifetime()
 	{
-		return current_time() > creation_time + SPACE_BAR_EVENT_LIFETIME;
+		return COMMON::current_time() > creation_time + SPACE_BAR_EVENT_LIFETIME;
 	}
 
 	int ref_id;

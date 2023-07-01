@@ -167,7 +167,7 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 				for(int j=0;j<c_tile_width;j++)
 				{
 					float dist = OpenZod::Util::Math::DistanceBetweenPoints((i*16)+8, (j*16)+8, c_center, c_center);
-					int cxyi = xy_to_i(i,j,c_tile_width);
+					int cxyi = COMMON::xy_to_i(i,j,c_tile_width);
 					
 					//insanity check
 					if(cxyi < 0) continue;
@@ -199,8 +199,8 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 							if(i_off >= tmap.GetMapBasics().width) continue;
 							if(j_off >= tmap.GetMapBasics().height) continue;
 							
-							int cxyi = xy_to_i(ci,cj,c_tile_width);
-							int hm_xyi = xy_to_i(i_off,j_off,h);
+							int cxyi = COMMON::xy_to_i(ci,cj,c_tile_width);
+							int hm_xyi = COMMON::xy_to_i(i_off,j_off,h);
 							
 							//insanity check
 							if(cxyi < 0) continue;
@@ -233,8 +233,8 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 				{
 					if(!zcore->CannonPlacable(bo, i ,j)) continue;
 					
-					float val = hm_data[xy_to_i(i,j,h)] + hm_data[xy_to_i(i+1,j,h)] +
-									hm_data[xy_to_i(i,j+1,h)] + hm_data[xy_to_i(i+1,j+1,h)];
+					float val = hm_data[COMMON::xy_to_i(i,j,h)] + hm_data[COMMON::xy_to_i(i+1,j,h)] +
+									hm_data[COMMON::xy_to_i(i,j+1,h)] + hm_data[COMMON::xy_to_i(i+1,j+1,h)];
 									
 					if(val > 0) results[val].push_back(std::pair<int,int>(i,j));
 				}
@@ -431,7 +431,7 @@ void ZHeatMapBase::AddHeat(ZMap &tmap, int cx, int cy, int heat_dist, float weig
 	for(int i=sx;i<=ex;i++)
 		for(int j=sy;j<=ey;j++)
 		{
-			int xyi = xy_to_i(i,j,tmap.GetMapBasics().height);
+			int xyi = COMMON::xy_to_i(i,j,tmap.GetMapBasics().height);
 			
 			if(xyi < 0) continue;
 			if(xyi >= heatmap_size) continue;

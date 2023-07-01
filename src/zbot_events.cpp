@@ -1,7 +1,5 @@
 #include "zbot.h"
 
-using namespace COMMON;
-
 void ZBot::SetupEHandler()
 {
 	ehandler.SetParent(this);

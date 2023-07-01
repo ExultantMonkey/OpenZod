@@ -3,8 +3,6 @@
 
 #include "Util/Math.h"
 
-using namespace COMMON;
-
 void ZPlayer::SetupEHandler()
 {
 	ehandler.SetParent(this);
@@ -513,7 +511,7 @@ void ZPlayer::keydown_event(ZPlayer *p, char *data, int size, int dummy)
 			{
 				p->up_down = true;
 				p->vert_scroll_over = 0;
-				p->last_vert_scroll_time = current_time();
+				p->last_vert_scroll_time = COMMON::current_time();
 			}
 			break;
 		case 274: //down
@@ -522,7 +520,7 @@ void ZPlayer::keydown_event(ZPlayer *p, char *data, int size, int dummy)
 			{
 				p->down_down = true;
 				p->vert_scroll_over = 0;
-				p->last_vert_scroll_time = current_time();
+				p->last_vert_scroll_time = COMMON::current_time();
 			}
 			break;
 		case 275: //right
@@ -531,7 +529,7 @@ void ZPlayer::keydown_event(ZPlayer *p, char *data, int size, int dummy)
 			{
 				p->right_down = true;
 				p->horz_scroll_over = 0;
-				p->last_horz_scroll_time = current_time();
+				p->last_horz_scroll_time = COMMON::current_time();
 			}
 			break;
 		case 276: //left
@@ -540,7 +538,7 @@ void ZPlayer::keydown_event(ZPlayer *p, char *data, int size, int dummy)
 			{
 				p->left_down = true;
 				p->horz_scroll_over = 0;
-				p->last_horz_scroll_time = current_time();
+				p->last_horz_scroll_time = COMMON::current_time();
 			}
 			break;
 		case 304: //left shift
@@ -725,7 +723,7 @@ void ZPlayer::display_news_event(ZPlayer *p, char *data, int size, int dummy)
 
 
 	//set death time
-	new_entry->death_time = current_time() + lasting_time;
+	new_entry->death_time = COMMON::current_time() + lasting_time;
 
 	if(new_entry->text_image.GetBaseSurface())
 	  p->news_list.insert(p->news_list.begin(), new_entry);
@@ -1365,7 +1363,7 @@ void ZPlayer::poll_buy_regkey(ZPlayer *p, char *data, int size, int dummy)
 	}
 	else
 	{
-		if(!file_can_be_written("registration.zkey"))
+		if(!COMMON::file_can_be_written("registration.zkey"))
 		{
 			p->AddNewsEntry("can not open registration file for writing, please visit www.nighsoft.com for troubleshooting");
 			return;

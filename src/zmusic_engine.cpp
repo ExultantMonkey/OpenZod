@@ -3,8 +3,6 @@
 
 #include "Util/Math.h"
 
-using namespace COMMON;
-
 bool ZMusicEngine::sound_system_on = true;
 
 Mix_Music *ZMusicEngine::splash_music;
@@ -216,7 +214,7 @@ void ZMusicEngine::Process(std::vector<ZObject*> &object_list, ZMap &tmap, int o
 {
 	if(!playing_planet_music) return;
 
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	static double next_check_time = 0;
 	ZObject *our_fort = NULL;
 
@@ -322,7 +320,7 @@ void ZMusicEngine::SetDangerLevel(int d_level_)
 	if(d_level_ < 0) return;
 	if(d_level_ >= M_MAX_DANGER_LEVELS) return;
 
-	//if(current_time() < next_change_d_level_time) return;
+	//if(COMMON::current_time() < next_change_d_level_time) return;
 
 	if(d_level_ == d_level) return;
 
@@ -356,7 +354,7 @@ void ZMusicEngine::ResetMusic()
 		printf("Mix_SetMusicPosition: %s\n", Mix_GetError());
 
 	//tell the system when to reset again
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	do_next_reset = true;
 	next_reset_time = the_time + d_level_start[p_type][d_level][random_s].length;
 

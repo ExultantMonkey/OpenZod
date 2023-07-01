@@ -4,8 +4,6 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace COMMON;
-
 ZServer::ZServer() : ZCore()
 {
 	//setup randomizer
@@ -260,7 +258,7 @@ void ZServer::ProcessEndGame()
 	if(map_list.size())
 	{
 		do_reset_game = true;
-		next_reset_game_time = current_time() + 10.0;
+		next_reset_game_time = COMMON::current_time() + 10.0;
 	}
 
 	//give clients the game over message
@@ -284,7 +282,7 @@ void ZServer::DoResetGame(std::string map_name)
 
 void ZServer::CheckResetGame()
 {
-	if(game_on || !map_list.size() || (current_time() < next_reset_game_time))
+	if(game_on || !map_list.size() || (COMMON::current_time() < next_reset_game_time))
 	{
 		return;	
 	}
@@ -434,14 +432,14 @@ bool ZServer::ReadMapList()
 	//random?
 	if(fgets(cur_line , 500 , fp))
 	{
-		clean_newline(cur_line, 500);
+		COMMON::clean_newline(cur_line, 500);
 		load_maps_randomly = atoi(cur_line);
 	}
 
 	//all the maps
 	while(fgets(cur_line , 500 , fp))
 	{
-		clean_newline(cur_line, 500);
+		COMMON::clean_newline(cur_line, 500);
 		if(strlen(cur_line))
 		{
 			map_list.push_back(cur_line);
@@ -477,7 +475,7 @@ bool ZServer::ReadSelectableMapList()
 	//load the maps
 	while(fgets(cur_line , 500 , fp))
 	{
-		clean_newline(cur_line, 500);
+		COMMON::clean_newline(cur_line, 500);
 		if(strlen(cur_line))
 		{
 			selectable_map_list.push_back(cur_line);
@@ -492,11 +490,11 @@ bool ZServer::ReadSelectableMapList()
 
 bool ZServer::ReadSelectableMapListFromFolder(std::string foldername)
 {
-	std::vector<std::string> mlist = directory_filelist(foldername);
+	std::vector<std::string> mlist = COMMON::directory_filelist(foldername);
 	//find only .maps
-	parse_filelist(mlist, ".map");
+	COMMON::parse_filelist(mlist, ".map");
 	//sort list
-	sort(mlist.begin(), mlist.end(), sort_string_func);
+	sort(mlist.begin(), mlist.end(), COMMON::sort_string_func);
 
 	if(!mlist.size())
 	{
@@ -915,7 +913,7 @@ void ZServer::Run()
 		CheckUpdateOnlineHistory();
 		
 		//pause
-		uni_pause(10);
+		COMMON::uni_pause(10);
 	}
 }
 
@@ -3048,7 +3046,7 @@ void ZServer::InitOnlineHistory()
 		return;
 	}
 
-	next_online_history_time = current_time() + (60 * 15);
+	next_online_history_time = COMMON::current_time() + (60 * 15);
 	next_online_history_player_count = 0;
 	next_online_history_tray_player_count = 0;
 }
@@ -3060,7 +3058,7 @@ void ZServer::CheckUpdateOnlineHistory()
 		return;
 	}
 
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	if(the_time < next_online_history_time)
 	{
 		return;
@@ -3723,7 +3721,7 @@ void ZServer::AttemptPlayerLogin(int player, std::string loginname, std::string 
 		return;
 	}
 
-	if(!good_user_string(loginname.c_str()) || !good_user_string(password.c_str()))
+	if(!COMMON::good_user_string(loginname.c_str()) || !COMMON::good_user_string(password.c_str()))
 	{
 		char message[500];
 		sprintf(message, "login error: only alphanumeric characters and entries under %d characters long allowed", MAX_PLAYER_NAME_SIZE);
@@ -4014,7 +4012,7 @@ void ZServer::ReshuffleTeams()
 
 void ZServer::CheckPlayerSuggestions()
 {
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 
 	if(the_time < next_make_suggestions_time)
 	{

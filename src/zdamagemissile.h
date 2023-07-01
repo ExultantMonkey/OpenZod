@@ -5,8 +5,6 @@
 
 #include "common.h"
 
-using namespace COMMON;
-
 class damage_missile
 {
 public:

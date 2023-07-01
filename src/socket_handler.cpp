@@ -10,8 +10,6 @@
 #include "socket_handler.h"
 #include "common.h"
 
-using namespace COMMON;
-
 SocketHandler::SocketHandler()
 {
 	connected = 0;
@@ -394,17 +392,17 @@ int SocketHandler::pause_for_send()
 	
 	if(socket_good_to_send(kill_me)) return 1;
 	
-	start_time = current_time();
+	start_time = COMMON::current_time();
 	
 	do
 	{
-		uni_pause(10);
+		COMMON::uni_pause(10);
 		
 		printf("pause_for_send:had to begin pausing\n");
 		
 		if(socket_good_to_send(kill_me)) return 1;
 		if(kill_me) return 0;
-	} while(current_time() - start_time < max_wait);
+	} while(COMMON::current_time() - start_time < max_wait);
 	
 	return 0;
 }

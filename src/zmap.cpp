@@ -15,8 +15,6 @@ SDL_mutex *ZMap::init_mutex = SDL_CreateMutex();
 
 //Mix_Music *ZMap::music[MAX_PLANET_TYPES];
 
-using namespace COMMON;
-
 ZMap::ZMap()
 {
 	//full_render = NULL;
@@ -1334,7 +1332,7 @@ double ZMap::ShiftViewDifference()
 {
 	double shift_difference;
 	double time_difference;
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	
 	time_difference = the_time - last_shift_time;
 	if(time_difference > SHIFT_CLICK_STREAM)
@@ -1934,12 +1932,12 @@ void ZMap::CreateCrater(int x, int y, bool is_big, double chance)
 		}
 		else
 		{
-			std::vector<xy_struct> ok_points;
+			std::vector<COMMON::xy_struct> ok_points;
 
-			if(!stamp_list[tx][ty]) ok_points.push_back(xy_struct(tx, ty));
-			if(!stamp_list[tx+1][ty]) ok_points.push_back(xy_struct(tx+1, ty));
-			if(!stamp_list[tx][ty+1]) ok_points.push_back(xy_struct(tx, ty+1));
-			if(!stamp_list[tx+1][ty+1]) ok_points.push_back(xy_struct(tx+1, ty+1));
+			if(!stamp_list[tx][ty]) ok_points.push_back(COMMON::xy_struct(tx, ty));
+			if(!stamp_list[tx+1][ty]) ok_points.push_back(COMMON::xy_struct(tx+1, ty));
+			if(!stamp_list[tx][ty+1]) ok_points.push_back(COMMON::xy_struct(tx, ty+1));
+			if(!stamp_list[tx+1][ty+1]) ok_points.push_back(COMMON::xy_struct(tx+1, ty+1));
 
 			if(!ok_points.size()) return;
 			if(ok_points.size() < 4)
@@ -1972,12 +1970,12 @@ void ZMap::CreateCrater(int x, int y, bool is_big, double chance)
 			is_big = false;
 
 			//can not do a big but maybe a small?
-			std::vector<xy_struct> ok_points;
+			std::vector<COMMON::xy_struct> ok_points;
 
-			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, tile_crater_type)) ok_points.push_back(xy_struct(tx,ty));
-			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, rct)) ok_points.push_back(xy_struct(tx+1,ty));
-			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, dct)) ok_points.push_back(xy_struct(tx,ty+1));
-			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, drct)) ok_points.push_back(xy_struct(tx+1,ty+1));
+			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, tile_crater_type)) ok_points.push_back(COMMON::xy_struct(tx,ty));
+			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, rct)) ok_points.push_back(COMMON::xy_struct(tx+1,ty));
+			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, dct)) ok_points.push_back(COMMON::xy_struct(tx,ty+1));
+			if(ZMapCraterGraphics::CraterExists(true, basic_info.terrain_type, drct)) ok_points.push_back(COMMON::xy_struct(tx+1,ty+1));
 
 			//no good choices at all?
 			if(!ok_points.size()) return;

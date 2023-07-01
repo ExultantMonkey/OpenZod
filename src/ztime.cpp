@@ -1,8 +1,6 @@
 #include "ztime.h"
 #include "common.h"
 
-using namespace COMMON;
-
 ZTime::ZTime()
 {
 	ztime = 0;
@@ -16,9 +14,9 @@ ZTime::ZTime()
 
 void ZTime::UpdateTime()
 {
-	//if(!paused) ztime = current_time() - lost_time;
+	//if(!paused) ztime = COMMON::current_time() - lost_time;
 
-	if(!paused) ztime = last_change_front_time + ((current_time() - last_change_back_time) * game_speed);
+	if(!paused) ztime = last_change_front_time + ((COMMON::current_time() - last_change_back_time) * game_speed);
 }
 
 void ZTime::Pause()
@@ -27,9 +25,9 @@ void ZTime::Pause()
 
 	paused = true;
 
-	//pause_time = current_time();
+	//pause_time = COMMON::current_time();
 
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	last_change_front_time = last_change_front_time + ((the_time - last_change_back_time) * game_speed);
 	last_change_back_time = the_time;
 }
@@ -40,9 +38,9 @@ void ZTime::Resume()
 
 	paused = false;
 
-	//lost_time += current_time() - pause_time;
+	//lost_time += COMMON::current_time() - pause_time;
 
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	//last_change_front_time = last_change_front_time + ((the_time - last_change_back_time) * 0);
 	last_change_back_time = the_time;
 }
@@ -53,7 +51,7 @@ void ZTime::SetGameSpeed(double new_speed)
 
 	if(!paused)
 	{
-		double the_time = current_time();
+		double the_time = COMMON::current_time();
 		last_change_front_time = last_change_front_time + ((the_time - last_change_back_time) * game_speed);
 		last_change_back_time = the_time;
 	}

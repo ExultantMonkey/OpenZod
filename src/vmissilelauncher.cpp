@@ -1,7 +1,5 @@
 #include "vmissilelauncher.h"
 
-using namespace COMMON;
-
 const double turrent_time_int = 1.0;
 
 ZSDL_Surface VMissileLauncher::base[MAX_TEAM_TYPES][MAX_ANGLE_TYPES][3];

@@ -1,8 +1,6 @@
 #include "client_socket.h"
 #include "common.h"
 
-using namespace COMMON;
-
 ClientSocket::ClientSocket()
 {
 	s = -1;
@@ -110,9 +108,9 @@ int ClientSocket::Connect()
 
 	while(connect(s, (struct sockaddr *)&c_in, sizeof c_in) < 0)
 	{
-		static double first_failure = current_time();
+		static double first_failure = COMMON::current_time();
 		
-		if(current_time() - first_failure > 15.0)
+		if(COMMON::current_time() - first_failure > 15.0)
 		{
 			printf("could not connect to '%s'\n", address.c_str());
 			return 0;

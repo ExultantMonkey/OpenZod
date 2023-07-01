@@ -74,7 +74,7 @@ void GMMWList::Process()
 
 	if(up_button_state==MMLIST_PRESSED)
 	{
-		the_time = current_time();
+		the_time = COMMON::current_time();
 		time_dif = the_time - button_down_time;
 		if(time_dif < 0) return;
 		clicks_to_go = time_dif * clicks_per_second;
@@ -89,7 +89,7 @@ void GMMWList::Process()
 	
 	if(down_button_state==MMLIST_PRESSED)
 	{
-		the_time = current_time();
+		the_time = COMMON::current_time();
 		time_dif = the_time - button_down_time;
 		if(time_dif < 0) return;
 		clicks_to_go = time_dif * clicks_per_second;
@@ -156,13 +156,13 @@ bool GMMWList::Click(int x_, int y_)
 	if(WithinUpButton(x_, y_)) 
 	{ 
 		up_button_state=MMLIST_PRESSED; 
-		button_down_time=current_time()+0.2;
+		button_down_time=COMMON::current_time()+0.2;
 		return true; 
 	}
 	if(WithinDownButton(x_, y_)) 
 	{ 
 		down_button_state=MMLIST_PRESSED; 
-		button_down_time=current_time()+0.2;
+		button_down_time=COMMON::current_time()+0.2;
 		return true; 
 	}
 

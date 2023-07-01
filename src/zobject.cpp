@@ -7,8 +7,6 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace COMMON;
-
 ZSettings ZObject::default_zsettings;
 
 ZSDL_Surface ZObject::group_tag[10];

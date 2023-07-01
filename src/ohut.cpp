@@ -160,7 +160,7 @@ void OHut::SendAnimalsHome(int amount)
 
 bool OHut::GetExitToTile(int &tx, int &ty)
 {
-	std::vector<xy_struct> possible_list;
+	std::vector<COMMON::xy_struct> possible_list;
 	int itx, ity;
 	int ctx, cty;
 	int rand_choice;
@@ -183,7 +183,7 @@ bool OHut::GetExitToTile(int &tx, int &ty)
 
 			if(!zmap->GetPathFinder().TilePassable(itx, ity, false)) continue;
 
-			xy_struct new_xy;
+			COMMON::xy_struct new_xy;
 			new_xy.x = itx;
 			new_xy.y = ity;
 			possible_list.push_back(new_xy);

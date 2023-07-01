@@ -11,8 +11,6 @@
 #include "common.h"
 #include <math.h>
 
-using namespace COMMON;
-
 class effect_flags
 {
 public:

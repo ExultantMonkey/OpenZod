@@ -5,8 +5,6 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace COMMON;
-
 ZBot::ZBot() : ZClient()
 {
 	player_name = "Bot";
@@ -59,7 +57,7 @@ void ZBot::Run()
 		//do bot AI
 		ProcessAI();
 		
-		uni_pause(10);
+		COMMON::uni_pause(10);
 	}
 }
 

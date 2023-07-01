@@ -49,8 +49,8 @@ EBridgeTurrent::EBridgeTurrent(ZTime *ztime_, int x_, int y_, int palette_, int 
 
 	if(is_reversed)
 	{
-		swap(sx, ex);
-		swap(sy, ey);
+		COMMON::swap(sx, ex);
+		COMMON::swap(sy, ey);
 	}
 
 	x = sx;

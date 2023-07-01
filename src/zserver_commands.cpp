@@ -2,8 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace COMMON;
-
 void ParseCommandContents(std::string contents, std::string *output, int max_values)
 {
 	unsigned int pos = 0;

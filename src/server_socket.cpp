@@ -1,8 +1,6 @@
 #include "server_socket.h"
 #include "common.h"
 
-using namespace COMMON;
-
 ServerSocket::ServerSocket()
 {
 	started = 0;
@@ -201,7 +199,7 @@ int ServerSocket::Bind()
 	while(bind(s, (struct sockaddr *) &si_me, sizeof(si_me))==-1)
 	{
 		printf("ServerSocket::Bind:error binding socket\n");
-		uni_pause(5000);
+		COMMON::uni_pause(5000);
 	}
 	
 	return 1;
@@ -217,7 +215,7 @@ int ServerSocket::Listen()
 	while (listen(s, 5) == -1)
 	{
 		printf("ServerSocket::Listen:error starting listen\n");
-		uni_pause(5000);
+		COMMON::uni_pause(5000);
 	}
 	
 #ifdef _WIN32

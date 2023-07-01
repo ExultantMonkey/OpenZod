@@ -5,8 +5,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-using namespace COMMON;
-
 ZPSettings::ZPSettings()
 {
 	LoadDefaults();
@@ -51,7 +49,7 @@ bool ZPSettings::LoadSettings(std::string filename)
 
 	while(fgets(cur_line , buf_size , fp))
 	{
-		clean_newline(cur_line, buf_size);
+		COMMON::clean_newline(cur_line, buf_size);
 
 		if(strlen(cur_line))
 		{
@@ -61,8 +59,8 @@ bool ZPSettings::LoadSettings(std::string filename)
 			if(cur_line[0] == '#') continue;
 
 			//parse this line
-			split(variable, cur_line, '=', &pt, buf_size, buf_size);
-			split(value, cur_line, '=', &pt, buf_size, buf_size);
+			COMMON::split(variable, cur_line, '=', &pt, buf_size, buf_size);
+			COMMON::split(value, cur_line, '=', &pt, buf_size, buf_size);
 
 			if(!strcmp(variable, "use_database"))
 				use_database = atoi(value);

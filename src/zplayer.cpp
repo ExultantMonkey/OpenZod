@@ -5,8 +5,6 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace COMMON;
-
 void selection_info::DeleteObject(ZObject *obj)
 {
 	ZObject::RemoveObjectFromList(obj, selected_list);
@@ -828,7 +826,7 @@ void ZPlayer::AddNewsEntry(std::string message, int r, int g, int b)
 	new_entry->text_image.MakeAlphable();
 
 	//set death time
-	new_entry->death_time = current_time() + lasting_time;
+	new_entry->death_time = COMMON::current_time() + lasting_time;
 
 	if(new_entry->text_image.GetBaseSurface())
 	{
@@ -1115,7 +1113,7 @@ void ZPlayer::Run()
 		//render
 		RenderScreen();
 		
-		uni_pause(10);
+		COMMON::uni_pause(10);
 	}
 }
 
@@ -1161,7 +1159,7 @@ void ZPlayer::ProcessGame()
 	cursor.Process(the_time);
 	Pcursor.Process(the_time);
 
-	zcomp_msg.Process(current_time());
+	zcomp_msg.Process(COMMON::current_time());
 
 	zhud.Process(the_time, object_list);
 		
@@ -1909,7 +1907,7 @@ void ZPlayer::Z_Button()
 void ZPlayer::OrderlySelectUnitType(int type)
 {
 	static double last_time = -100;
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	static int last_ref_id_default = -1;
 	static int last_ref_id_cannon = -1;
 	static int last_ref_id_robot = -1;
@@ -2085,7 +2083,7 @@ void ZPlayer::FocusCameraTo(int map_x, int map_y)
 	double dy = focus_to_y - shift_y;
 	focus_to_original_distance = sqrt((dx *dx) + (dy * dy));
 
-	last_focus_to_time = current_time();
+	last_focus_to_time = COMMON::current_time();
 
 	final_focus_to_time = last_focus_to_time + 0.7;
 
@@ -2184,23 +2182,23 @@ void ZPlayer::StartMouseScrolling(int new_mouse_x, int new_mouse_y)
 	if(!(mouse_x < 10) && (new_mouse_x < 10)) 
 	{
 		horz_scroll_over = 0;
-		last_horz_scroll_time = current_time();
+		last_horz_scroll_time = COMMON::current_time();
 	}
 	else if(!(mouse_x > screen->w - 10) && (new_mouse_x > screen->w - 10)) 
 	{
 		horz_scroll_over = 0;
-		last_horz_scroll_time = current_time();
+		last_horz_scroll_time = COMMON::current_time();
 	}
 
 	if(!(mouse_y < 10) && (new_mouse_y < 10)) 
 	{
 		vert_scroll_over = 0;
-		last_vert_scroll_time = current_time();
+		last_vert_scroll_time = COMMON::current_time();
 	}
 	else if(!(mouse_y > screen->h - 10) && (new_mouse_y > screen->h - 10)) 
 	{
 		vert_scroll_over = 0;
-		last_vert_scroll_time = current_time();
+		last_vert_scroll_time = COMMON::current_time();
 	}
 }
 
@@ -2246,7 +2244,7 @@ bool ZPlayer::DoKeyScrollDown()
 
 void ZPlayer::ProcessScroll()
 {
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	const double shift_speed = 400;
 	double time_diff;
 	double the_shift;
@@ -2379,7 +2377,7 @@ void ZPlayer::ShowPcursor(int mx, int my)
 
 void ZPlayer::RenderNews()
 {
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	const int y_int = 15;
 	const double start_fade_time = 5;
 	const int max_news_history = 50;
@@ -2765,11 +2763,11 @@ void ZPlayer::DoSplash()
 		{
 			if(!did_init)
 			{
-				last_time = current_time();
+				last_time = COMMON::current_time();
 				did_init = true;
 			}
 			
-			splash_fade -= (float)(current_time() - last_time) * fade_per_second;
+			splash_fade -= (float)(COMMON::current_time() - last_time) * fade_per_second;
 			if(splash_fade < 0)
 			{
 				splash_fade = 0;

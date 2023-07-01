@@ -1,7 +1,5 @@
 #include "vapc.h"
 
-using namespace COMMON;
-
 const double turrent_time_int = 0.2;
 
 ZSDL_Surface VAPC::base[MAX_TEAM_TYPES][MAX_ANGLE_TYPES][3];

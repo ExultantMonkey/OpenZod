@@ -2,8 +2,6 @@
 #include "zsdl.h"
 #include "common.h"
 
-using namespace COMMON;
-
 namespace ZPath_Finding_AStar
 {
 	inline int gf(int &cx, int &cy, int &nx, int &ny, ZPath_Finding_Response *response);
@@ -310,7 +308,7 @@ namespace ZPath_Finding_AStar
 		open_list.AddPoint(sp);
 		//open_list.list[open_list.size++] = pf_point(start_x, start_y);
 
-		tick_time = current_time();
+		tick_time = COMMON::current_time();
 		//start_time = tick_time;
 		total_ticks = 0;
 		pause_ticks = 0;
@@ -363,11 +361,11 @@ namespace ZPath_Finding_AStar
 			{
 				pause_ticks = 0;
 				
-				double diff_time = current_time() - tick_time;
+				double diff_time = COMMON::current_time() - tick_time;
 				if(diff_time > 0.01)
 				{
 					SDL_Delay(1000 * diff_time * 0.4 * ZPath_Finding_Response::existing_responses);
-					tick_time = current_time();
+					tick_time = COMMON::current_time();
 				}
 			}
 
@@ -380,7 +378,7 @@ namespace ZPath_Finding_AStar
 				return;
 			}
 		}
-		//end_time = current_time();
+		//end_time = COMMON::current_time();
 
 		std::vector<pf_point> final_path;
 		if(cp.x == end_x && cp.y == end_y)

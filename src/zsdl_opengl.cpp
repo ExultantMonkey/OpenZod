@@ -5,8 +5,6 @@
 
 #include "Util/Math.h"
 
-using namespace COMMON;
-
 void InitOpenGL()
 {
 #ifndef DISABLE_OPENGL

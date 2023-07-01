@@ -2,8 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace COMMON;
-
 void ZServer::SetupEHandler()
 {
 	ehandler.SetParent(this);
@@ -892,8 +890,8 @@ void ZServer::player_login_event(ZServer *p, char *data, int size, int player)
 	char password[500];
 	int i=0;
 
-	split(loginname, data, ',', &i, 500, size-1);
-	split(password, data, ',', &i, 500, size-1);
+	COMMON::split(loginname, data, ',', &i, 500, size-1);
+	COMMON::split(password, data, ',', &i, 500, size-1);
 
 	if(!loginname[0])
 	{
@@ -904,11 +902,11 @@ void ZServer::player_login_event(ZServer *p, char *data, int size, int player)
 		return;
 	}
 
-	if(!good_user_string(loginname))
+	if(!COMMON::good_user_string(loginname))
 	{
 		return;
 	}
-	if(!good_user_string(password))
+	if(!COMMON::good_user_string(password))
 	{
 		return;
 	}
@@ -934,10 +932,10 @@ void ZServer::create_user_event(ZServer *p, char *data, int size, int player)
 	char email[500];
 	int i=0;
 
-	split(username, data, ',', &i, 500, size-1);
-	split(loginname, data, ',', &i, 500, size-1);
-	split(password, data, ',', &i, 500, size-1);
-	split(email, data, ',', &i, 500, size-1);
+	COMMON::split(username, data, ',', &i, 500, size-1);
+	COMMON::split(loginname, data, ',', &i, 500, size-1);
+	COMMON::split(password, data, ',', &i, 500, size-1);
+	COMMON::split(email, data, ',', &i, 500, size-1);
 
 	if(!username[0])
 	{
@@ -956,19 +954,19 @@ void ZServer::create_user_event(ZServer *p, char *data, int size, int player)
 		return;
 	}
 
-	if(!good_user_string(username))
+	if(!COMMON::good_user_string(username))
 	{
 		return;
 	}
-	if(!good_user_string(loginname))
+	if(!COMMON::good_user_string(loginname))
 	{
 		return;
 	}
-	if(!good_user_string(password))
+	if(!COMMON::good_user_string(password))
 	{
 		return;
 	}
-	if(!good_user_string(email))
+	if(!COMMON::good_user_string(email))
 	{
 		return;
 	}
@@ -1034,7 +1032,7 @@ void ZServer::buy_regkey_event(ZServer *p, char *data, int size, int player)
 	p->server_socket.SendMessage(player, RETURN_REGKEY, (const char*)&packet, sizeof(buy_registration_packet));
 
 	//log the transaction
-	printd_reg((char*)std::string(p->player_info[player].name + " bought a registration key for " + data_to_hex_string((unsigned char*)pi->buf, 16)).c_str());
+	COMMON::printd_reg((char*)std::string(p->player_info[player].name + " bought a registration key for " + COMMON::data_to_hex_string((unsigned char*)pi->buf, 16)).c_str());
 
 #endif
 }

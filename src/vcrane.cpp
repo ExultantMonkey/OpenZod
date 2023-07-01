@@ -1,7 +1,5 @@
 #include "vcrane.h"
 
-using namespace COMMON;
-
 const double turrent_time_int = 1.0;
 const double hook_time_int = 0.7;
 

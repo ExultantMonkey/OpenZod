@@ -8,8 +8,6 @@
 
 #include <SDL/SDL_ttf.h>
 
-using namespace COMMON;
-
 enum editor_mode
 {
 	NORMAL_MODE, MAP_MODE, USABLE_MODE, PASSABLE_MODE,
@@ -140,7 +138,7 @@ int main(int argc, char **argv)
 				break;
 		}
 		
-		uni_pause(10);
+		COMMON::uni_pause(10);
 	}
 	
 	return 0;

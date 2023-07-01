@@ -1,8 +1,6 @@
 #include "zvote.h"
 #include "common.h"
 
-using namespace COMMON;
-
 ZSDL_Surface ZVote::vote_in_progress_img;
 
 ZVote::ZVote()
@@ -102,7 +100,7 @@ bool ZVote::StartVote(int vote_type_, int value_)
 	in_progress = true;
 	vote_type = vote_type_;
 	value = value_;
-	start_time = current_time();
+	start_time = COMMON::current_time();
 	end_time = start_time + MAX_VOTE_TIME;
 
 	return true;
@@ -110,7 +108,7 @@ bool ZVote::StartVote(int vote_type_, int value_)
 
 bool ZVote::TimeExpired()
 {
-	return current_time() >= end_time;
+	return COMMON::current_time() >= end_time;
 }
 
 void ZVote::SetVoteType(int vote_type_)

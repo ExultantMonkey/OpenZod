@@ -3,8 +3,6 @@
 
 #include "Util/Math.h"
 
-using namespace COMMON;
-
 bool zsdl_play_music = true;
 
 SDL_RotoZoomSurface::SDL_RotoZoomSurface()

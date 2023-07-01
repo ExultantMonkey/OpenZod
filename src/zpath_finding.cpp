@@ -6,8 +6,6 @@
 #include <string.h>
 #include <math.h>
 
-using namespace COMMON;
-
 int ZPath_Finding_Response::existing_responses = 0;
 
 void ZPath_Finding_Bresenham::Init(int stx_, int sty_, int etx_, int ety_, int w, int h)

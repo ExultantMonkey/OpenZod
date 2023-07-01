@@ -1,8 +1,6 @@
 #include "ztray.h"
 #include "common.h"
 
-using namespace COMMON;
-
 ZTray::ZTray() : ZClient()
 {
 	player_name = "Tray";
@@ -18,7 +16,7 @@ ZTray::ZTray() : ZClient()
 void ZTray::Setup()
 {
 	while(!client_socket.Start(remote_address.c_str()))
-		uni_pause(10000);
+		COMMON::uni_pause(10000);
 }
 
 void ZTray::Run()
@@ -31,7 +29,7 @@ void ZTray::Run()
 		//process events
 		ehandler.ProcessEvents();
 		
-		uni_pause(10);
+		COMMON::uni_pause(10);
 	}
 }
 
@@ -61,7 +59,7 @@ void ZTray::SetupEHandler()
 void ZTray::ProcessDisconnect()
 {
 	while(!client_socket.Start(remote_address.c_str()))
-		uni_pause(10000);
+		COMMON::uni_pause(10000);
 }
 
 void ZTray::SetUpdateCallBack(void (*update_func_)(ZTray*))

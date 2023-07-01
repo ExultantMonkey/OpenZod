@@ -3,8 +3,6 @@
 
 #include <stdio.h>
 
-using namespace COMMON;
-
 ZSettings::ZSettings()
 {
 	SetDefaults();
@@ -410,7 +408,7 @@ bool ZSettings::LoadSettings(std::string filename)
 
 	while(fgets(cur_line , buf_size , fp))
 	{
-		clean_newline(cur_line, buf_size);
+		COMMON::clean_newline(cur_line, buf_size);
 
 		if(strlen(cur_line))
 		{
@@ -420,14 +418,14 @@ bool ZSettings::LoadSettings(std::string filename)
 			if(cur_line[0] == '#') continue;
 
 			//parse this line
-			split(element_type, cur_line, '.', &pt, buf_size, buf_size);
-			split(element, cur_line, '.', &pt, buf_size, buf_size);
-			split(variable, cur_line, '=', &pt, buf_size, buf_size);
-			split(value, cur_line, '=', &pt, buf_size, buf_size);
+			COMMON::split(element_type, cur_line, '.', &pt, buf_size, buf_size);
+			COMMON::split(element, cur_line, '.', &pt, buf_size, buf_size);
+			COMMON::split(variable, cur_line, '=', &pt, buf_size, buf_size);
+			COMMON::split(value, cur_line, '=', &pt, buf_size, buf_size);
 
-			lcase(element_type, buf_size);
-			lcase(element, buf_size);
-			lcase(variable, buf_size);
+			COMMON::lcase(element_type, buf_size);
+			COMMON::lcase(element, buf_size);
+			COMMON::lcase(variable, buf_size);
 
 			if(!strcmp(element_type, "unit"))
 			{

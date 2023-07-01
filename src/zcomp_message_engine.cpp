@@ -3,8 +3,6 @@
 #include "zobject.h"
 #include "common.h"
 
-using namespace COMMON;
-
 ZSDL_Surface ZCompMessageEngine::robot_manufactured;
 ZSDL_Surface ZCompMessageEngine::vehicle_manufactured;
 ZSDL_Surface ZCompMessageEngine::gun_manufactured;
@@ -344,7 +342,7 @@ void ZCompMessageEngine::DisplayMessage(int comp_message_, int ref_id_)
 {
 	double the_time;
 
-	the_time = current_time();
+	the_time = COMMON::current_time();
 
 	show_message = comp_message_;
 	next_flip_time = the_time + 0.3;

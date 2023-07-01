@@ -2,8 +2,6 @@
 #include "common.h"
 #include "zteam.h"
 
-using namespace COMMON;
-
 bool ZPortrait::finished_init = false;
 
 ZSDL_Surface ZPortrait::backdrop[MAX_PLANET_TYPES];
@@ -194,7 +192,7 @@ void ZPortrait::StartAnim(int anim_)
 
 	cur_anim = anim_;
 	render_frame = &anim_info[cur_anim].frame_list[0];
-	anim_start_time = current_time();
+	anim_start_time = COMMON::current_time();
 
 	PlayAnimSound();
 	//printf("StartAnim::%d:%s\n", cur_anim, portrait_anim_string[cur_anim].c_str());
@@ -229,7 +227,7 @@ bool ZPortrait::DoingAnim()
 
 int ZPortrait::Process()
 {
-	double the_time = current_time();
+	double the_time = COMMON::current_time();
 	//static double next_test_anim_time = 0;
 
 	if(!finished_init) return 1;

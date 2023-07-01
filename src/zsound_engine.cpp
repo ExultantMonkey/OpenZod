@@ -1,8 +1,6 @@
 #include "zsound_engine.h"
 #include "common.h"
 
-using namespace COMMON;
-
 bool ZSoundEngine::finished_init = NULL;
 ZMap *ZSoundEngine::zmap = NULL;
 ZSound ZSoundEngine::engine_sound[MAX_ENGINE_SOUNDS];
@@ -62,7 +60,7 @@ void ZSound::PlaySound()
 
 	if(!snd_chunk) return;
 
-	the_time = current_time();
+	the_time = COMMON::current_time();
 
 	if(the_time < next_play_time) return;
 

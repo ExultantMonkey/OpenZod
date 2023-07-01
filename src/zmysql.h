@@ -19,8 +19,6 @@
 #include "constants.h"
 #include "common.h"
 
-using namespace COMMON;
-
 class ZMysqlUser
 {
 public:
@@ -83,10 +81,10 @@ public:
 		if(password.length() > MAX_PLAYER_NAME_SIZE) return false;
 		if(email.length() > 250) return false;
 
-		if(!good_user_string(username.c_str())) return false;
-		if(!good_user_string(loginname.c_str())) return false;
-		if(!good_user_string(password.c_str())) return false;
-		if(!good_user_string(email.c_str())) return false;
+		if(!COMMON::good_user_string(username.c_str())) return false;
+		if(!COMMON::good_user_string(loginname.c_str())) return false;
+		if(!COMMON::good_user_string(password.c_str())) return false;
+		if(!COMMON::good_user_string(email.c_str())) return false;
 
 		return true;
 	}

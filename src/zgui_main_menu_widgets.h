@@ -8,8 +8,6 @@
 #include "zfont_engine.h"
 #include "common.h"
 
-using namespace COMMON;
-
 class gmmw_flag
 {
 public:

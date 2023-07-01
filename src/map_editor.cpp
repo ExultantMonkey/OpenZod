@@ -64,9 +64,6 @@ TCHAR *optarg;
 #define MINIMAP_X 5
 #define MINIMAP_Y 400
 
-using namespace COMMON;
-using namespace std;
-
 //editor modes
 enum map_editor_mode
 {
@@ -424,8 +421,8 @@ int main(int argc, char **argv)
 				break;
 		}
 		
-// 		if(edit_map.DoEffects(current_time())) draw_map();
-		double the_time = current_time();
+// 		if(edit_map.DoEffects(COMMON::current_time())) draw_map();
+		double the_time = COMMON::current_time();
 		ztime.UpdateTime();
 
 		ProcessScroll(the_time);
@@ -441,7 +438,7 @@ int main(int argc, char **argv)
 
 		SDL_Flip(screen);
 		
-		uni_pause(10);
+		COMMON::uni_pause(10);
 	}
 	
 	return 0;
@@ -476,7 +473,7 @@ void do_print_screen()
 		edit_map.DoRender(print_surface);
 
 		//draw zones
-		edit_map.DoZoneEffects(current_time(), print_surface);
+		edit_map.DoZoneEffects(COMMON::current_time(), print_surface);
 	
 		//draw objects
 		for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
@@ -725,28 +722,28 @@ void process_button_pressed(int c)
 		case 273: //up
 			up_down = true;
 			vert_scroll_over = 0;
-			last_vert_scroll_time = current_time();
+			last_vert_scroll_time = COMMON::current_time();
 			//edit_map.ShiftViewUp();
 			//draw_map();
 			break;
 		case 274: //down
 			down_down = true;
 			vert_scroll_over = 0;
-			last_vert_scroll_time = current_time();
+			last_vert_scroll_time = COMMON::current_time();
 			//edit_map.ShiftViewDown();
 			//draw_map();
 			break;
 		case 275: //right
 			right_down = true;
 			horz_scroll_over = 0;
-			last_horz_scroll_time = current_time();
+			last_horz_scroll_time = COMMON::current_time();
 			//edit_map.ShiftViewRight();
 			//draw_map();
 			break;
 		case 276: //left
 			left_down = true;
 			horz_scroll_over = 0;
-			last_horz_scroll_time = current_time();
+			last_horz_scroll_time = COMMON::current_time();
 			//edit_map.ShiftViewLeft();
 			//draw_map();
 			break;
@@ -1908,10 +1905,10 @@ void draw_map(bool flip)
 	edit_map.DoRender(screen, MAP_SHIFT_X);
 	
 	//do map effects
-	//edit_map.DoEffects(current_time(), screen, MAP_SHIFT_X);
+	//edit_map.DoEffects(COMMON::current_time(), screen, MAP_SHIFT_X);
 
 	//draw zones
-	edit_map.DoZoneEffects(current_time(), screen, MAP_SHIFT_X);
+	edit_map.DoZoneEffects(COMMON::current_time(), screen, MAP_SHIFT_X);
 	
 	//draw objects
 	for(vector<ZObject*>::iterator i=object_list.begin(); i!=object_list.end(); i++)
@@ -2185,9 +2182,9 @@ void draw_map(bool flip)
 // 				printf("%d %d %d %d\n", new_zone.x, new_zone.y, new_zone.w, new_zone.h);
 				if(new_zone.x == -1) break;
 				
-				if(current_time() - last_nz_time > 0.3)
+				if(COMMON::current_time() - last_nz_time > 0.3)
 				{
-					last_nz_time = current_time();
+					last_nz_time = COMMON::current_time();
 					nz_io++;
 					if(nz_io >= MAX_TEAM_TYPES) nz_io = 0;
 				}

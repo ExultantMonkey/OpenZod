@@ -1,7 +1,5 @@
 #include "zrobot.h"
 
-using namespace COMMON;
-
 #define GRENADE_TIME_INT 0.15
 
 ZSDL_Surface ZRobot::null_img;

@@ -1,7 +1,5 @@
 #include "vjeep.h"
 
-using namespace COMMON;
-
 const double base_time_int = 0.25;
 const double turrent_time_int = 1.0;
 

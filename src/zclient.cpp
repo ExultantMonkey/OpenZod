@@ -5,8 +5,6 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace COMMON;
-
 ZClient::ZClient() : ZCore()
 {
 	remote_address = "localhost";
@@ -929,7 +927,7 @@ bool ZClient::ProcessSelectableMapList(char *data, int size)
 
 	while(i < len)
 	{
-		split(buf, data, ',', &i, buf_size, len);
+		COMMON::split(buf, data, ',', &i, buf_size, len);
 		selectable_map_list.push_back(buf);
 	}
 

@@ -47,7 +47,7 @@ bool GMMWTextBox::KeyPress(int c)
 	else
 	{
 		if(max_text != -1 && text.length() >= max_text) return true;
-		if(good_chars_only && !good_user_char(c)) return true;
+		if(good_chars_only && !COMMON::good_user_char(c)) return true;
 
 		//add it to the string
 		text += c;

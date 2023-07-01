@@ -209,8 +209,8 @@ void AHutAnimal::GotoRandomTile()
 	}
 	else
 	{
-		std::vector<xy_struct> possible_list;
-		std::vector<xy_struct> preferred_list;
+		std::vector<COMMON::xy_struct> possible_list;
+		std::vector<COMMON::xy_struct> preferred_list;
 		int itx, ity;
 		int rand_choice;
 
@@ -223,7 +223,7 @@ void AHutAnimal::GotoRandomTile()
 				if(!zmap->GetPathFinder().TilePassable(itx, ity, false)) continue;
 				if(TileIsTooFar(itx, ity)) continue;
 
-				xy_struct new_xy;
+				COMMON::xy_struct new_xy;
 				new_xy.x = itx;
 				new_xy.y = ity;
 				possible_list.push_back(new_xy);
