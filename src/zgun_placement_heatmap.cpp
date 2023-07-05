@@ -150,8 +150,8 @@ bool ZGunPlacementHeatMap::FindCannonPlace(ZCore *zcore, ZMap &tmap, ZSettings &
 	{
 		std::map<float, std::vector< std::pair<int,int> > > results;
 		int h = tmap.GetMapBasics().height;
-		double c_attack_radius = zsettings.GetUnitSettings(CANNON_OBJECT, coid).attack_radius;
-		int c_tile_dist = ceil((float)(zsettings.GetUnitSettings(CANNON_OBJECT, coid).attack_radius / 16));
+		double c_attack_radius = zsettings.GetUnitSettings(CANNON_OBJECT, coid).attackRadius;
+		int c_tile_dist = ceil((float)(zsettings.GetUnitSettings(CANNON_OBJECT, coid).attackRadius / 16));
 		int c_tile_width = c_tile_dist * 2;
 		int c_center = c_tile_dist * 16;
 		int c_size = c_tile_width * c_tile_width;

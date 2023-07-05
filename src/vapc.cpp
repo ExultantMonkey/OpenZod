@@ -275,14 +275,14 @@ void VAPC::ResetDamageInfo()
 	//exit with still cleared?
 	if(!driver_info.size()) return;
 
-	ZUnit_Settings &unit_settings = zsettings->GetUnitSettings(ROBOT_OBJECT, driver_type);
+	OpenZod::Core::UnitSettings &unit_settings = zsettings->GetUnitSettings(ROBOT_OBJECT, driver_type);
 
-	attack_radius = unit_settings.attack_radius;
-	damage = unit_settings.attack_damage * MAX_UNIT_HEALTH;
-	damage_chance = unit_settings.attack_damage_chance;
-	damage_int_time = unit_settings.attack_speed;
-	damage_radius = unit_settings.attack_damage_radius;
-	missile_speed = unit_settings.attack_missile_speed;
+	attack_radius = unit_settings.attackRadius;
+	damage = unit_settings.attackDamage * MAX_UNIT_HEALTH;
+	damage_chance = unit_settings.attackDamageChance;
+	damage_int_time = unit_settings.attackSpeed;
+	damage_radius = unit_settings.attackDamageRadius;
+	missile_speed = unit_settings.attackMissileSpeed;
 
 	if(driver_type == TOUGH)
 	{

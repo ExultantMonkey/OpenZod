@@ -1,4 +1,5 @@
 #include "zsettings.h"
+#include "Core/UnitSettings.h"
 #include "common.h"
 
 #include <stdio.h>
@@ -15,240 +16,240 @@ void ZSettings::SetDefaults()
 
 	//robots
 	oid = GRUNT;
-	robot_settings[oid].group_amount = 3;
-	robot_settings[oid].move_speed = 14;
-	robot_settings[oid].attack_radius = 120;
-	robot_settings[oid].attack_damage = 0.0011046;
-	robot_settings[oid].attack_damage_chance = 0.7;
-	robot_settings[oid].attack_damage_radius = 0;
-	robot_settings[oid].attack_missile_speed = 0;
-	robot_settings[oid].attack_speed = 0.5;
-	robot_settings[oid].attack_snipe_chance = 0.3;
+	robot_settings[oid].groupAmount = 3;
+	robot_settings[oid].moveSpeed = 14;
+	robot_settings[oid].attackRadius = 120;
+	robot_settings[oid].attackDamage = 0.0011046;
+	robot_settings[oid].attackDamageChance = 0.7;
+	robot_settings[oid].attackDamageRadius = 0;
+	robot_settings[oid].attackMissileSpeed = 0;
+	robot_settings[oid].attackSpeed = 0.5;
+	robot_settings[oid].attackSnipeChance = 0.3;
 	robot_settings[oid].health = 8.0 / 74;
-	robot_settings[oid].build_time = 1 * 60 + 12;
-	robot_settings[oid].max_run_time = run_past_radius * robot_settings[oid].attack_radius / robot_settings[oid].move_speed;
+	robot_settings[oid].buildTime = 1 * 60 + 12;
+	robot_settings[oid].maxRunTime = run_past_radius * robot_settings[oid].attackRadius / robot_settings[oid].moveSpeed;
 
 	oid = PSYCHO;
-	robot_settings[oid].group_amount = 3;
-	robot_settings[oid].move_speed = 12;
-	robot_settings[oid].attack_radius = 120;
-	robot_settings[oid].attack_damage = 0.002617;
-	robot_settings[oid].attack_damage_chance = 0.65;
-	robot_settings[oid].attack_damage_radius = 0;
-	robot_settings[oid].attack_missile_speed = 0;
-	robot_settings[oid].attack_speed = 0.1;
-	robot_settings[oid].attack_snipe_chance = 0.3;
+	robot_settings[oid].groupAmount = 3;
+	robot_settings[oid].moveSpeed = 12;
+	robot_settings[oid].attackRadius = 120;
+	robot_settings[oid].attackDamage = 0.002617;
+	robot_settings[oid].attackDamageChance = 0.65;
+	robot_settings[oid].attackDamageRadius = 0;
+	robot_settings[oid].attackMissileSpeed = 0;
+	robot_settings[oid].attackSpeed = 0.1;
+	robot_settings[oid].attackSnipeChance = 0.3;
 	robot_settings[oid].health = 13.0 / 74;
-	robot_settings[oid].build_time = 1 * 60 + 38;
-	robot_settings[oid].max_run_time = run_past_radius * robot_settings[oid].attack_radius / robot_settings[oid].move_speed;
+	robot_settings[oid].buildTime = 1 * 60 + 38;
+	robot_settings[oid].maxRunTime = run_past_radius * robot_settings[oid].attackRadius / robot_settings[oid].moveSpeed;
 
 	oid = SNIPER;
-	robot_settings[oid].group_amount = 3;
-	robot_settings[oid].move_speed = 14;
-	robot_settings[oid].attack_radius = 144;
-	robot_settings[oid].attack_damage = 0.007008;
-	robot_settings[oid].attack_damage_chance = 0.8;
-	robot_settings[oid].attack_damage_radius = 0;
-	robot_settings[oid].attack_missile_speed = 0;
-	robot_settings[oid].attack_speed = 0.4;
-	robot_settings[oid].attack_snipe_chance = 0.8;
+	robot_settings[oid].groupAmount = 3;
+	robot_settings[oid].moveSpeed = 14;
+	robot_settings[oid].attackRadius = 144;
+	robot_settings[oid].attackDamage = 0.007008;
+	robot_settings[oid].attackDamageChance = 0.8;
+	robot_settings[oid].attackDamageRadius = 0;
+	robot_settings[oid].attackMissileSpeed = 0;
+	robot_settings[oid].attackSpeed = 0.4;
+	robot_settings[oid].attackSnipeChance = 0.8;
 	robot_settings[oid].health = 13.0 / 74;
-	robot_settings[oid].build_time = 2 * 60 + 28;
-	robot_settings[oid].max_run_time = run_past_radius * robot_settings[oid].attack_radius / robot_settings[oid].move_speed;
+	robot_settings[oid].buildTime = 2 * 60 + 28;
+	robot_settings[oid].maxRunTime = run_past_radius * robot_settings[oid].attackRadius / robot_settings[oid].moveSpeed;
 	
 	oid = TOUGH;
-	robot_settings[oid].group_amount = 2;
-	robot_settings[oid].move_speed = 12;
-	robot_settings[oid].attack_radius = 120;
-	robot_settings[oid].attack_damage = 40.0 / 240;
-	robot_settings[oid].attack_damage_chance = 0;
-	robot_settings[oid].attack_damage_radius = 40;
-	robot_settings[oid].attack_missile_speed = 150;
-	robot_settings[oid].attack_speed = 1.442;
-	robot_settings[oid].attack_snipe_chance = 0.0;
+	robot_settings[oid].groupAmount = 2;
+	robot_settings[oid].moveSpeed = 12;
+	robot_settings[oid].attackRadius = 120;
+	robot_settings[oid].attackDamage = 40.0 / 240;
+	robot_settings[oid].attackDamageChance = 0;
+	robot_settings[oid].attackDamageRadius = 40;
+	robot_settings[oid].attackMissileSpeed = 150;
+	robot_settings[oid].attackSpeed = 1.442;
+	robot_settings[oid].attackSnipeChance = 0.0;
 	robot_settings[oid].health = 25.0 / 74;
-	robot_settings[oid].build_time = 1 * 60 + 56;
-	robot_settings[oid].max_run_time = 0.5 * run_past_radius * robot_settings[oid].attack_radius / robot_settings[oid].move_speed;
+	robot_settings[oid].buildTime = 1 * 60 + 56;
+	robot_settings[oid].maxRunTime = 0.5 * run_past_radius * robot_settings[oid].attackRadius / robot_settings[oid].moveSpeed;
 	
 	oid = PYRO;
-	robot_settings[oid].group_amount = 4;
-	robot_settings[oid].move_speed = 12;
-	robot_settings[oid].attack_radius = 120;
-	robot_settings[oid].attack_damage = 0.010486;
-	robot_settings[oid].attack_damage_chance = 0.7;
-	robot_settings[oid].attack_damage_radius = 0;
-	robot_settings[oid].attack_missile_speed = 0;
-	robot_settings[oid].attack_speed = 0.1;
-	robot_settings[oid].attack_snipe_chance = 0.0;
+	robot_settings[oid].groupAmount = 4;
+	robot_settings[oid].moveSpeed = 12;
+	robot_settings[oid].attackRadius = 120;
+	robot_settings[oid].attackDamage = 0.010486;
+	robot_settings[oid].attackDamageChance = 0.7;
+	robot_settings[oid].attackDamageRadius = 0;
+	robot_settings[oid].attackMissileSpeed = 0;
+	robot_settings[oid].attackSpeed = 0.1;
+	robot_settings[oid].attackSnipeChance = 0.0;
 	robot_settings[oid].health = 20.0 / 74;
-	robot_settings[oid].build_time = 2 * 60 + 41;
-	robot_settings[oid].max_run_time = run_past_radius * robot_settings[oid].attack_radius / robot_settings[oid].move_speed;
+	robot_settings[oid].buildTime = 2 * 60 + 41;
+	robot_settings[oid].maxRunTime = run_past_radius * robot_settings[oid].attackRadius / robot_settings[oid].moveSpeed;
 	
 	oid = LASER;
-	robot_settings[oid].group_amount = 4;
-	robot_settings[oid].move_speed = 14;
-	robot_settings[oid].attack_radius = 136;
-	robot_settings[oid].attack_damage = 0.017799;
-	robot_settings[oid].attack_damage_chance = 0.7;
-	robot_settings[oid].attack_damage_radius = 0;
-	robot_settings[oid].attack_missile_speed = 0;
-	robot_settings[oid].attack_speed = 0.4;
-	robot_settings[oid].attack_snipe_chance = 0.6;
+	robot_settings[oid].groupAmount = 4;
+	robot_settings[oid].moveSpeed = 14;
+	robot_settings[oid].attackRadius = 136;
+	robot_settings[oid].attackDamage = 0.017799;
+	robot_settings[oid].attackDamageChance = 0.7;
+	robot_settings[oid].attackDamageRadius = 0;
+	robot_settings[oid].attackMissileSpeed = 0;
+	robot_settings[oid].attackSpeed = 0.4;
+	robot_settings[oid].attackSnipeChance = 0.6;
 	robot_settings[oid].health = 15.0 / 74;
-	robot_settings[oid].build_time = 2 * 60 + 59;
-	robot_settings[oid].max_run_time = run_past_radius * robot_settings[oid].attack_radius / robot_settings[oid].move_speed;
+	robot_settings[oid].buildTime = 2 * 60 + 59;
+	robot_settings[oid].maxRunTime = run_past_radius * robot_settings[oid].attackRadius / robot_settings[oid].moveSpeed;
 
 	//vehicles
 	oid = JEEP;
-	vehicle_settings[oid].group_amount = 0;
-	vehicle_settings[oid].move_speed = 17;
-	vehicle_settings[oid].attack_radius = 120;
-	vehicle_settings[oid].attack_damage = 0.0027067;
-	vehicle_settings[oid].attack_damage_chance = 0.65;
-	vehicle_settings[oid].attack_damage_radius = 0;
-	vehicle_settings[oid].attack_missile_speed = 0;
-	vehicle_settings[oid].attack_speed = 0.1;
-	vehicle_settings[oid].attack_snipe_chance = 0.4;
+	vehicle_settings[oid].groupAmount = 0;
+	vehicle_settings[oid].moveSpeed = 17;
+	vehicle_settings[oid].attackRadius = 120;
+	vehicle_settings[oid].attackDamage = 0.0027067;
+	vehicle_settings[oid].attackDamageChance = 0.65;
+	vehicle_settings[oid].attackDamageRadius = 0;
+	vehicle_settings[oid].attackMissileSpeed = 0;
+	vehicle_settings[oid].attackSpeed = 0.1;
+	vehicle_settings[oid].attackSnipeChance = 0.4;
 	vehicle_settings[oid].health = 13.0 / 74;
-	vehicle_settings[oid].build_time = 1 * 60 + 21;
-	vehicle_settings[oid].max_run_time = run_past_radius * vehicle_settings[oid].attack_radius / vehicle_settings[oid].move_speed;
+	vehicle_settings[oid].buildTime = 1 * 60 + 21;
+	vehicle_settings[oid].maxRunTime = run_past_radius * vehicle_settings[oid].attackRadius / vehicle_settings[oid].moveSpeed;
 
 	oid = LIGHT;
-	vehicle_settings[oid].group_amount = 0;
-	vehicle_settings[oid].move_speed = 14;
-	vehicle_settings[oid].attack_radius = 120;
-	vehicle_settings[oid].attack_damage = 50.0 / 240;
-	vehicle_settings[oid].attack_damage_chance = 0;
-	vehicle_settings[oid].attack_damage_radius = 40;
-	vehicle_settings[oid].attack_missile_speed = 225;
-	vehicle_settings[oid].attack_speed = 1.128;
-	vehicle_settings[oid].attack_snipe_chance = 0.0;
+	vehicle_settings[oid].groupAmount = 0;
+	vehicle_settings[oid].moveSpeed = 14;
+	vehicle_settings[oid].attackRadius = 120;
+	vehicle_settings[oid].attackDamage = 50.0 / 240;
+	vehicle_settings[oid].attackDamageChance = 0;
+	vehicle_settings[oid].attackDamageRadius = 40;
+	vehicle_settings[oid].attackMissileSpeed = 225;
+	vehicle_settings[oid].attackSpeed = 1.128;
+	vehicle_settings[oid].attackSnipeChance = 0.0;
 	vehicle_settings[oid].health = 25.0 / 74;
-	vehicle_settings[oid].build_time = 2 * 60 + 17;
-	vehicle_settings[oid].max_run_time = run_past_radius * vehicle_settings[oid].attack_radius / vehicle_settings[oid].move_speed;
+	vehicle_settings[oid].buildTime = 2 * 60 + 17;
+	vehicle_settings[oid].maxRunTime = run_past_radius * vehicle_settings[oid].attackRadius / vehicle_settings[oid].moveSpeed;
 
 	oid = MEDIUM;
-	vehicle_settings[oid].group_amount = 0;
-	vehicle_settings[oid].move_speed = 12;
-	vehicle_settings[oid].attack_radius = 128;
-	vehicle_settings[oid].attack_damage = 80.0 / 240;
-	vehicle_settings[oid].attack_damage_chance = 0;
-	vehicle_settings[oid].attack_damage_radius = 45;
-	vehicle_settings[oid].attack_missile_speed = 160;
-	vehicle_settings[oid].attack_speed = 2.336;
-	vehicle_settings[oid].attack_snipe_chance = 0.0;
+	vehicle_settings[oid].groupAmount = 0;
+	vehicle_settings[oid].moveSpeed = 12;
+	vehicle_settings[oid].attackRadius = 128;
+	vehicle_settings[oid].attackDamage = 80.0 / 240;
+	vehicle_settings[oid].attackDamageChance = 0;
+	vehicle_settings[oid].attackDamageRadius = 45;
+	vehicle_settings[oid].attackMissileSpeed = 160;
+	vehicle_settings[oid].attackSpeed = 2.336;
+	vehicle_settings[oid].attackSnipeChance = 0.0;
 	vehicle_settings[oid].health = 50.0 / 74;
-	vehicle_settings[oid].build_time = 3 * 60 + 45;
-	vehicle_settings[oid].max_run_time = run_past_radius * vehicle_settings[oid].attack_radius / vehicle_settings[oid].move_speed;
+	vehicle_settings[oid].buildTime = 3 * 60 + 45;
+	vehicle_settings[oid].maxRunTime = run_past_radius * vehicle_settings[oid].attackRadius / vehicle_settings[oid].moveSpeed;
 
 	oid = HEAVY;
-	vehicle_settings[oid].group_amount = 0;
-	vehicle_settings[oid].move_speed = 9;
-	vehicle_settings[oid].attack_radius = 144;
-	vehicle_settings[oid].attack_damage = 120.0 / 240;
-	vehicle_settings[oid].attack_damage_chance = 0;
-	vehicle_settings[oid].attack_damage_radius = 50;
-	vehicle_settings[oid].attack_missile_speed = 135;
-	vehicle_settings[oid].attack_speed = 4.088;
-	vehicle_settings[oid].attack_snipe_chance = 0.0;
+	vehicle_settings[oid].groupAmount = 0;
+	vehicle_settings[oid].moveSpeed = 9;
+	vehicle_settings[oid].attackRadius = 144;
+	vehicle_settings[oid].attackDamage = 120.0 / 240;
+	vehicle_settings[oid].attackDamageChance = 0;
+	vehicle_settings[oid].attackDamageRadius = 50;
+	vehicle_settings[oid].attackMissileSpeed = 135;
+	vehicle_settings[oid].attackSpeed = 4.088;
+	vehicle_settings[oid].attackSnipeChance = 0.0;
 	vehicle_settings[oid].health = 62.0 / 74;
-	vehicle_settings[oid].build_time = 5 * 60 + 9;
-	vehicle_settings[oid].max_run_time = 0.7 * run_past_radius * vehicle_settings[oid].attack_radius / vehicle_settings[oid].move_speed;
+	vehicle_settings[oid].buildTime = 5 * 60 + 9;
+	vehicle_settings[oid].maxRunTime = 0.7 * run_past_radius * vehicle_settings[oid].attackRadius / vehicle_settings[oid].moveSpeed;
 
 	oid = APC;
-	vehicle_settings[oid].group_amount = 0;
-	vehicle_settings[oid].move_speed = 14;
-	vehicle_settings[oid].attack_radius = 0;
-	vehicle_settings[oid].attack_damage = 0;
-	vehicle_settings[oid].attack_damage_chance = 0;
-	vehicle_settings[oid].attack_damage_radius = 0;
-	vehicle_settings[oid].attack_missile_speed = 0;
-	vehicle_settings[oid].attack_speed = 0;
-	vehicle_settings[oid].attack_snipe_chance = 0.0;
+	vehicle_settings[oid].groupAmount = 0;
+	vehicle_settings[oid].moveSpeed = 14;
+	vehicle_settings[oid].attackRadius = 0;
+	vehicle_settings[oid].attackDamage = 0;
+	vehicle_settings[oid].attackDamageChance = 0;
+	vehicle_settings[oid].attackDamageRadius = 0;
+	vehicle_settings[oid].attackMissileSpeed = 0;
+	vehicle_settings[oid].attackSpeed = 0;
+	vehicle_settings[oid].attackSnipeChance = 0.0;
 	vehicle_settings[oid].health = 50.0 / 74;
-	vehicle_settings[oid].build_time = 1 * 60 + 58;
-	vehicle_settings[oid].max_run_time = run_past_radius * 120 / vehicle_settings[oid].move_speed;
+	vehicle_settings[oid].buildTime = 1 * 60 + 58;
+	vehicle_settings[oid].maxRunTime = run_past_radius * 120 / vehicle_settings[oid].moveSpeed;
 
 	oid = MISSILE_LAUNCHER;
-	vehicle_settings[oid].group_amount = 0;
-	vehicle_settings[oid].move_speed = 6;
-	vehicle_settings[oid].attack_radius = 160;
-	vehicle_settings[oid].attack_damage = 62.0 / 74;//360.0 / 240;
-	vehicle_settings[oid].attack_damage_chance = 0;
-	vehicle_settings[oid].attack_damage_radius = 80;
-	vehicle_settings[oid].attack_missile_speed = 70;
-	vehicle_settings[oid].attack_speed = 4.454;
-	vehicle_settings[oid].attack_snipe_chance = 0.0;
+	vehicle_settings[oid].groupAmount = 0;
+	vehicle_settings[oid].moveSpeed = 6;
+	vehicle_settings[oid].attackRadius = 160;
+	vehicle_settings[oid].attackDamage = 62.0 / 74;//360.0 / 240;
+	vehicle_settings[oid].attackDamageChance = 0;
+	vehicle_settings[oid].attackDamageRadius = 80;
+	vehicle_settings[oid].attackMissileSpeed = 70;
+	vehicle_settings[oid].attackSpeed = 4.454;
+	vehicle_settings[oid].attackSnipeChance = 0.0;
 	vehicle_settings[oid].health = 50.0 / 74;
-	vehicle_settings[oid].build_time = 6 * 60 + 13;
-	vehicle_settings[oid].max_run_time = 0.5 * run_past_radius * vehicle_settings[oid].attack_radius / vehicle_settings[oid].move_speed;
+	vehicle_settings[oid].buildTime = 6 * 60 + 13;
+	vehicle_settings[oid].maxRunTime = 0.5 * run_past_radius * vehicle_settings[oid].attackRadius / vehicle_settings[oid].moveSpeed;
 
 	oid = CRANE;
-	vehicle_settings[oid].group_amount = 0;
-	vehicle_settings[oid].move_speed = 14;
-	vehicle_settings[oid].attack_radius = 0;
-	vehicle_settings[oid].attack_damage = 0;
-	vehicle_settings[oid].attack_damage_chance = 0;
-	vehicle_settings[oid].attack_damage_radius = 0;
-	vehicle_settings[oid].attack_missile_speed = 0;
-	vehicle_settings[oid].attack_speed = 0;
-	vehicle_settings[oid].attack_snipe_chance = 0.0;
+	vehicle_settings[oid].groupAmount = 0;
+	vehicle_settings[oid].moveSpeed = 14;
+	vehicle_settings[oid].attackRadius = 0;
+	vehicle_settings[oid].attackDamage = 0;
+	vehicle_settings[oid].attackDamageChance = 0;
+	vehicle_settings[oid].attackDamageRadius = 0;
+	vehicle_settings[oid].attackMissileSpeed = 0;
+	vehicle_settings[oid].attackSpeed = 0;
+	vehicle_settings[oid].attackSnipeChance = 0.0;
 	vehicle_settings[oid].health = 1.0;
-	vehicle_settings[oid].build_time = 1 * 60 + 37;
-	vehicle_settings[oid].max_run_time = 0.7 * run_past_radius * vehicle_settings[oid].attack_radius / vehicle_settings[oid].move_speed;
+	vehicle_settings[oid].buildTime = 1 * 60 + 37;
+	vehicle_settings[oid].maxRunTime = 0.7 * run_past_radius * vehicle_settings[oid].attackRadius / vehicle_settings[oid].moveSpeed;
 
 	//cannons
 	oid = GATLING;
-	cannon_settings[oid].group_amount = 0;
-	cannon_settings[oid].move_speed = 0;
-	cannon_settings[oid].attack_radius = 120;
-	cannon_settings[oid].attack_damage = 0.00397566;
-	cannon_settings[oid].attack_damage_chance = 0.65;
-	cannon_settings[oid].attack_damage_radius = 0;
-	cannon_settings[oid].attack_missile_speed = 0;
-	cannon_settings[oid].attack_speed = 0.1;
-	cannon_settings[oid].attack_snipe_chance = 0.4;
+	cannon_settings[oid].groupAmount = 0;
+	cannon_settings[oid].moveSpeed = 0;
+	cannon_settings[oid].attackRadius = 120;
+	cannon_settings[oid].attackDamage = 0.00397566;
+	cannon_settings[oid].attackDamageChance = 0.65;
+	cannon_settings[oid].attackDamageRadius = 0;
+	cannon_settings[oid].attackMissileSpeed = 0;
+	cannon_settings[oid].attackSpeed = 0.1;
+	cannon_settings[oid].attackSnipeChance = 0.4;
 	cannon_settings[oid].health = 13.0 / 74;
-	cannon_settings[oid].build_time = 1 * 60 + 36;
+	cannon_settings[oid].buildTime = 1 * 60 + 36;
 
 	oid = GUN;
-	cannon_settings[oid].group_amount = 0;
-	cannon_settings[oid].move_speed = 0;
-	cannon_settings[oid].attack_radius = 128;
-	cannon_settings[oid].attack_damage = 75.0 / 240;
-	cannon_settings[oid].attack_damage_chance = 0;
-	cannon_settings[oid].attack_damage_radius = 40;
-	cannon_settings[oid].attack_missile_speed = 225;
-	cannon_settings[oid].attack_speed = 2.254;
-	cannon_settings[oid].attack_snipe_chance = 0.0;
+	cannon_settings[oid].groupAmount = 0;
+	cannon_settings[oid].moveSpeed = 0;
+	cannon_settings[oid].attackRadius = 128;
+	cannon_settings[oid].attackDamage = 75.0 / 240;
+	cannon_settings[oid].attackDamageChance = 0;
+	cannon_settings[oid].attackDamageRadius = 40;
+	cannon_settings[oid].attackMissileSpeed = 225;
+	cannon_settings[oid].attackSpeed = 2.254;
+	cannon_settings[oid].attackSnipeChance = 0.0;
 	cannon_settings[oid].health = 25.0 / 74;
-	cannon_settings[oid].build_time = 2 * 60 + 5;
+	cannon_settings[oid].buildTime = 2 * 60 + 5;
 
 	oid = HOWITZER;
-	cannon_settings[oid].group_amount = 0;
-	cannon_settings[oid].move_speed = 0;
-	cannon_settings[oid].attack_radius = 200;
-	cannon_settings[oid].attack_damage = 100.0 / 240;
-	cannon_settings[oid].attack_damage_chance = 0;
-	cannon_settings[oid].attack_damage_radius = 40;
-	cannon_settings[oid].attack_missile_speed = 95;
-	cannon_settings[oid].attack_speed = 4.86;
-	cannon_settings[oid].attack_snipe_chance = 0.0;
+	cannon_settings[oid].groupAmount = 0;
+	cannon_settings[oid].moveSpeed = 0;
+	cannon_settings[oid].attackRadius = 200;
+	cannon_settings[oid].attackDamage = 100.0 / 240;
+	cannon_settings[oid].attackDamageChance = 0;
+	cannon_settings[oid].attackDamageRadius = 40;
+	cannon_settings[oid].attackMissileSpeed = 95;
+	cannon_settings[oid].attackSpeed = 4.86;
+	cannon_settings[oid].attackSnipeChance = 0.0;
 	cannon_settings[oid].health = 25.0 / 74;
-	cannon_settings[oid].build_time = 2 * 60 + 59;
+	cannon_settings[oid].buildTime = 2 * 60 + 59;
 
 	oid = MISSILE_CANNON;
-	cannon_settings[oid].group_amount = 0;
-	cannon_settings[oid].move_speed = 0;
-	cannon_settings[oid].attack_radius = 144;
-	cannon_settings[oid].attack_damage = 200.0 / 240;
-	cannon_settings[oid].attack_damage_chance = 0;
-	cannon_settings[oid].attack_damage_radius = 50;
-	cannon_settings[oid].attack_missile_speed = 128;
-	cannon_settings[oid].attack_speed = 1.124;
-	cannon_settings[oid].attack_snipe_chance = 0.0;
+	cannon_settings[oid].groupAmount = 0;
+	cannon_settings[oid].moveSpeed = 0;
+	cannon_settings[oid].attackRadius = 144;
+	cannon_settings[oid].attackDamage = 200.0 / 240;
+	cannon_settings[oid].attackDamageChance = 0;
+	cannon_settings[oid].attackDamageRadius = 50;
+	cannon_settings[oid].attackMissileSpeed = 128;
+	cannon_settings[oid].attackSpeed = 1.124;
+	cannon_settings[oid].attackSnipeChance = 0.0;
 	cannon_settings[oid].health = 25.0 / 74;
-	cannon_settings[oid].build_time = 3 * 60 + 2;
+	cannon_settings[oid].buildTime = 3 * 60 + 2;
 
 	//rogue variables
 	fort_building_health = 10000.0 / 240;
@@ -287,46 +288,6 @@ void ZSettings::SetDefaults()
 	hut_animal_roam_distance = 7 * 16;
 }
 
-void ZUnit_Settings::CensorNegatives()
-{
-	if(group_amount < 0) group_amount = 0;
-	if(move_speed < 0) move_speed = 0;
-	if(attack_radius < 0) attack_radius = 0;
-	if(attack_damage < 0) attack_damage = 0;
-	if(attack_damage_chance < 0) attack_damage_chance = 0;
-	if(attack_damage_radius < 0) attack_damage_radius = 0;
-	if(attack_missile_speed < 0) attack_missile_speed = 0;
-	if(attack_speed < 0) attack_speed = 0;
-	if(attack_snipe_chance < 0) attack_snipe_chance = 0;
-	if(health < 0) health = 0;
-	if(build_time < 0) build_time = 0;
-
-	if(attack_damage_chance > 1.0) attack_damage_chance = 1.0;
-	if(attack_snipe_chance > 1.0) attack_snipe_chance = 1.0;
-}
-
-void ZUnit_Settings::CensorNonMissileUnit()
-{
-	attack_damage_radius = 0;
-	attack_missile_speed = 0;
-}
-
-void ZUnit_Settings::CensorMissileUnit()
-{
-	attack_damage_chance = 0;
-}
-
-void ZUnit_Settings::CensorNonWeaponUnit()
-{
-	attack_radius = 0;
-	attack_damage = 0;
-	attack_damage_chance = 0;
-	attack_damage_radius = 0;
-	attack_missile_speed = 0;
-	attack_speed = 0;
-	attack_snipe_chance = 0;
-}
-
 void ZSettings::CensorSettings()
 {
 	//some settings are forced to certain values
@@ -357,7 +318,7 @@ void ZSettings::CensorSettings()
 
 	//non movement
 	for(int i=0;i<MAX_CANNON_TYPES;i++)
-		cannon_settings[i].move_speed = 0;
+		cannon_settings[i].moveSpeed = 0;
 
 	//non negatives
 	for(int i=0;i<MAX_ROBOT_TYPES;i++) robot_settings[i].CensorNegatives();
@@ -388,10 +349,7 @@ void ZSettings::CensorSettings()
 
 bool ZSettings::LoadSettings(std::string filename)
 {
-	FILE *fp;
-
-	fp = fopen(filename.c_str(), "r");
-
+	FILE *fp = fopen(filename.c_str(), "r");
 	if(!fp)
 	{
 		printf("ZSettings::could not open '%s' to read settings\n", filename.c_str());
@@ -550,10 +508,7 @@ bool ZSettings::LoadSettings(std::string filename)
 
 bool ZSettings::SaveSettings(std::string filename)
 {
-	FILE *fp;
-
-	fp = fopen(filename.c_str(), "w");
-
+	FILE *fp = fopen(filename.c_str(), "w");
 	if(!fp)
 	{
 		printf("ZSettings::could not open '%s' to save settings\n", filename.c_str());
@@ -618,56 +573,9 @@ bool ZSettings::SaveSettings(std::string filename)
 	return true;
 }
 
-void ZUnit_Settings::SaveLine(FILE *fp, std::string obj_name)
+OpenZod::Core::UnitSettings &ZSettings::GetUnitSettings(unsigned char ot, unsigned char oid)
 {
-	fprintf(fp, "\n");
-	fprintf(fp, "%s.group_amount=%d\n", obj_name.c_str(), group_amount);
-	fprintf(fp, "%s.move_speed=%d\n", obj_name.c_str(), move_speed);
-	fprintf(fp, "%s.attack_radius=%d\n", obj_name.c_str(), attack_radius);
-	fprintf(fp, "%s.attack_damage=%lf\n", obj_name.c_str(), attack_damage);
-	fprintf(fp, "%s.attack_damage_chance=%lf\n", obj_name.c_str(), attack_damage_chance);
-	fprintf(fp, "%s.attack_damage_radius=%d\n", obj_name.c_str(), attack_damage_radius);
-	fprintf(fp, "%s.attack_missile_speed=%d\n", obj_name.c_str(), attack_missile_speed);
-	fprintf(fp, "%s.attack_speed=%lf\n", obj_name.c_str(), attack_speed);
-	fprintf(fp, "%s.attack_snipe_chance=%lf\n", obj_name.c_str(), attack_snipe_chance);
-	fprintf(fp, "%s.health=%lf\n", obj_name.c_str(), health);
-	fprintf(fp, "%s.build_time=%d\n", obj_name.c_str(), build_time);
-	fprintf(fp, "%s.max_run_time=%lf\n", obj_name.c_str(), max_run_time);
-}
-
-void ZUnit_Settings::ReadEntry(std::string variable, std::string value)
-{
-	//printf("ZUnit_Settings::ReadEntry:var:'%s' val:'%s'\n", variable.c_str(), value.c_str());
-
-	if(variable == "group_amount")
-		group_amount = atoi(value.c_str());
-	else if(variable == "move_speed")
-		move_speed = atoi(value.c_str());
-	else if(variable == "attack_radius")
-		attack_radius = atoi(value.c_str());
-	else if(variable == "attack_damage")
-		attack_damage = atof(value.c_str());
-	else if(variable == "attack_damage_chance")
-		attack_damage_chance = atof(value.c_str());
-	else if(variable == "attack_damage_radius")
-		attack_damage_radius = atoi(value.c_str());
-	else if(variable == "attack_missile_speed")
-		attack_missile_speed = atoi(value.c_str());
-	else if(variable == "attack_speed")
-		attack_speed = atof(value.c_str());
-	else if(variable == "attack_snipe_chance")
-		attack_snipe_chance = atof(value.c_str());
-	else if(variable == "health")
-		health = atof(value.c_str());
-	else if(variable == "build_time")
-		build_time = atoi(value.c_str());
-	else if(variable == "max_run_time")
-		max_run_time = atof(value.c_str());
-}
-
-ZUnit_Settings &ZSettings::GetUnitSettings(unsigned char ot, unsigned char oid)
-{
-	static ZUnit_Settings empty_settings;
+	static OpenZod::Core::UnitSettings empty_settings;
 
 	switch(ot)
 	{

@@ -586,7 +586,7 @@ ZObject *ZServer::CreateRobotGroup(unsigned char oid, int x, int y, int owner, s
 
 	if(robot_amount < 0)
 	{
-		robot_amount = zsettings.GetUnitSettings(ROBOT_OBJECT, oid).group_amount;
+		robot_amount = zsettings.GetUnitSettings(ROBOT_OBJECT, oid).groupAmount;
 	}
 
 	//create leader

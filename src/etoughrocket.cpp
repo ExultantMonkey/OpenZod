@@ -8,7 +8,7 @@ ZSDL_Surface EToughRocket::the_bullet[2];
 EToughRocket::EToughRocket(ZTime *ztime_, int start_x, int start_y, int dest_x, int dest_y) : ZEffect(ztime_)
 {
 	double &the_time = ztime->ztime;
-	double bullet_speed = zsettings->GetUnitSettings(ROBOT_OBJECT, TOUGH).attack_missile_speed;
+	double bullet_speed = zsettings->GetUnitSettings(ROBOT_OBJECT, TOUGH).attackMissileSpeed;
 
 	if(!finished_init)
 	{
@@ -112,7 +112,7 @@ void EToughRocket::DoRender(ZMap &zmap, SDL_Surface *dest)
 
 void EToughRocket::PlaceSmoke(double &the_time)
 {
-	double bullet_speed = zsettings->GetUnitSettings(ROBOT_OBJECT, TOUGH).attack_missile_speed;
+	double bullet_speed = zsettings->GetUnitSettings(ROBOT_OBJECT, TOUGH).attackMissileSpeed;
 	const double time_d = 6.0 / bullet_speed;
 	const double time_d2 = 8.0 / bullet_speed;
 

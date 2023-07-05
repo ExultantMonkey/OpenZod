@@ -255,7 +255,7 @@ int ZBuildList::UnitBuildTime(unsigned char ot, unsigned char oid)
 		return 5;
 	}
 
-	return zsettings->GetUnitSettings(ot, oid).build_time;
+	return zsettings->GetUnitSettings(ot, oid).buildTime;
 
  //  	switch(ot)
  //  	{

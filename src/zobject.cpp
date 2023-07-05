@@ -184,18 +184,18 @@ void ZObject::InitTypeId(unsigned char ot, unsigned char oid)
 	}
 	else
 	{
-		ZUnit_Settings &unit_settings = zsettings->GetUnitSettings(object_type, object_id);
+		OpenZod::Core::UnitSettings &unit_settings = zsettings->GetUnitSettings(object_type, object_id);
 
-		move_speed = unit_settings.move_speed;
-		attack_radius = unit_settings.attack_radius;
-		damage = unit_settings.attack_damage * MAX_UNIT_HEALTH;
-		damage_chance = unit_settings.attack_damage_chance;
-		damage_radius = unit_settings.attack_damage_radius;
-		missile_speed = unit_settings.attack_missile_speed;
-		snipe_chance = unit_settings.attack_snipe_chance;
-		damage_int_time = unit_settings.attack_speed;
+		move_speed = unit_settings.moveSpeed;
+		attack_radius = unit_settings.attackRadius;
+		damage = unit_settings.attackDamage * MAX_UNIT_HEALTH;
+		damage_chance = unit_settings.attackDamageChance;
+		damage_radius = unit_settings.attackDamageRadius;
+		missile_speed = unit_settings.attackMissileSpeed;
+		snipe_chance = unit_settings.attackSnipeChance;
+		damage_int_time = unit_settings.attackSpeed;
 		max_health = unit_settings.health * MAX_UNIT_HEALTH;
-		max_stamina = unit_settings.max_run_time;
+		max_stamina = unit_settings.maxRunTime;
 	}
 
 	//set health and stamina to full

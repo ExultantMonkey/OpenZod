@@ -8,8 +8,7 @@ ZSDL_Surface EMoMissileRockets::the_bullet;
 EMoMissileRockets::EMoMissileRockets(ZTime *ztime_, int start_x, int start_y, int dest_x, int dest_y) : ZEffect(ztime_)
 {
 	double &the_time = ztime->ztime;
-	//const double bullet_speed = MMISSILE_MISSILE_SPEED;
-	const double bullet_speed = zsettings->vehicle_settings[MISSILE_LAUNCHER].attack_missile_speed;
+	const double bullet_speed = zsettings->GetUnitSettings(VEHICLE_OBJECT, MISSILE_LAUNCHER).attackMissileSpeed;
 
 	if(!finished_init)
 	{
@@ -103,7 +102,7 @@ void EMoMissileRockets::Process()
 		//particle neighboring objects
 		eflags.unit_particles = true;
 		//eflags.unit_particles_radius = MMISSILE_DAMAGE_RADIUS;
-		eflags.unit_particles_radius = zsettings->vehicle_settings[MISSILE_LAUNCHER].attack_damage_radius;
+		eflags.unit_particles_radius = zsettings->GetUnitSettings(VEHICLE_OBJECT, MISSILE_LAUNCHER).attackDamageRadius;
 		eflags.unit_particles_amount = 7 + (2 * 2) + (3 * 4);
 		eflags.x = ex;
 		eflags.y = ey;
@@ -147,8 +146,7 @@ void EMoMissileRockets::DoRender(ZMap &zmap, SDL_Surface *dest)
 
 void EMoMissileRockets::PlaceSmoke(double &the_time)
 {
-	//const double bullet_speed = MMISSILE_MISSILE_SPEED;
-	const double bullet_speed = zsettings->vehicle_settings[MISSILE_LAUNCHER].attack_missile_speed;
+	const double bullet_speed = zsettings->GetUnitSettings(VEHICLE_OBJECT, MISSILE_LAUNCHER).attackMissileSpeed;
 	const double time_d = 6.0 / bullet_speed;
 	const double time_d2 = 8.0 / bullet_speed;
 

@@ -8,8 +8,7 @@ ZSDL_Surface EMissileCRockets::the_bullet;
 EMissileCRockets::EMissileCRockets(ZTime *ztime_, int start_x, int start_y, int dest_x, int dest_y) : ZEffect(ztime_)
 {
 	double &the_time = ztime->ztime;
-	//const double bullet_speed = MISSILE_CANNON_MISSILE_SPEED;
-	const double bullet_speed = zsettings->cannon_settings[MISSILE_CANNON].attack_missile_speed;
+	const double bullet_speed = zsettings->GetUnitSettings(CANNON_OBJECT, MISSILE_CANNON).attackMissileSpeed;
 
 	if(!finished_init)
 	{
@@ -103,7 +102,7 @@ void EMissileCRockets::Process()
 		//particle neighboring objects
 		eflags.unit_particles = true;
 		//eflags.unit_particles_radius = MISSILE_CANNON_DAMAGE_RADIUS;
-		eflags.unit_particles_radius = zsettings->cannon_settings[MISSILE_CANNON].attack_damage_radius;
+		eflags.unit_particles_radius = zsettings->GetUnitSettings(CANNON_OBJECT, MISSILE_CANNON).attackDamageRadius;
 		eflags.unit_particles_amount = 7 + (1 * 2) + (3 * 3);
 		eflags.x = ex;
 		eflags.y = ey;
@@ -138,8 +137,7 @@ void EMissileCRockets::DoRender(ZMap &zmap, SDL_Surface *dest)
 
 void EMissileCRockets::PlaceSmoke(double &the_time)
 {
-	//const double bullet_speed = MISSILE_CANNON_MISSILE_SPEED;
-	const double bullet_speed = zsettings->cannon_settings[MISSILE_CANNON].attack_missile_speed;
+	const double bullet_speed = zsettings->GetUnitSettings(CANNON_OBJECT, MISSILE_CANNON).attackMissileSpeed;
 	const double time_d = 6.0 / bullet_speed;
 	const double time_d2 = 8.0 / bullet_speed;
 

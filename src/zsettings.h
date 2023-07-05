@@ -1,54 +1,14 @@
 #ifndef _ZSETTINGS_H_
 #define _ZSETTINGS_H_
 
-#include <stdio.h>
 #include <string>
 
 #include "zmap.h"
 #include "constants.h"
 
+#include "Core/UnitSettings.h"
+
 #pragma pack(1)
-
-class ZUnit_Settings
-{
-public:
-	ZUnit_Settings()
-	{
-		group_amount = 0;
-		move_speed = 0;
-		attack_radius = 0;
-		attack_damage = 0;
-		attack_damage_chance = 0;
-		attack_damage_radius = 0;
-		attack_missile_speed = 0;
-		attack_speed = 0;
-		attack_snipe_chance = 0;
-		health = 0;
-		build_time = 0;
-		max_run_time = 0;
-	}
-
-	int group_amount;
-	int move_speed;
-	int attack_radius;
-	double attack_damage;
-	double attack_damage_chance;
-	int attack_damage_radius;
-	int attack_missile_speed;
-	double attack_speed;
-	double attack_snipe_chance;
-	double health;
-	int build_time;
-	double max_run_time;
-
-	void SaveLine(FILE *fp, std::string obj_name);
-	void ReadEntry(std::string variable, std::string value);
-	void CensorNonMissileUnit();
-	void CensorMissileUnit();
-	void CensorNonWeaponUnit();
-	void CensorNegatives();
-};
-
 class ZSettings
 {
 public:
@@ -56,12 +16,8 @@ public:
 	void SetDefaults();
 	bool LoadSettings(std::string filename);
 	bool SaveSettings(std::string filename);
-	ZUnit_Settings &GetUnitSettings(unsigned char ot, unsigned char oid);
+	OpenZod::Core::UnitSettings &GetUnitSettings(unsigned char ot, unsigned char oid);
 
-	ZUnit_Settings robot_settings[MAX_ROBOT_TYPES];
-	ZUnit_Settings vehicle_settings[MAX_VEHICLE_TYPES];
-	ZUnit_Settings cannon_settings[MAX_CANNON_TYPES];
-	
 	double fort_building_health;
 	double robot_building_health;
 	double vehicle_building_health;
@@ -99,6 +55,9 @@ public:
 
 private:
 	void CensorSettings();
+	OpenZod::Core::UnitSettings robot_settings[MAX_ROBOT_TYPES];
+	OpenZod::Core::UnitSettings vehicle_settings[MAX_VEHICLE_TYPES];
+	OpenZod::Core::UnitSettings cannon_settings[MAX_CANNON_TYPES];
 };
 
 #pragma pack()
